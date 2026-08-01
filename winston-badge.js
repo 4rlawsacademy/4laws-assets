@@ -1,4 +1,4 @@
-/* 4 LAWS ACADEMY — winston-badge.js v1 (Bench 15/16, 8/1/26)
+/* 4 LAWS ACADEMY — winston-badge.js v3 THE FIRST HELLO (8/1/26)
  * THE WINSTON BADGE — the IT guy, everywhere.
  * Director's ruling: "a small avatar button somewhere obvious...
  * Winston's face shows up... you click, and you get a chat."
@@ -30,6 +30,11 @@
     '#wnBadge{position:fixed;right:18px;bottom:18px;z-index:9400;' +
     'display:flex;align-items:center;gap:10px;cursor:pointer;' +
     'text-decoration:none;border:none;background:transparent;padding:0;}' +
+    '#wnBadge .wnb-col{display:flex;flex-direction:column;align-items:center;gap:5px;}' +
+    '#wnBadge .wnb-chip{font-family:"Cinzel",Georgia,serif;font-size:11px;' +
+    'font-weight:700;letter-spacing:.18em;color:#0a0d12;background:#c8a84b;' +
+    'padding:3px 9px;border-radius:2px;white-space:nowrap;' +
+    'box-shadow:0 2px 10px rgba(0,0,0,.5);}' +
     '#wnBadge .wnb-face{width:52px;height:52px;border-radius:50%;' +
     'border:2px solid #c8a84b;object-fit:cover;display:block;' +
     'box-shadow:0 2px 14px rgba(0,0,0,.55);opacity:.85;' +
@@ -44,24 +49,55 @@
     'transition:opacity .25s ease,transform .25s ease;}' +
     '#wnBadge:hover .wnb-whisper,#wnBadge:focus .wnb-whisper{opacity:1;' +
     'transform:translateX(0);}' +
+    '#wnBadge .wnb-whisper.wnb-intro{opacity:1;transform:translateX(0);}' +
+    '@keyframes wnbArrive{0%{transform:translateX(120px);opacity:0;}' +
+    '60%{transform:translateX(-10px);opacity:1;}80%{transform:translateX(4px);}' +
+    '100%{transform:translateX(0);}}' +
+    '#wnBadge.wnb-arriving{animation:wnbArrive .9s ease-out;}' +
     '@media (max-width:640px){#wnBadge{right:12px;bottom:12px;}' +
     '#wnBadge .wnb-face{width:46px;height:46px;}' +
-    '#wnBadge .wnb-whisper{display:none;}}';
+    '#wnBadge .wnb-whisper{display:none;}' +
+    '#wnBadge .wnb-chip{font-size:10px;}}';
 
   var style = document.createElement('style');
   style.type = 'text/css';
   style.appendChild(document.createTextNode(css));
   document.head.appendChild(style);
 
-  var whisper = (lang() === 'es') ? '\u00bfIntrigado? \u2014 Winston'
-                                  : 'Puzzled? \u2014 Winston';
+  var es = (lang() === 'es');
+  var whisper = es ? '\u00bfIntrigado? \u2014 Winston' : 'Puzzled? \u2014 Winston';
+  var chip    = es ? 'AYUDA T\u00c9CNICA' : 'IT HELP';
 
   var a = document.createElement('a');
   a.id = 'wnBadge';
   a.href = '/winston';
   a.setAttribute('aria-label', 'Ask Winston, the IT Guide');
   a.innerHTML = '<span class="wnb-whisper">' + whisper + '</span>' +
-    '<img class="wnb-face" src="' + AVATAR + '" alt="Winston" />';
+    '<span class="wnb-col">' +
+    '<img class="wnb-face" src="' + AVATAR + '" alt="Winston" />' +
+    '<span class="wnb-chip">' + chip + '</span>' +
+    '</span>';
+
+  // THE FIRST HELLO (Director's ruling): the very first time a member
+  // ever meets Winston, he slides in from the edge, bounces once, and
+  // introduces himself for six seconds. Ever after: the quiet chip.
+  var firstEver = false;
+  try {
+    if (!localStorage.getItem('4laws-winston-met')) {
+      firstEver = true;
+      localStorage.setItem('4laws-winston-met', '1');
+    }
+  } catch (e) {}
+  if (firstEver) {
+    setTimeout(function() {
+      a.className = 'wnb-arriving';
+      var w = a.querySelector('.wnb-whisper');
+      if (w) {
+        w.className = 'wnb-whisper wnb-intro';
+        setTimeout(function() { w.className = 'wnb-whisper'; a.className = ''; }, 6000);
+      }
+    }, 1500);
+  }
 
   if (document.body) {
     document.body.appendChild(a);
