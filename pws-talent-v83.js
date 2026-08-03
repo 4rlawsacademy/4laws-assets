@@ -1,44 +1,27 @@
-/* 4 LAWS ACADEMY — pws-talent-v83.js — THE HONEST CLOCK (Bench 17, 8/3/26)
- * Three field bugs, four root causes, one clean cut:
- *  1) DONE↔Contributions desync: four save paths dropped _lastResetDate,
- *     so ordinary taps (cycle a state, mark done, delete) armed a full
- *     wipe on the NEXT load. Cured by the constitutional canonical-payload
- *     pattern: pwsStationData() — every save carries the marker.
- *  2) The day ended at 8 PM Eastern: fifteen toISOString() date stamps ran
- *     on UTC. All now use pwsLocalDate() — the member's own midnight.
- *  3) Morning ritual exiled past midnight: untimed items drew a '99:99'
- *     sentinel and sorted last, clobbering saved order every load. Now
- *     pwsNormalizeSchedule(): timed items flow chronologically through the
- *     timed positions; untimed items KEEP the member's saved position.
- *  4) Mobile could never reorder: HTML5 drag doesn't fire on touch. The
- *     Arranger comes home — ▲▼ tap-arrows on every My Day row, everywhere.
- *  5) Bonus (BD10 law, permanent sweep): pre-existing URLSearchParams +
- *     unguarded double-decode in pwsInit replaced with the hand-rolled
- *     ES5 parser — one guarded decode, station can't die on a stray %.
- * winston-badge.js investigated and exonerated. Lineage: v82. */
+/* 4 LAWS ACADEMY - pws-talent-v83.js - THE HONEST CLOCK (Bench 17, 8/3/26)
+ * Built on the LIVE v105-lineage inline script (383KB), NOT the stale repo
+ * v82 snapshot (36KB behind). Live base had already cured UTC dates,
+ * station payload leaks, and URLSearchParams. Three live bugs remained:
+ *  1) '99:99' exile of untimed items -> pwsNormalizeSchedule (positions kept).
+ *  2) No mobile reorder (HTML5 drag never fires on touch) -> arrow buttons,
+ *     speaking the drag's own dialect: _manualOrder = true.
+ *  3) Cascade: windows with no link info credited nothing on DONE ->
+ *     fourth-tier exact-label credit; a UNIQUE match self-heals the cid.
+ * Completes the CDN externalization staged two weeks ago: /pws becomes a
+ * thin shell (v110) pointing here. */
+
 (function() {
   'use strict';
+  // pws_TALENT v105 -- AUTO-LINK + THE FOURTH LEAK. (1) A FOURTH pwsSaveStation leak was hiding in pwsSaveModify: it posts action:action from a map, so no grep for the literal 'pwsSaveStation' found it -- not Bench 4's, not Bug Detector 8's. Every MODIFY on Contributions re-armed the reset that erases the dots. Now uses pwsStationPayload(). Lesson: audit by DATA SHAPE, not by call-site string. (2) AUTO-LINK: the modify AI was only ever shown labels and times, so it could not attach contributionCid even in principle, and a member whose windows were planned in a different conversation from their Contributions could never earn credit without linking every window by hand. The Registry is now passed to Doc B numbered, and Doc B returns servesIndex; pwsResolveServesIndex maps index -> cid deterministically. AI proposes, code writes the fact. Out-of-range or missing index fails safe as no link, and an existing hand-made link is never overwritten. v104.3 base -- THE DOTS STOP DISAPPEARING. Root cause: seven pwsSaveStation call sites, only two carried _lastResetDate, and the boot daily-reset keys off exactly that field. Tapping a Contributions dot by hand saved the dots WITHOUT the stamp; the next load read it empty, concluded a new day had started, and wiped every dot to not-started -- so every hand-set dot armed the reset that erased it. The cascade (pwsBehavioralCascade, DONE -> crushing) was never broken; it just faithfully wrote back the empty stamp the toggle left behind. Fix: pwsStationPayload(), one canonical builder every save path uses, mirroring pwsToolsPayload. Plus the boot reset now treats a MISSING stamp as corruption rather than a new day -- it stamps and resets nothing, so no member loses a day to this on first load. v104.2 base -- THE DOOR LOOKS LIKE A DOOR. The Entertainment Center row in the EC menu was wearing pws-links-save-btn, so it rendered as a second filled gold block directly under SAVE -- two gold buttons, no way to tell a save from a navigation, and it clipped at the panel edge. Now outlined rather than filled, cream on felt, 17px, full width, with a post-layout scroll so the last row is never cut off. Font family unquoted in cssText per the standing watch item. v104.1 base -- TWO MORE DEAD BUTTONS FOUND AND CLOSED. Same v83 residue as the Self Encouragement card: the TWS tool rail's Reminders entry was function(){ void 0; } -- a SECOND silent reminder, now on the real Twilio wire (pwsToggleAlarmsMenu). The rail's music link still called pwsOpenDeparture; it now opens the inline EC menu like the launcher. Mastery Check-In parsed its stage and project id then swallowed the tap; it is genuinely unbuilt, so it now SAYS so instead of pretending. House rule from today: a button that does nothing silently is a lie -- either wire it or have it speak. v104 base -- THE DEAD CARD DIES. SELF ENCOURAGEMENT TIME sat under the Entertainment Center tiles looking alive with a LAUNCH button whose two click handlers were literally function(){ void 0; } -- the residue of v83 stripping pwsOpenSelfEncouragement for the port to Trust and leaving the card behind. Card, orphaned overlay (nothing opened it) and the whole quote/panel subsystem removed together; the working code is preserved intact in SELF_ENCOURAGEMENT_for_TRUST.js so the Trust build starts from something proven. Reclaims headroom in a file that had ~2.5KB left. v103 base -- THE FAKE REMINDER DIES. The launcher's Reminders button was still the v83-era stopgap (two prompt() boxes, browser Notification, setTimeout) sitting three inches from the wall's real Twilio alarms -- two reminder systems in one overlay, and the prettier one silently failed the moment the tab closed. Now both doors use one wire: pwsToggleAlarmsMenu posts pwsSaveReminder into the Reminders sheet, fired by the five-minute server heartbeat, delivered by Twilio (honest stub queue until live). Time + message + phone, phone remembered after once, alarms listed inline, all persisted to cfg.reminders on the activity's equip: row. pwsToggleReminderPanel deleted outright. v102 base -- THE MENU THAT KEEPS YOU: the launcher's three ejecting buttons stop throwing the member out. Music and Games now open pwsToggleECMenu() in the feed -- the links saved for THIS activity, each with OPEN straight to that URL in a new tab, an inline add form, and the Entertainment Center as the LAST row (a door you choose, never one you fall through). Play opens its saved link directly instead of a departure screen. Reads/writes cfg.ecLinks on the activity's equip: row -- same store as the wall and /todos, so a track added here appears on both. Departure screens now reachable only by deliberate tap. v101 base -- ENTERTAINMENT ON THE WALL: the equipping wall gains a fifth panel reading cfg.ecLinks -- the same store todos_v33's inline EC panel already writes ({url,label,icon,category}; music/games/news/other). Per-track OPEN goes straight to that link in a new tab; no departure screen, the member never leaves the window. Add/remove ride the existing funnel (pwsEquipSaveCfg_ -> pwsSaveEquip), so a track saved on the stage stands in the workshop and vice versa -- one equip: row, now five panels. v100.1 base -- MY FAVORITE DAY: the My Plan section label becomes "My Favorite Day" / "Mi Dia Favorito", carrying pws-accordion-section alongside pws-day-section-label so it wears the same Cinzel 22/700 white as My Projects and My Contributions (the accordion rule sits later in the sheet and wins on font, weight and color; the day-label rule keeps the gold divider beneath it), centered. NO stylesheet change -- pws-talent.css untouched, no jsDelivr purge needed. The name is the psychology: this page is a game, and the question it asks is how good a day can I build. v100 base -- STORAGE SWAP (Director's Ruling 7/25, per-activity rows): equipment now lives on its own equip:<name> PWS row, never in the one window_config cell. One write door (pwsEquipSaveCfg_ -> pwsSaveEquip), one read accessor (pwsEquipMerge_: equip wins, legacy fills gaps, migrated = the row exists, no flags). Reads ride pwsGetEquipAll, which returns the new store and the legacy blob in one round trip so read-through migration costs no extra fetch. All 3 write sites and 2 read sites converted; pwsSaveLinkEntry branch 2 (window launch) routed through the funnel, branches 1 (TWS) and 3 (tool.links) deliberately untouched -- room rebuild's business. NO UI CHANGES: storage only. Backend PWS.gs Build 20 @ Main 226. v99.2 base -- invocation fix: deep-link watch now starts at script parse (v99/v99.1 mounted it in pwsRenderAll, which boot never calls -- proven live); fire-once guard added so mid-session renders can't re-open a closed overlay. v99.1: retry patience fix (proven live 7/24: walk sound, cards render past the old 6s window on cold loads; now 60 tries x 1s). v99: FORGE->ACTIVATE deep link (?activate=<obligation> auto-opens that tool's activation overlay; DOM-matched, retried, silent no-op on unknown names). v98 base -- EQUIPPING STANDARD WALL (Sprint #2 clone pass A, 7/24): every My Plan drawer now shows the window's equipped wall -- On the Shelf (files: tap opens from Drive, + Add File racks via pwsUploadFile @ Main 223, X unracks + pwsDeleteFile, >10MB link-only fallback), Links (+ add, in-place open), Contacts (tel: tap-to-call), Alarms (SMS via pwsSaveReminder, today-only display, honest one-shot line) -- reading the SAME window_config keys todos_v31 writes (files/links/contacts/reminders/reminderPhone): one shape, two doors, zero migration. Drawer open-state survives equip re-renders (pwsEquipRerender_). v97 base -- THE UNIFICATION: the note-drawer law selector becomes ONE picker, one question -- 'What does this serve?' Registry contributions first (cid -> dot crush + Respect/Responsibility split), the four bare laws beneath (bar credit only), mint door at the bottom (pwsAppendStation via Games URL, idempotent). Precedence made physical: choosing a contribution deletes lawTag and vice versa. Mint guard: picker resting on __mint__ assigns nothing until Create succeeds. data-law-select retired; data-serves-select + pwsServesMint born.
 
-  var NL = '\n';
-
-  /* ── v83 THE HONEST CLOCK — shared helpers ─────────────────── */
-  function pwsLocalDate() {
-    var d = new Date();
-    var m = d.getMonth() + 1, day = d.getDate();
-    return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
-  }
-  function pwsStationData() {
-    return {
-      confirmedObs:   (_obsData && _obsData.confirmedObs) || [],
-      hateList:       (_obsData && _obsData.hateList) || [],
-      wishList:       (_obsData && _obsData.wishList) || [],
-      whatMatters:    (_obsData && _obsData.whatMatters) || '',
-      _lastResetDate: (_obsData && _obsData._lastResetDate) || ''
-    };
-  }
-  function pwsNormalizeSchedule() {
-    if (!_dayData || !_dayData.finalSchedule || !_dayData.finalSchedule.length) return;
-    var fs = _dayData.finalSchedule;
+  // v95: the member's calendar date, from their local clock. toISOString is
+  // UTC -- after 8 PM EDT it names TOMORROW, so evening check-ins were logged
+  // to a day that had not happened yet and vanished from today's restore.
+  // -- Bench 17 THE HONEST CLOCK: timed items flow chronologically through
+  // the timed positions; untimed items KEEP the exact positions the member
+  // gave them - no more '99:99' exile of the morning ritual.
+  function pwsNormalizeSchedule(fs) {
+    if (!fs || !fs.length) return;
     var timed = [];
     for (var i = 0; i < fs.length; i++) {
       var tv = fs[i].time || fs[i].derivedTime || '';
@@ -46,13 +29,20 @@
     }
     timed.sort(function(a, b) { return a.t - b.t; });
     var ti = 0;
-    var out = [];
     for (var k = 0; k < fs.length; k++) {
       var hv = fs[k].time || fs[k].derivedTime || '';
-      out.push(hv ? timed[ti++].s : fs[k]);
+      if (hv) fs[k] = timed[ti++].s;
     }
-    _dayData.finalSchedule = out;
   }
+
+  function pwsLocalDate() {
+    var d = new Date();
+    var mo = d.getMonth() + 1;
+    var da = d.getDate();
+    return d.getFullYear() + '-' + (mo < 10 ? '0' + mo : mo) + '-' + (da < 10 ? '0' + da : da);
+  }
+
+  var NL = '\n';
   var DEPLOY_URL = 'https://script.google.com/macros/s/AKfycbzHDY-xIM2EEajM7sr2erRrIOXHTH3DJnf6yojbk59_eBNKZcxKlS9p5Q99nKN8j8pa/exec';
   var GAMES_URL  = 'https://script.google.com/macros/s/AKfycbw1usnBC3UWpdkkBLMTPcuTWGKs3Ez_zLxSE-wZOu4WJ04UvpxKzuEPzbdPZ9WCLdX5sw/exec';
   var SESSION_KEY = '4laws-session';
@@ -134,25 +124,192 @@
 
   function fmtTime(t) { return t || ''; }
 
-  function pwsInit() {
-    // v83 (BD10 law): hand-rolled ES5 query parser — no URLSearchParams,
-    // ONE guarded decode, no second decode downstream. A literal % in any
-    // param can no longer take down the whole station.
-    var _q = window.location.search;
-    var _urlParams = {};
-    if (_q && _q.length > 1) {
-      var _pairs = _q.substring(1).split('&');
-      for (var _pi = 0; _pi < _pairs.length; _pi++) {
-        var _eq = _pairs[_pi].indexOf('=');
-        if (_eq === -1) continue;
-        var _pk = _pairs[_pi].substring(0, _eq);
-        var _pv = _pairs[_pi].substring(_eq + 1).replace(/\+/g, ' ');
-        try { _urlParams[_pk] = decodeURIComponent(_pv); } catch (ePd) { _urlParams[_pk] = _pv; }
+  // v89: when the AI modify flow replaces confirmedObs wholesale, carry each
+  // existing dot's stable cid onto the new entry with the same text (R4:
+  // identity is stable; a rename mints fresh next load, a keep keeps its id).
+  function pwsCarryCids(oldArr, newArr) {
+    if (!oldArr || !newArr) return newArr;
+    newArr.forEach(function(n) {
+      if (!n || n.cid || !n.text) return;
+      var t = n.text.toString().toLowerCase().trim();
+      for (var ci = 0; ci < oldArr.length; ci++) {
+        var o = oldArr[ci];
+        if (o && o.cid && o.text && o.text.toString().toLowerCase().trim() === t) { n.cid = o.cid; break; }
+      }
+    });
+    return newArr;
+  }
+
+  // v105 AUTO-LINK: the AI proposes an INDEX, the code resolves the cid.
+  // Why an index and not the cid itself: platform law is that AI proposes
+  // and deterministic controls write single facts. Doc B emitting a 30-char
+  // cid is a hallucination surface; a small integer is not, and an
+  // out-of-range integer fails safe as no link at all. Root cause this
+  // closes: the modify AI was only ever shown labels and times, so it could
+  // not attach a contributionCid even in principle -- pwsCarrySlotFields
+  // existed purely to rescue links the AI would otherwise destroy. A member
+  // whose windows were built in a different conversation from their
+  // Contributions could never get credit without linking all of them by hand.
+  function pwsRegistryPromptBlock() {
+    var obs = (_obsData && _obsData.confirmedObs) ? _obsData.confirmedObs : [];
+    if (!obs.length) return '';
+    var lines = [];
+    for (var i = 0; i < obs.length; i++) {
+      if (obs[i] && obs[i].text) lines.push('[' + i + '] ' + obs[i].text);
+    }
+    if (!lines.length) return '';
+    return ' The member\'s Registry of declared contributions, numbered: ' +
+      lines.join(' | ') +
+      '. For EVERY schedule slot that serves one of these contributions, include a field "servesIndex" set to that number. Use the number only, never invent one, and omit servesIndex entirely when a slot serves none of them. Never output a cid.';
+  }
+
+  // Resolves servesIndex -> contributionCid deterministically. Never
+  // overwrites a link the member made by hand; an out-of-range or absent
+  // index simply leaves the slot unlinked.
+  function pwsResolveServesIndex(arr) {
+    var obs = (_obsData && _obsData.confirmedObs) ? _obsData.confirmedObs : [];
+    if (!arr || !obs.length) return arr;
+    for (var i = 0; i < arr.length; i++) {
+      var sl = arr[i];
+      if (!sl) continue;
+      var idx = sl.servesIndex;
+      if (sl.servesIndex !== undefined) { try { delete sl.servesIndex; } catch (e) { sl.servesIndex = undefined; } }
+      if (sl.contributionCid) continue;
+      var n = parseInt(idx, 10);
+      if (isNaN(n) || n < 0 || n >= obs.length) continue;
+      if (obs[n] && obs[n].cid) sl.contributionCid = obs[n].cid;
+    }
+    return arr;
+  }
+
+  // v92: when the MODIFY chat rebuilds the day, the AI only sees labels and
+  // times -- so its draft would silently strip contributionCid links, lawTag,
+  // notes, and every other field. Match draft slots to existing slots to
+  // carry those fields over.
+  // v107 -- TITLE PLUMBING FIX (real version): every slot now carries a
+  // permanent id, minted once at birth (pwsEnsureSlotIds_) and handed to
+  // Doc B during MODIFY with an explicit instruction to echo it back
+  // unchanged, even when it rewords the label. That id is now the
+  // authoritative match -- exact, unambiguous, never guessed. Label and
+  // time matching remain ONLY as a defensive fallback for the rare case
+  // an AI response drops the id despite the instruction (models aren't
+  // perfectly obedient); when that happens the recovered slot still gets
+  // a fresh id going forward via pwsEnsureSlotIds_, so the gap self-heals
+  // by the next round. An old slot with a contribution link that STILL
+  // can't be matched by any tier is logged loudly (console.warn) instead
+  // of silently losing its credit -- on-screen surfacing is a follow-up
+  // design decision, not guessed here.
+  function pwsCarrySlotFields(oldArr, newArr) {
+    if (!oldArr || !newArr) return newArr;
+    var claimed = new Array(oldArr.length);
+    var byId = {};
+    oldArr.forEach(function(o, si) { if (o && o.id) byId[o.id] = si; });
+
+    function carry(n, o) {
+      var ks = Object.keys(o);
+      for (var ki = 0; ki < ks.length; ki++) {
+        if (n[ks[ki]] === undefined) n[ks[ki]] = o[ks[ki]];
       }
     }
-    var _urlSession = _urlParams['session'];
-    var _urlMember = _urlParams['member'];
-    var _urlDname = _urlParams['dname'];
+
+    // Tier 0: exact id match -- the real fix, authoritative when present.
+    newArr.forEach(function(n) {
+      if (!n || !n.id) return;
+      var si = byId[n.id];
+      if (si !== undefined && !claimed[si]) {
+        carry(n, oldArr[si]);
+        claimed[si] = true;
+        n._pwsCarried = true;
+      }
+    });
+
+    // Tier 1 (fallback only): exact label match, for slots where the id
+    // didn't come back -- unambiguous when found, but wording-dependent.
+    newArr.forEach(function(n) {
+      if (!n || n._pwsCarried || !n.label) return;
+      var t = (n.label + '').toLowerCase().trim();
+      for (var si = 0; si < oldArr.length; si++) {
+        if (claimed[si]) continue;
+        var o = oldArr[si];
+        if (o && o.label && (o.label + '').toLowerCase().trim() === t) {
+          carry(n, o);
+          claimed[si] = true;
+          n._pwsCarried = true;
+          break;
+        }
+      }
+    });
+
+    // Tier 2 (fallback only): same time, only when exactly one unclaimed
+    // old slot shares it -- a tie is left unmatched rather than risk
+    // attaching the wrong contributionCid to the wrong task.
+    newArr.forEach(function(n) {
+      if (!n || n._pwsCarried) return;
+      var nt = (n.derivedTime || n.time || '').toString().trim();
+      if (!nt) return;
+      var matchIdx = -1, matchCount = 0;
+      for (var si = 0; si < oldArr.length; si++) {
+        if (claimed[si]) continue;
+        var o = oldArr[si];
+        var ot = o && (o.derivedTime || o.time || '').toString().trim();
+        if (ot && ot === nt) { matchCount++; matchIdx = si; }
+      }
+      if (matchCount === 1) {
+        carry(n, oldArr[matchIdx]);
+        claimed[matchIdx] = true;
+        n._pwsCarried = true;
+      }
+    });
+
+    // Loud safety net: an unclaimed old slot with a real contribution link
+    // is a silent credit-loss unless we say something now.
+    oldArr.forEach(function(o, si) {
+      if (claimed[si]) return;
+      if (o && (o.contributionCid || (o.contributionId !== undefined && o.contributionId !== null))) {
+        console.warn('[pwsCarrySlotFields] Contribution link lost on MODIFY -- old slot "' +
+          (o.label || '?') + '" (' + (o.derivedTime || o.time || '?') + ', id=' + (o.id || 'none') +
+          ') had a contribution link that no new slot could be matched to (its id was not echoed back). ' +
+          'Credit for this item will not register until re-linked by hand via the serves-picker.');
+      }
+    });
+
+    newArr.forEach(function(n) { if (n) delete n._pwsCarried; });
+    return newArr;
+  }
+
+  // v107: mints a permanent id on any schedule slot that doesn't have one
+  // yet -- called on every day-load (backfills slots created before this
+  // fix existed) and right after a MODIFY merge (covers brand-new slots
+  // Doc B just added, so they have an id before the very next round).
+  function pwsEnsureSlotIds_(arr) {
+    if (!arr) return arr;
+    arr.forEach(function(s) {
+      if (s && !s.id) s.id = 'slot_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+    });
+    return arr;
+  }
+
+  function pwsGetUrlParam(name) {
+    var q = window.location.search.substring(1);
+    if (!q) return null;
+    var pairs = q.split('&');
+    for (var i = 0; i < pairs.length; i++) {
+      var kv = pairs[i].split('=');
+      var rawKey = (kv[0] || '').replace(/\+/g, ' ');
+      var key; try { key = decodeURIComponent(rawKey); } catch (e) { key = rawKey; }
+      if (key === name) {
+        if (kv[1] === undefined) return '';
+        var rawVal = kv[1].replace(/\+/g, ' ');
+        try { return decodeURIComponent(rawVal); } catch (e) { return rawVal; }
+      }
+    }
+    return null;
+  }
+
+  function pwsInit() {
+    var _urlSession = pwsGetUrlParam('session');
+    var _urlMember = pwsGetUrlParam('member');
+    var _urlDname = pwsGetUrlParam('dname');
     if (_urlSession && _urlMember) {
       localStorage.setItem(SESSION_KEY, _urlSession);
       localStorage.setItem(MEMBER_KEY, _urlMember);
@@ -199,63 +356,7 @@
     }).catch(function(){});
   }
 
-  function pwsInitWeather() {
-    var HOLYOKE_LAT = 42.2043;
-    var HOLYOKE_LON = -72.6162;
-    var pref = '';
-    try { pref = localStorage.getItem('4laws-weather-pref') || ''; } catch(e) {}
 
-    if (pref === 'yes') {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          function(pos) { pwsLoadWeather(pos.coords.latitude, pos.coords.longitude); },
-          function() { pwsLoadWeather(HOLYOKE_LAT, HOLYOKE_LON); }
-        );
-      } else {
-        pwsLoadWeather(HOLYOKE_LAT, HOLYOKE_LON);
-      }
-      return;
-    }
-
-    if (pref === 'no') {
-      pwsLoadWeather(HOLYOKE_LAT, HOLYOKE_LON);
-      return;
-    }
-
-    // First visit — show permission banner in now-hero
-    var strip = document.getElementById('pwsWeatherStrip');
-    if (!strip) return;
-    var banner = document.createElement('div');
-    banner.id = 'pwsWeatherBanner';
-    banner.style.cssText = 'display:flex;align-items:center;gap:10px;margin-top:8px;padding:7px 12px;background:rgba(200,168,75,0.1);border:1px solid rgba(200,168,75,0.35);border-radius:4px;';
-    banner.innerHTML = '<span style="font-family:\'Cormorant Garamond\',serif;font-size:20px !important;color:rgba(240,230,204,0.8);">'
-      + '<span class="en">Allow location for weather?</span>'
-      + '<span class="es">&#191;Permitir ubicaci&#243;n para el clima?</span>'
-      + '</span>'
-      + '<button id="pwsWeatherYes" style="font-family:\'Cinzel\',serif;font-size:16px !important;letter-spacing:0.12em;text-transform:uppercase;color:#040608;background:#c8a84b;border:none;border-radius:3px;padding:4px 12px;cursor:pointer;">Yes</button>'
-      + '<button id="pwsWeatherNo"  style="font-family:\'Cinzel\',serif;font-size:16px !important;letter-spacing:0.12em;text-transform:uppercase;color:rgba(240,230,204,0.5);background:transparent;border:1px solid rgba(240,230,204,0.2);border-radius:3px;padding:4px 12px;cursor:pointer;">No</button>';
-    strip.parentNode.insertBefore(banner, strip.nextSibling);
-    pwsApplyLang();
-
-    document.getElementById('pwsWeatherYes').addEventListener('click', function() {
-      try { localStorage.setItem('4laws-weather-pref', 'yes'); } catch(e) {}
-      banner.parentNode.removeChild(banner);
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          function(pos) { pwsLoadWeather(pos.coords.latitude, pos.coords.longitude); },
-          function() { pwsLoadWeather(HOLYOKE_LAT, HOLYOKE_LON); }
-        );
-      } else {
-        pwsLoadWeather(HOLYOKE_LAT, HOLYOKE_LON);
-      }
-    });
-
-    document.getElementById('pwsWeatherNo').addEventListener('click', function() {
-      try { localStorage.setItem('4laws-weather-pref', 'no'); } catch(e) {}
-      banner.parentNode.removeChild(banner);
-      pwsLoadWeather(HOLYOKE_LAT, HOLYOKE_LON);
-    });
-  }
 
   pwsSetCurrentTime();
     setInterval(pwsTickClock, 60000);
@@ -288,12 +389,10 @@
     var _closeBtn2 = document.getElementById('pwsUseCloseBtn2');
     if (_closeBtn2) _closeBtn2.addEventListener('click', pwsCloseUse);
 
-    // BUILD 3: Wire header Doc B Enter key and camera
     var _docbInp = document.getElementById('pwsDocBInput');
     if (_docbInp) _docbInp.addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); pwsSendDocB(); }
     });
-    // BUILD 3: Shortcut button delegation
     var _docbShortcuts = document.getElementById('pwsDocBShortcuts');
     if (_docbShortcuts) _docbShortcuts.addEventListener('click', function(e) {
       var btn = e.target.closest ? e.target.closest('[data-docb-shortcut]') : null;
@@ -465,19 +564,36 @@
       post({ action: 'pwsGetStation',        sessionId: _session, requestingMemberId: _memberId }).catch(function(){ return null; }),
       post({ action: 'pwsGetTools',          sessionId: _session, requestingMemberId: _memberId }).catch(function(){ return null; }),
       post({ action: 'pwsGetDay',            sessionId: _session, requestingMemberId: _memberId }).catch(function(){ return null; }),
-      post({ action: 'pwsGetTodayAdherence', sessionId: _session, requestingMemberId: _memberId }).catch(function(){ return null; }),
-      post({ action: 'pwsGetWindowConfig',   sessionId: _session, requestingMemberId: _memberId }).catch(function(){ return null; })
+      post({ action: 'pwsGetTodayAdherence', sessionId: _session, requestingMemberId: _memberId, date: pwsLocalDate() }).catch(function(){ return null; }),
+      post({ action: 'pwsGetEquipAll',       sessionId: _session, requestingMemberId: _memberId }).catch(function(){ return null; }),
+      fetch(GAMES_URL, { method: 'POST', body: JSON.stringify({ action: 'pwsMintStationCids', memberId: _memberId }) }).then(function(r){ return r.json(); }).catch(function(){ return null; })
     ]).then(function(results) {
-      var dStation = results[0], dTools = results[1], dDay = results[2], dAdherence = results[3], dWinConfig = results[4];
+      var dStation = results[0], dTools = results[1], dDay = results[2], dAdherence = results[3], dWinConfig = results[4], dMint = results[5];
       if (dStation && dStation.status === 'ok') { _obsData = dStation.data ? Object.assign({}, dStation.data, { lastSavedAt: dStation.lastSavedAt }) : null; }
-      // Reset contribution states daily
+      if (_obsData && _obsData.confirmedObs && dMint && dMint.success && dMint.confirmedObs && dMint.confirmedObs.length) {
+        _obsData.confirmedObs.forEach(function(ob, mi) {
+          var m = dMint.confirmedObs[mi];
+          if (ob && !ob.cid && m && m.cid) { ob.cid = m.cid; }
+        });
+      }
       if (_obsData && _obsData.confirmedObs) {
         var _todayReset = pwsLocalDate();
         var _lastReset = _obsData._lastResetDate || '';
-        if (_lastReset !== _todayReset) {
+        if (!_lastReset) {
+          // v104.3: NO stamp means a record written by one of the old leaking
+          // save paths -- corruption evidence, not evidence of a new day.
+          // Stamp today and reset NOTHING. Wiping here is what destroyed the
+          // member's dots every reload. A brand-new member is unaffected:
+          // their obligations are already not-started.
+          _obsData._lastResetDate = _todayReset;
+          post({ action: 'pwsSaveStation', sessionId: _session, requestingMemberId: _memberId,
+            data: pwsStationPayload({ _lastResetDate: _todayReset }) });
+        } else if (_lastReset !== _todayReset) {
+          // A real new day: yesterday's dots clear.
           _obsData.confirmedObs.forEach(function(ob) { ob.state = 'not-started'; });
           _obsData._lastResetDate = _todayReset;
-          post({ action: 'pwsSaveStation', sessionId: _session, requestingMemberId: _memberId, data: pwsStationData() });
+          post({ action: 'pwsSaveStation', sessionId: _session, requestingMemberId: _memberId,
+            data: pwsStationPayload({ _lastResetDate: _todayReset }) });
         }
       }
       if (!_obsData || !_obsData.confirmedObs || !_obsData.confirmedObs.length) {
@@ -490,8 +606,8 @@
       }
       if (dTools && dTools.status === 'ok') { _toolsData = dTools.data ? Object.assign({}, dTools.data, { lastSavedAt: dTools.lastSavedAt }) : null; }
       if (dDay && dDay.status === 'ok') { _dayData = dDay.data ? Object.assign({}, dDay.data, { lastSavedAt: dDay.lastSavedAt }) : null; }
-      // Reset _checkedIn on load — prevents stale state
       if (_dayData && _dayData.finalSchedule) {
+        pwsEnsureSlotIds_(_dayData.finalSchedule);
         _dayData.finalSchedule.forEach(function(s) { s._checkedIn = ''; });
       }
       if (dAdherence && dAdherence.status === 'ok') {
@@ -507,7 +623,6 @@
               keyMap[rec.windowKey] = rec; // later entries overwrite earlier
             }
           });
-          // Three-tier match: label_ key, window_N positional, activityLabel scan
           filteredSched.forEach(function(slot, i) {
             var labelKey = 'label_' + (slot.label || '').replace(/\s+/g, '_').toLowerCase();
             var posKey = 'window_' + i;
@@ -526,12 +641,11 @@
           });
         }
       }
-      if (dWinConfig && dWinConfig.status === 'ok' && dWinConfig.data) { _windowConfig = dWinConfig.data; }
-      // v83: timed windows flow chronologically through the timed positions;
-      // untimed items KEEP the member's saved position — the morning ritual
-      // stays #1 instead of being exiled past midnight by a '99:99' sentinel
-      // that also clobbered every manual arrangement on load.
-      pwsNormalizeSchedule();
+      if (dWinConfig && dWinConfig.status === 'ok') { _windowConfig = pwsEquipMerge_(dWinConfig.data, dWinConfig.legacy); }
+      // Sort by time only on first load — preserve manual drag order thereafter
+      if (_dayData && _dayData.finalSchedule && _dayData.finalSchedule.length && !_dayData._manualOrder) {
+        pwsNormalizeSchedule(_dayData.finalSchedule);
+      }
       pwsShowLoading(false);
       try { pwsRenderStationTile(); } catch(e) {}
       try { pwsRenderToolsTile(); } catch(e) {}
@@ -561,7 +675,6 @@
 
   function pwsRenderAll() {
     pwsRenderCurrentWindow(); pwsRenderStationTile(); pwsRenderToolsTile(); pwsRenderDayTile(); pwsUpdateAccordionStatus(); pwsEnsureProjectSlot();
-    pwsInitWeather();
   }
 
   function pwsEnsureProjectSlot() {
@@ -955,7 +1068,7 @@
       { key: 'Doc B',      icon: '\uD83E\uDD16', label: 'Doc B',       labelEs: 'Doc B',            action: function() { pwsOpenDocB(); } },
       { key: 'Links',      icon: '\uD83D\uDD17', label: 'Links',       labelEs: 'Enlaces',          action: function() { pwsToggleLinksPanel(); } },
       { key: 'Timer',      icon: '\u23F1',        label: 'Timer',       labelEs: 'Cron\u00f3metro',  action: function() { pwsToggleTimerPanel(); } },
-      { key: 'Reminders',  icon: '\uD83D\uDD14', label: 'Reminders',   labelEs: 'Recordatorios',   action: function() { pwsToggleReminderPanel(); } },
+      { key: 'Reminders',  icon: '\uD83D\uDD14', label: 'Reminders',   labelEs: 'Recordatorios',   action: function() { pwsToggleAlarmsMenu(); } },
       { key: 'Games',      icon: '\uD83C\uDFAE', label: 'Games',       labelEs: 'Juegos',           action: function() { pwsEntertainmentBridgeOutbound('game'); } },
       { key: 'Notes',      icon: '\uD83D\uDCDD', label: 'Notes',       labelEs: 'Notas',            action: function() { pwsOpenTWSNotes(); } },
       { key: 'Camera',     icon: '\uD83D\uDCF7', label: 'Camera',      labelEs: 'C\u00e1mara',     action: function() { pwsOpenTWSCamera(); } },
@@ -1127,7 +1240,6 @@
     pwsRenderToolsTile();
 
     // -------------------------------------------------------
-    // TEMPLATE NAMING — Item 4
     // After the member builds their tool set for the first time,
     // prompt them to name their daily system.
     // Only ask once — skip if templateName already exists.
@@ -1140,7 +1252,6 @@
   }
 
   // -------------------------------------------------------
-  // pwsShowTemplateNamingPrompt
   // Inserts a naming card after the tool grid in the Tools
   // & Entertainment accordion section.
   // -------------------------------------------------------
@@ -1475,14 +1586,16 @@
     var ob = _obsData.confirmedObs[idx]; if (!ob) return;
     var states = ['not-started', 'in-progress', 'crushing'];
     ob.state = states[(states.indexOf(ob.state || 'not-started') + 1) % states.length];
-    post({ action: 'pwsSaveStation', sessionId: _session, requestingMemberId: _memberId, data: pwsStationData() });
+    post({ action: 'pwsSaveStation', sessionId: _session, requestingMemberId: _memberId,
+      data: pwsStationPayload() });
     pwsRenderStationTile(); pwsRenderToolsTile(); pwsUpdateAccordionStatus();
   };
 
   window.pwsDeleteObs = function pwsDeleteObs(idx) {
     if (!_obsData || !_obsData.confirmedObs) return;
     _obsData.confirmedObs.splice(idx, 1);
-    post({ action: 'pwsSaveStation', sessionId: _session, requestingMemberId: _memberId, data: pwsStationData() });
+    post({ action: 'pwsSaveStation', sessionId: _session, requestingMemberId: _memberId,
+      data: pwsStationPayload() });
     pwsRenderStationTile();
     pwsRenderToolsTile();
     pwsUpdateAccordionStatus();
@@ -1502,9 +1615,13 @@
     }
     var allWindowsComplete = _adherenceData && _adherenceData.allWindowsComplete === true;
     container.innerHTML = '';
+    // v96: the Foundry door -- stages get exit signs, not saw tables (S1/S2).
+    var foundryDoor = document.createElement('div');
+    foundryDoor.style.cssText = 'text-align:right;margin:0 0 10px 0;';
+    foundryDoor.innerHTML = '<a href="/todos?create=tool" style="font-family:Cinzel,serif;font-size:16px !important;letter-spacing:0.14em;text-transform:uppercase;color:#c8a84b;text-decoration:none;border:1px solid rgba(200,168,75,0.5);border-radius:3px;padding:7px 14px;display:inline-block;"><span class="en">+ New Activity Tool \u2192</span><span class="es">+ Nueva Herramienta \u2192</span></a>';
+    container.appendChild(foundryDoor);
 
     // -------------------------------------------------------
-    // TEMPLATE NAME DISPLAY — Item 4
     // Show the member's named system at the top of the tile.
     // -------------------------------------------------------
     if (_toolsData.templateName) {
@@ -1742,20 +1859,35 @@
     lockedRow.appendChild(ecTile);
     lockedRow.appendChild(sdTile);
     if (container.parentNode) container.parentNode.appendChild(lockedRow);
-    var eS=container.parentNode?container.parentNode.querySelector('.pws-se-card'):null;
-    if(eS) eS.parentNode.removeChild(eS);
-    var seCard=document.createElement('div'); seCard.className='pws-se-card';
-    seCard.style.cssText='margin-top:12px;display:flex;align-items:center;gap:12px;background:rgba(200,168,75,0.05);border:1px solid rgba(200,168,75,0.22);border-radius:6px;padding:14px 18px;cursor:pointer;';
-    seCard.innerHTML='<div style="flex:1;"><div style="font-family:\'Cinzel\',serif;font-size:15px !important;letter-spacing:0.18em;color:#c8a84b;text-transform:uppercase;margin-bottom:4px;"><span class="en">Self Encouragement Time</span><span class="es">Aliento Personal</span></div><div style="font-family:\'Cormorant Garamond\',serif;font-size:20px !important;font-style:italic;color:rgba(240,230,204,0.5);"><span class="en">Soul Scroll + your own voice</span><span class="es">Revelación + tu propia voz</span></div></div><button class="pws-tool-open-btn"><span class="en">► Launch</span><span class="es">► Lanzar</span></button>';
-    seCard.querySelector('.pws-tool-open-btn').addEventListener('click',function(ev){ev.stopPropagation();pwsOpenSelfEncouragement();});
-    seCard.addEventListener('click',function(){pwsOpenSelfEncouragement();});
-    pwsApplyLang();
-    if(container.parentNode) container.parentNode.appendChild(seCard);
   }
 
   var _unlockedTools = {};
   function pwsIsToolUnlocked(t) { var key = (t.obligation || '') + '|' + (t.en || ''); return !!_unlockedTools[key]; }
   function pwsMarkToolUnlocked(t) { var key = (t.obligation || '') + '|' + (t.en || ''); _unlockedTools[key] = true; }
+
+  // v104.3 THE CANONICAL STATION PAYLOAD -- every pwsSaveStation goes
+  // through here. Three of seven save paths were omitting _lastResetDate,
+  // and the boot reset keys off that field: tap a dot by hand, the toggle
+  // saved your dots WITHOUT the stamp, next load read it as empty, decided
+  // a new day had begun, and wiped every dot back to not-started. Each
+  // hand-set dot armed the reset that erased it. A field any call site can
+  // silently drop will be dropped again, so there is now exactly one door.
+  function pwsStationPayload(extra) {
+    var d = _obsData || {};
+    var p = {
+      confirmedObs:   d.confirmedObs || [],
+      hateList:       d.hateList     || [],
+      wishList:       d.wishList     || [],
+      whatMatters:    d.whatMatters  || '',
+      _lastResetDate: d._lastResetDate || pwsLocalDate()
+    };
+    if (extra) {
+      for (var k in extra) {
+        if (Object.prototype.hasOwnProperty.call(extra, k)) p[k] = extra[k];
+      }
+    }
+    return p;
+  }
 
   // Helper: build the canonical tools save payload (always includes templateName)
   function pwsToolsPayload() {
@@ -1791,8 +1923,8 @@
         (_dayData.wakeTime ? '<span class="pws-day-bookend"><span class="en">Wake: </span><span class="es">Despertar: </span>' + escHtml(_dayData.wakeTime) + '</span>' : '') +
         (_dayData.bedTime ? '<span class="pws-day-bookend"><span class="en">Wind down: </span><span class="es">Relajarse: </span>' + escHtml(_dayData.bedTime) + '</span>' : '') + '</div>';
     }
-    var planItems = [], todoItems = [];
-    schedule.forEach(function(s, idx) { if (s.isTodo) todoItems.push({ s: s, idx: idx }); else planItems.push({ s: s, idx: idx }); });
+    var planItems = [];
+    schedule.forEach(function(s, idx) { planItems.push({ s: s, idx: idx }); });
     var planNum = 0;
     var planRowsHTML = planItems.map(function(entry) {
       var s = entry.s, idx = entry.idx;
@@ -1844,47 +1976,69 @@
         }
       } else {
         checkinHTML = '<div class="pws-checkin-row" onclick="event.stopPropagation();">' +
-        '<button class="pws-checkin-btn done' + (checkedIn === 'done' ? ' checked' : '') + '" onclick="pwsCheckinByLabel(' + JSON.stringify(s.label) + ',\'done\')"><span class="en">Done</span><span class="es">Listo</span></button>' +
-        '<button class="pws-checkin-btn missed' + (checkedIn === 'missed' ? ' checked' : '') + '" onclick="pwsCheckinByLabel(' + JSON.stringify(s.label) + ',\'missed\')"><span class="en">Missed</span><span class="es">Me lo salt\u00e9</span></button></div>';
+        '<button class="pws-checkin-btn done' + (checkedIn === 'done' ? ' checked' : '') + '" onclick="pwsCheckinByLabel(' + JSON.stringify(s.label).replace(/"/g, '&quot;') + ',\'done\')"><span class="en">Done</span><span class="es">Listo</span></button>' +
+        '<button class="pws-checkin-btn missed' + (checkedIn === 'missed' ? ' checked' : '') + '" onclick="pwsCheckinByLabel(' + JSON.stringify(s.label).replace(/"/g, '&quot;') + ',\'missed\')"><span class="en">Missed</span><span class="es">Me lo salt\u00e9</span></button></div>';
       }
       var winCfgKey = s.label || '';
       var winCfg = _windowConfig && winCfgKey && _windowConfig[winCfgKey] ? _windowConfig[winCfgKey] : null;
-      if (hasObl) {
+      if (s.isTodo) {
+        var todoUrl = '/todos?open=' + encodeURIComponent(s.label || '');
+        checkinHTML += '<div class="pws-checkin-row" style="margin-top:4px !important;"><button class="pws-day-launch-btn" data-todo-url="' + encodeURIComponent(s.label || '') + '"><span class="en">&#9654; Open in Todos</span><span class="es">&#9654; Abrir en Tareas</span></button></div>';
+      } else if (hasObl) {
         checkinHTML += '<div class="pws-checkin-row" style="margin-top:4px !important;"><button class="pws-day-launch-btn" data-launch-tool="' + launchIdx + '" data-obligation="' + escHtml(validTools[launchIdx] ? (validTools[launchIdx].obligation || validTools[launchIdx].en || '') : '') + '"><span class="en">&#9654; Launch</span><span class="es">&#9654; Lanzar</span></button></div>';
       } else if (winCfg) {
         checkinHTML += '<div class="pws-checkin-row" style="margin-top:4px !important;"><button class="pws-day-launch-btn" data-launch-window="' + escHtml(winCfgKey) + '"><span class="en">&#9654; Launch</span><span class="es">&#9654; Lanzar</span></button></div>';
       }
-      return '<div class="pws-plan-seq-row' + (isCurrent ? ' current-window' : '') + '" draggable="true" data-idx="' + idx + '">' +
+      var fsIdx = _dayData.finalSchedule.indexOf(s);
+      return '<div class="pws-plan-seq-row' + (isCurrent ? ' current-window' : '') + '" draggable="true" data-idx="' + fsIdx + '">' +
         '<div class="pws-drag-handle" draggable="false">&#x2261;</div><div class="pws-plan-seq-num">' + planNum + '</div>' +
-        '<div class="pws-seq-arrows"><button type="button" class="pws-seq-arrow" onclick="pwsSeqMove(' + idx + ',-1);event.stopPropagation();" aria-label="Move up">&#9650;</button><button type="button" class="pws-seq-arrow" onclick="pwsSeqMove(' + idx + ',1);event.stopPropagation();" aria-label="Move down">&#9660;</button></div>' +
+        '<div class="pws-seq-arrows"><button type="button" class="pws-seq-arrow" onclick="pwsSeqMove(' + fsIdx + ',-1);event.stopPropagation();" aria-label="Move up">&#9650;</button><button type="button" class="pws-seq-arrow" onclick="pwsSeqMove(' + fsIdx + ',1);event.stopPropagation();" aria-label="Move down">&#9660;</button></div>' +
         '<div class="pws-plan-seq-body">' +
-        '<div class="pws-plan-seq-label" onclick="pwsToggleNote(' + idx + ');event.stopPropagation();">' + escHtml(s.label || '') + noteIndicator + '</div>' +
+        '<div class="pws-plan-seq-label" onclick="pwsToggleNote(' + idx + ');event.stopPropagation();">' + escHtml(s.label || '') + (s.isTodo ? '<span class="pws-todo-badge"> TODO</span>' : '') + noteIndicator + '</div>' +
         (s.chem ? '<div class="pws-plan-seq-meta">' + escHtml(s.chem) + (isCurrent ? ' \u2014 <span class="en">Now</span><span class="es">Ahora</span>' : '') + (timeStr ? ' \u00b7 ' + timeStr : '') + '</div>' : (timeStr ? '<div class="pws-plan-seq-meta">' + timeStr + '</div>' : '')) +
         checkinHTML +
-        '<div class="pws-item-note-wrap" id="pwsNoteWrap' + idx + '" onclick="event.stopPropagation();"><textarea class="pws-item-note" id="pwsNote' + idx + '" rows="2" placeholder="Add a note \u2014 phone number, link, agenda...">' + escHtml(s.note || '') + '</textarea></div>' +
+        '<div class="pws-item-note-wrap" id="pwsNoteWrap' + idx + '" onclick="event.stopPropagation();"><textarea class="pws-item-note" id="pwsNote' + idx + '" rows="2" placeholder="Add a note \u2014 phone number, link, agenda...">' + escHtml(s.note || '') + '</textarea>' + (function() {
+          // v97 UNIFICATION: one picker, one question -- "What does this serve?"
+          // Registry contributions first (cid -> dot crush + split engine),
+          // the four bare laws beneath (bar credit only), mint door at bottom.
+          // Contribution link wins precedence; the handler makes it physical.
+          var es97 = (_lang === 'es');
+          var lawVal = (s.lawTag === 'talent' || s.lawTag === 'respect' || s.lawTag === 'responsibility' || s.lawTag === 'limits') ? s.lawTag : '';
+          var curCid = s.contributionCid || '';
+          var legacyIdx = (s.contributionId !== undefined && s.contributionId !== null) ? parseInt(s.contributionId, 10) : -1;
+          var hasLink = !!curCid || legacyIdx >= 0;
+          var h = '<select data-serves-select="' + fsIdx + '" style="margin-top:6px;background:rgba(240,230,204,0.04);border:1px solid rgba(200,168,75,0.25);border-radius:3px;color:#c8a84b;font-family:Cinzel,serif;font-size:15px;letter-spacing:0.08em;padding:5px 8px;max-width:100%;">';
+          h += '<option value=""' + (!hasLink && !lawVal ? ' selected' : '') + '>' + (es97 ? '\u2014 \u00bfA qu\u00e9 sirve? \u2014' : '\u2014 What does this serve? \u2014') + '</option>';
+          var obs97 = (_obsData && _obsData.confirmedObs) ? _obsData.confirmedObs : [];
+          for (var ci97 = 0; ci97 < obs97.length; ci97++) {
+            var ob97 = obs97[ci97]; if (!ob97) continue;
+            var val97 = ob97.cid ? ob97.cid : ('idx_' + ci97);
+            var sel97 = (curCid && ob97.cid === curCid) || (!curCid && legacyIdx === ci97);
+            h += '<option value="' + escHtml(val97) + '"' + (sel97 ? ' selected' : '') + '>' + escHtml(ob97.text || ((es97 ? 'Contribuci\u00f3n ' : 'Contribution ') + (ci97 + 1))) + '</option>';
+          }
+          var laws97 = [['talent', 'Talent', 'Talento'], ['respect', 'Respect', 'Respeto'], ['responsibility', 'Responsibility', 'Responsabilidad'], ['limits', 'Limits', 'L\u00edmites']];
+          for (var li = 0; li < laws97.length; li++) {
+            h += '<option value="' + laws97[li][0] + '"' + (!hasLink && lawVal === laws97[li][0] ? ' selected' : '') + '>' + (es97 ? laws97[li][2] : laws97[li][1]) + '</option>';
+          }
+          h += '<option value="__mint__">' + (es97 ? '+ Nueva contribuci\u00f3n\u2026' : '+ New contribution\u2026') + '</option>';
+          h += '</select>';
+          h += '<div id="pwsServesMint' + fsIdx + '" style="display:none;margin-top:6px;">' +
+            '<input type="text" id="pwsServesMintInput' + fsIdx + '" maxlength="120" placeholder="' + (es97 ? 'Nombra la contribuci\u00f3n\u2026' : 'Name the contribution\u2026') + '" style="width:100%;box-sizing:border-box;background:rgba(240,230,204,0.04);border:1px solid rgba(200,168,75,0.25);border-radius:4px;color:#f0e6cc;font-family:Cormorant Garamond,serif;font-size:18px;padding:10px 12px;outline:none;min-height:44px;">' +
+            '<button id="pwsServesMintBtn' + fsIdx + '" onclick="pwsServesMint(' + fsIdx + ');event.stopPropagation();" style="width:100%;box-sizing:border-box;margin-top:8px;background:rgba(200,168,75,0.12);border:1px solid #c8a84b;border-radius:4px;color:#c8a84b;font-family:Cinzel,serif;font-size:16px;letter-spacing:0.12em;text-transform:uppercase;padding:10px 12px;cursor:pointer;min-height:44px;">' + (es97 ? 'Crear' : 'Create') + '</button>' +
+            '<div id="pwsServesMintStatus' + fsIdx + '" style="font-family:Cormorant Garamond,serif;font-size:15px;color:rgba(240,230,204,0.6);margin-top:6px;min-height:18px;"></div>' +
+          '</div>';
+          // v98 EQUIPPING STANDARD clone: the window's wall, on the stage.
+          // Same window_config keys as todos_v31 -- files/links/contacts/
+          // reminders/reminderPhone -- one shape, two doors, zero migration.
+          h += pwsEquipWallHTML(fsIdx, winCfg, es97);
+          return h;
+        })() + '</div>' +
         '</div></div>';
     }).join('');
-    container.innerHTML = bookendHTML + '<div class="pws-day-section-label"><span class="en">My Plan</span><span class="es">Mi Plan</span></div>' +
+    container.innerHTML = bookendHTML + '<div class="pws-day-section-label pws-accordion-section" style="text-align:center;"><span class="en">My Favorite Day</span><span class="es">Mi D\u00eda Favorito</span></div>' +
       (planRowsHTML || '<div class="pws-empty-state" style="padding:10px 0;"><span class="en pws-empty-msg">No scheduled items yet.</span><span class="es pws-empty-msg">Sin actividades programadas a\u00fan.</span></div>');
     pwsWireDrag(container);
-    if (todosCont) {
-      var todoRowsHTML = todoItems.map(function(entry) {
-        var s = entry.s, idx = entry.idx;
-        var checkedIn = s._checkedIn || '';
-        var hasNote = s.note && s.note.trim();
-        var noteIndicator = hasNote ? '<span class="pws-note-indicator" title="Note">&#x270E;</span>' : '';
-        return '<div class="pws-plan-seq-row" data-idx="' + idx + '">' +
-          '<button class="pws-todo-delete" onclick="pwsDeleteTodo(' + idx + ')">&#x2715;</button>' +
-          '<div class="pws-plan-seq-body">' +
-          '<div class="pws-plan-seq-label" onclick="pwsToggleNote(' + idx + ');event.stopPropagation();">' + escHtml(s.label || '') + noteIndicator + '</div>' +
-          '<div class="pws-checkin-row" onclick="event.stopPropagation();">' +
-          '<button class="pws-checkin-btn done' + (checkedIn === 'done' ? ' checked' : '') + '" onclick="pwsCheckinByLabel(' + JSON.stringify(s.label) + ',\'done\')"><span class="en">Done</span><span class="es">Listo</span></button>' +
-          '<button class="pws-checkin-btn missed' + (checkedIn === 'missed' ? ' checked' : '') + '" onclick="pwsCheckinByLabel(' + JSON.stringify(s.label) + ',\'missed\')"><span class="en">Missed</span><span class="es">Me lo salt\u00e9</span></button></div>' +
-          '<div class="pws-item-note-wrap" id="pwsNoteWrap' + idx + '" onclick="event.stopPropagation();"><textarea class="pws-item-note" id="pwsNote' + idx + '" rows="2" placeholder="Add a note...">' + escHtml(s.note || '') + '</textarea></div>' +
-          '</div></div>';
-      }).join('');
-      todosCont.innerHTML = '<div class="pws-day-section-label" style="margin-top:24px;"><span class="en">My To-Dos</span><span class="es">Mis Tareas</span></div>' + (todoRowsHTML || '');
-    }
+    if (todosCont) { todosCont.innerHTML = ''; }
     pwsUpdateSavedLabel('pwsDaySaved', _dayData.lastSavedAt);
   }
 
@@ -1907,6 +2061,7 @@
       date: pwsLocalDate(), windowKey: 'label_' + (item.label || ('window_' + idx)).replace(/\s+/g, '_').toLowerCase(),
       activityLabel: item.label || ('window_' + idx), completed: result === 'done', note: '', lawTag: pwsLawTagFromSlot(item) });
     pwsRenderDayTile();
+    pwsBehavioralCascade(item, result, schedule);
     var allChecked = schedule.filter(function(s) { return s._checkedIn; });
     var doneCount = schedule.filter(function(s) { return s._checkedIn === 'done'; }).length;
     if (allChecked.length === schedule.length) pwsAdherenceFeedback(doneCount, schedule.length);
@@ -1927,10 +2082,358 @@
       date: pwsLocalDate(), windowKey: 'label_' + (item.label || ('window_' + idx)).replace(/\s+/g, '_').toLowerCase(),
       activityLabel: item.label || ('window_' + idx), completed: result === 'done', note: '', lawTag: pwsLawTagFromSlot(item) });
     pwsRenderDayTile();
+    pwsBehavioralCascade(item, result, schedule);
     var allChecked = schedule.filter(function(s) { return s._checkedIn; });
     var doneCount = schedule.filter(function(s) { return s._checkedIn === 'done'; }).length;
     if (allChecked.length === schedule.length) pwsAdherenceFeedback(doneCount, schedule.length);
   };
+
+  // v97 UNIFICATION: mint door inside the serves picker. Ported from
+  // /todos tdMintContribution (v28). Calls pwsAppendStation (Games URL,
+  // idempotent -- duplicate text returns existing, never twins), adopts
+  // the contribution locally, links the slot by cid, saves the day, and
+  // re-renders so the new dot appears on the Contributions tile at once.
+  window.pwsServesMint = function pwsServesMint(fsIdx) {
+    var inp = document.getElementById('pwsServesMintInput' + fsIdx);
+    var btn = document.getElementById('pwsServesMintBtn' + fsIdx);
+    var st  = document.getElementById('pwsServesMintStatus' + fsIdx);
+    if (!inp) return;
+    var text = (inp.value || '').replace(/^\s+|\s+$/g, '');
+    if (!text) { if (st) st.textContent = _lang === 'es' ? 'Escribe un nombre primero.' : 'Write a name first.'; return; }
+    if (btn) btn.disabled = true;
+    if (st)  st.textContent = _lang === 'es' ? 'Declarando\u2026' : 'Declaring\u2026';
+    fetch(GAMES_URL, { method: 'POST', body: JSON.stringify({ action: 'pwsAppendStation', memberId: _memberId, text: text }) })
+      .then(function(r){ return r.json(); })
+      .then(function(d) {
+        if (!d || !d.success || !d.contribution || !d.contribution.cid) {
+          if (st)  st.textContent = _lang === 'es' ? 'No se pudo guardar. Intenta de nuevo.' : 'Could not save. Try again.';
+          if (btn) btn.disabled = false;
+          return;
+        }
+        var c = d.contribution;
+        if (!_obsData) _obsData = { confirmedObs: [] };
+        if (!_obsData.confirmedObs) _obsData.confirmedObs = [];
+        var already = false;
+        _obsData.confirmedObs.forEach(function(ob) { if (ob && ob.cid === c.cid) already = true; });
+        if (!already) _obsData.confirmedObs.push(c);
+        var slot = (_dayData && _dayData.finalSchedule) ? _dayData.finalSchedule[fsIdx] : null;
+        if (slot) {
+          slot.contributionCid = c.cid;
+          delete slot.contributionId;
+          delete slot.lawTag;
+          pwsSaveDaySchedule();
+        }
+        pwsRenderStationTile();
+        pwsRenderToolsTile();
+        pwsRenderDayTile();
+      })
+      .catch(function() {
+        if (st)  st.textContent = _lang === 'es' ? 'Error de conexi\u00f3n.' : 'Connection error.';
+        if (btn) btn.disabled = false;
+      });
+  };
+
+  // ── v98 EQUIPPING STANDARD — the wall, cloned from todos_v31 ─────────
+  // The Racked Promise on the stage: every drawer shows what the window
+  // owns -- Shelf, Links, Contacts, Alarms -- reading the SAME
+  // window_config keys the workshop writes. Rack here, see it there.
+  // Sticky Config law: every act below writes into the window's own
+  // config. Bytes live in Drive (PWSFiles.gs, Main 223); the sheet racks
+  // only {fileId, name, viewUrl}.
+
+  var PWS_EQ_ROW  = 'display:flex;align-items:center;gap:8px;margin-top:6px;background:rgba(240,230,204,0.04);border:1px solid rgba(200,168,75,0.2);border-radius:4px;padding:8px 10px;';
+  var PWS_EQ_HDR  = 'font-family:Cinzel,serif;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(200,168,75,0.7);margin-top:14px;';
+  var PWS_EQ_A    = 'flex:1;color:#c8a84b;font-family:Cormorant Garamond,serif;font-size:18px;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-height:28px;display:flex;align-items:center;';
+  var PWS_EQ_TXT  = 'flex:1;color:#f0e6cc;font-family:Cormorant Garamond,serif;font-size:18px;';
+  var PWS_EQ_X    = 'background:none;border:1px solid rgba(200,168,75,0.25);border-radius:4px;color:rgba(240,230,204,0.6);cursor:pointer;min-width:34px;min-height:34px;font-size:15px;';
+  var PWS_EQ_BTN  = 'width:100%;box-sizing:border-box;margin-top:6px;background:rgba(200,168,75,0.12);border:1px solid #c8a84b;border-radius:4px;color:#c8a84b;font-family:Cinzel,serif;font-size:15px;letter-spacing:0.12em;text-transform:uppercase;padding:9px 12px;cursor:pointer;min-height:44px;';
+  var PWS_EQ_IN   = 'width:100%;box-sizing:border-box;margin-top:6px;background:rgba(240,230,204,0.04);border:1px solid rgba(200,168,75,0.25);border-radius:4px;color:#f0e6cc;font-family:Cormorant Garamond,serif;font-size:18px;padding:10px 12px;outline:none;min-height:44px;';
+  var PWS_EQ_DIM  = 'font-family:Cormorant Garamond,serif;font-size:14px;color:rgba(240,230,204,0.45);margin-top:4px;';
+
+  function pwsEquipWallHTML(fsIdx, cfg, es) {
+    cfg = cfg || {};
+    var h = '';
+    // Shelf
+    h += '<div style="' + PWS_EQ_HDR + '">' + (es ? 'En el estante' : 'On the shelf') + '</div>';
+    var files = cfg.files || [];
+    if (!files.length) {
+      h += '<div style="' + PWS_EQ_DIM + '">' + (es ? 'Nada guardado a\u00fan.' : 'Nothing racked yet.') + '</div>';
+    }
+    for (var fi = 0; fi < files.length; fi++) {
+      var f = files[fi]; if (!f) continue;
+      h += '<div style="' + PWS_EQ_ROW + '"><a href="' + escHtml(f.viewUrl || '#') + '" target="_blank" rel="noopener" style="' + PWS_EQ_A + '">\uD83D\uDCC4 ' + escHtml(f.name || 'file') + '</a><button onclick="pwsEquipRemove(\'file\',' + fsIdx + ',' + fi + ');event.stopPropagation();" style="' + PWS_EQ_X + '">\u2715</button></div>';
+    }
+    h += '<input type="file" id="pwsEquipFile' + fsIdx + '" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.gif,.webp" style="display:none;" onchange="pwsEquipFileChosen(' + fsIdx + ',this)">';
+    h += '<button onclick="document.getElementById(\'pwsEquipFile' + fsIdx + '\').click();event.stopPropagation();" style="' + PWS_EQ_BTN + '">' + (es ? '+ Agregar Archivo' : '+ Add File') + '</button>';
+    h += '<div id="pwsEquipFileStatus' + fsIdx + '" style="' + PWS_EQ_DIM + 'min-height:16px;"></div>';
+    // Links
+    h += '<div style="' + PWS_EQ_HDR + '">' + (es ? 'Enlaces' : 'Links') + '</div>';
+    var links = cfg.links || [];
+    for (var li2 = 0; li2 < links.length; li2++) {
+      var lk = links[li2]; if (!lk) continue;
+      var lUrl = lk.url || (typeof lk === 'string' ? lk : ''); if (!lUrl) continue;
+      h += '<div style="' + PWS_EQ_ROW + '"><a href="' + escHtml(lUrl) + '" target="_blank" rel="noopener" style="' + PWS_EQ_A + '">\uD83D\uDD17 ' + escHtml(lk.name || lUrl) + '</a><button onclick="pwsEquipRemove(\'link\',' + fsIdx + ',' + li2 + ');event.stopPropagation();" style="' + PWS_EQ_X + '">\u2715</button></div>';
+    }
+    h += '<div id="pwsEquipLinkForm' + fsIdx + '" style="display:none;">' +
+      '<input type="text" id="pwsEquipLinkName' + fsIdx + '" placeholder="' + (es ? 'Nombre (opcional)' : 'Name (optional)') + '" style="' + PWS_EQ_IN + '">' +
+      '<input type="text" id="pwsEquipLinkUrl' + fsIdx + '" placeholder="https://\u2026" style="' + PWS_EQ_IN + '">' +
+      '<button onclick="pwsEquipSaveLink(' + fsIdx + ');event.stopPropagation();" style="' + PWS_EQ_BTN + '">' + (es ? 'Guardar Enlace' : 'Save Link') + '</button></div>';
+    h += '<button onclick="pwsEquipToggle(\'Link\',' + fsIdx + ');event.stopPropagation();" style="' + PWS_EQ_BTN + '">' + (es ? '+ Agregar Enlace' : '+ Add Link') + '</button>';
+    // Entertainment (v101: the wall's fifth panel -- same ecLinks store todos writes)
+    h += '<div style="' + PWS_EQ_HDR + '">' + (es ? 'Entretenimiento' : 'Entertainment') + '</div>';
+    var ecl = cfg.ecLinks || [];
+    if (!ecl.length) h += '<div style="' + PWS_EQ_DIM + '">' + (es ? 'Sin enlaces guardados.' : 'No saved links yet.') + '</div>';
+    for (var ei2 = 0; ei2 < ecl.length; ei2++) {
+      var ec2 = ecl[ei2]; if (!ec2 || !ec2.url) continue;
+      h += '<div style="' + PWS_EQ_ROW + '"><a href="' + escHtml(ec2.url) + '" target="_blank" rel="noopener" style="' + PWS_EQ_A + '">' + (ec2.icon || '\uD83D\uDD17') + ' ' + escHtml(ec2.label || ec2.url) + '</a><button onclick="pwsEquipRemove(\'ec\',' + fsIdx + ',' + ei2 + ');event.stopPropagation();" style="' + PWS_EQ_X + '">\u2715</button></div>';
+    }
+    h += '<div id="pwsEquipECForm' + fsIdx + '" style="display:none;">' +
+      '<select id="pwsEquipECCat' + fsIdx + '" style="' + PWS_EQ_IN + 'cursor:pointer;">' +
+        '<option value="music">\uD83C\uDFB5 ' + (es ? 'M\u00fasica' : 'Music') + '</option>' +
+        '<option value="games">\uD83C\uDFAE ' + (es ? 'Juegos' : 'Games') + '</option>' +
+        '<option value="news">\uD83D\uDCFA ' + (es ? 'Noticias' : 'News') + '</option>' +
+        '<option value="other">\uD83D\uDD17 ' + (es ? 'Otro' : 'Other') + '</option></select>' +
+      '<input type="text" id="pwsEquipECUrl' + fsIdx + '" placeholder="https://\u2026" style="' + PWS_EQ_IN + '">' +
+      '<input type="text" id="pwsEquipECName' + fsIdx + '" placeholder="' + (es ? 'Nombre (opcional)' : 'Name (optional)') + '" style="' + PWS_EQ_IN + '">' +
+      '<button onclick="pwsEquipSaveEC(' + fsIdx + ');event.stopPropagation();" style="' + PWS_EQ_BTN + '">' + (es ? 'Guardar' : 'Save') + '</button></div>';
+    h += '<button onclick="pwsEquipToggle(\'EC\',' + fsIdx + ');event.stopPropagation();" style="' + PWS_EQ_BTN + '">' + (es ? '+ Agregar Entretenimiento' : '+ Add Entertainment') + '</button>';
+    // Contacts
+    h += '<div style="' + PWS_EQ_HDR + '">' + (es ? 'Contactos' : 'Contacts') + '</div>';
+    var contacts = cfg.contacts || [];
+    for (var ci2 = 0; ci2 < contacts.length; ci2++) {
+      var c = contacts[ci2]; if (!c) continue;
+      var tel = c.phone ? ('tel:' + String(c.phone).replace(/[^0-9+]/g, '')) : '';
+      if (tel) {
+        h += '<div style="' + PWS_EQ_ROW + '"><a href="' + tel + '" style="' + PWS_EQ_A + '">\uD83D\uDCDE ' + escHtml(c.name || c.phone || '') + '</a><button onclick="pwsEquipRemove(\'contact\',' + fsIdx + ',' + ci2 + ');event.stopPropagation();" style="' + PWS_EQ_X + '">\u2715</button></div>';
+      } else {
+        h += '<div style="' + PWS_EQ_ROW + '"><div style="' + PWS_EQ_TXT + '">\uD83D\uDCDE ' + escHtml(c.name || '') + '</div><button onclick="pwsEquipRemove(\'contact\',' + fsIdx + ',' + ci2 + ');event.stopPropagation();" style="' + PWS_EQ_X + '">\u2715</button></div>';
+      }
+    }
+    h += '<div id="pwsEquipContactForm' + fsIdx + '" style="display:none;">' +
+      '<input type="text" id="pwsEquipContactName' + fsIdx + '" placeholder="' + (es ? 'Nombre' : 'Name') + '" style="' + PWS_EQ_IN + '">' +
+      '<input type="text" id="pwsEquipContactPhone' + fsIdx + '" placeholder="' + (es ? 'Tel\u00e9fono' : 'Phone') + '" style="' + PWS_EQ_IN + '">' +
+      '<button onclick="pwsEquipSaveContact(' + fsIdx + ');event.stopPropagation();" style="' + PWS_EQ_BTN + '">' + (es ? 'Guardar Contacto' : 'Save Contact') + '</button></div>';
+    h += '<button onclick="pwsEquipToggle(\'Contact\',' + fsIdx + ');event.stopPropagation();" style="' + PWS_EQ_BTN + '">' + (es ? '+ Agregar Contacto' : '+ Add Contact') + '</button>';
+    // Alarms
+    h += '<div style="' + PWS_EQ_HDR + '">' + (es ? 'Alarmas (SMS)' : 'Alarms (SMS)') + '</div>';
+    var rems = cfg.reminders || [];
+    var todayEq = pwsLocalDate();
+    var shownEq = 0;
+    for (var ri2 = 0; ri2 < rems.length; ri2++) {
+      var r = rems[ri2]; if (!r || !r.time) continue;
+      if (r.date && r.date !== todayEq) continue;
+      h += '<div style="' + PWS_EQ_ROW + '"><div style="' + PWS_EQ_TXT + '">\u23F0 ' + escHtml(r.time) + (r.note ? ' \u2014 ' + escHtml(r.note) : '') + '</div></div>';
+      shownEq++;
+    }
+    if (!shownEq) h += '<div style="' + PWS_EQ_DIM + '">' + (es ? 'Sin alarmas hoy.' : 'No alarms today.') + '</div>';
+    var phonePre = cfg.reminderPhone || (function(){ try { return localStorage.getItem('4laws-alarm-phone') || ''; } catch(e) { return ''; } })();
+    h += '<div id="pwsEquipAlarmForm' + fsIdx + '" style="display:none;">' +
+      '<input type="time" id="pwsEquipAlarmTime' + fsIdx + '" style="' + PWS_EQ_IN + '">' +
+      '<input type="text" id="pwsEquipAlarmNote' + fsIdx + '" placeholder="' + (es ? 'Mensaje' : 'Message') + '" style="' + PWS_EQ_IN + '">' +
+      '<input type="text" id="pwsEquipAlarmPhone' + fsIdx + '" value="' + escHtml(phonePre) + '" placeholder="' + (es ? 'Tu celular (una vez)' : 'Your cell (asked once)') + '" style="' + PWS_EQ_IN + '">' +
+      '<div style="' + PWS_EQ_DIM + '">' + (es ? 'Suena hoy a esa hora \u2014 un texto, sin cancelar.' : 'Fires today at that time \u2014 one text, no cancel.') + '</div>' +
+      '<button onclick="pwsEquipSaveAlarm(' + fsIdx + ');event.stopPropagation();" style="' + PWS_EQ_BTN + '">' + (es ? 'Poner Alarma' : 'Set Alarm') + '</button></div>';
+    h += '<button onclick="pwsEquipToggle(\'Alarm\',' + fsIdx + ');event.stopPropagation();" style="' + PWS_EQ_BTN + '">' + (es ? '+ Agregar Alarma' : '+ Add Alarm') + '</button>';
+    return h;
+  }
+
+  function pwsEquipCfg_(fsIdx) {
+    if (!_dayData || !_dayData.finalSchedule || !_dayData.finalSchedule[fsIdx]) return null;
+    var wLabel = _dayData.finalSchedule[fsIdx].label || '';
+    if (!wLabel) return null;
+    if (!_windowConfig) _windowConfig = {};
+    if (!_windowConfig[wLabel]) _windowConfig[wLabel] = {};
+    return { label: wLabel, cfg: _windowConfig[wLabel] };
+  }
+  // v100 STORAGE SWAP -- the one write door. Every wall in this file goes
+  // through here and lands on its own equip:<name> row. Nothing in /pws
+  // writes the legacy window_config blob any more.
+  function pwsEquipSaveCfg_(wLabel) {
+    if (!wLabel) return Promise.resolve(null);
+    if (!_windowConfig) _windowConfig = {};
+    if (!_windowConfig[wLabel]) _windowConfig[wLabel] = {};
+    return post({ action: 'pwsSaveEquip', sessionId: _session, requestingMemberId: _memberId, activityName: wLabel, config: _windowConfig[wLabel] });
+  }
+  // v100 PRECEDENCE LAW -- one accessor, every read site. Equip wins,
+  // legacy fills the gaps, and an activity is "migrated" by the mere
+  // existence of its equip: row. No flags, nothing to desync. Once an
+  // activity is migrated its legacy entry is never read again.
+  function pwsEquipMerge_(equipMap, legacyMap) {
+    var out = {}, k;
+    if (legacyMap) { for (k in legacyMap) { if (Object.prototype.hasOwnProperty.call(legacyMap, k)) out[k] = legacyMap[k]; } }
+    if (equipMap)  { for (k in equipMap)  { if (Object.prototype.hasOwnProperty.call(equipMap,  k)) out[k] = equipMap[k];  } }
+    return out;
+  }
+  function pwsEquipRerender_() {
+    var openIds = [];
+    var wraps = document.querySelectorAll('.pws-item-note-wrap.open');
+    for (var i = 0; i < wraps.length; i++) openIds.push(wraps[i].id);
+    pwsRenderDayTile();
+    for (var j = 0; j < openIds.length; j++) {
+      var w = document.getElementById(openIds[j]);
+      if (w) w.classList.add('open');
+    }
+  }
+  window.pwsEquipToggle = function pwsEquipToggle(kind, fsIdx) {
+    var f = document.getElementById('pwsEquip' + kind + 'Form' + fsIdx);
+    if (f) f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  };
+  window.pwsEquipFileChosen = function pwsEquipFileChosen(fsIdx, inputEl) {
+    var w = pwsEquipCfg_(fsIdx); if (!w) return;
+    var file = inputEl && inputEl.files && inputEl.files[0]; if (!file) return;
+    var st = document.getElementById('pwsEquipFileStatus' + fsIdx);
+    if (file.size > 10 * 1024 * 1024) {
+      if (st) st.textContent = _lang === 'es' ? 'M\u00e1s de 10MB \u2014 agr\u00e9galo como enlace.' : 'Over 10MB \u2014 rack it as a link instead.';
+      return;
+    }
+    if (st) st.textContent = _lang === 'es' ? 'Guardando en el estante\u2026' : 'Racking it\u2026';
+    var reader = new FileReader();
+    reader.onloadend = function() {
+      var base64 = reader.result.split(',')[1];
+      post({ action: 'pwsUploadFile', sessionId: _session, requestingMemberId: _memberId,
+        fileName: file.name, mediaType: file.type || 'application/octet-stream', base64Data: base64 })
+      .then(function(d) {
+        if (!d || d.status !== 'ok' || !d.file || !d.file.fileId) {
+          if (st) st.textContent = (d && d.code === 'too_large')
+            ? (_lang === 'es' ? 'M\u00e1s de 10MB \u2014 agr\u00e9galo como enlace.' : 'Over 10MB \u2014 rack it as a link instead.')
+            : (_lang === 'es' ? 'No se pudo guardar. Intenta de nuevo.' : 'Could not rack it. Try again.');
+          return;
+        }
+        if (!w.cfg.files) w.cfg.files = [];
+        w.cfg.files.push({ fileId: d.file.fileId, name: d.file.name, viewUrl: d.file.viewUrl, mediaType: d.file.mediaType || '' });
+        pwsEquipSaveCfg_(w.label).catch(function(){});
+        pwsEquipRerender_();
+      })
+      .catch(function() { if (st) st.textContent = _lang === 'es' ? 'Error de conexi\u00f3n.' : 'Connection error.'; });
+    };
+    reader.readAsDataURL(file);
+  };
+  window.pwsEquipRemove = function pwsEquipRemove(kind, fsIdx, itemIdx) {
+    var w = pwsEquipCfg_(fsIdx); if (!w) return;
+    if (kind === 'file') {
+      if (!w.cfg.files || !w.cfg.files[itemIdx]) return;
+      var fRec = w.cfg.files[itemIdx];
+      if (!confirm(_lang === 'es' ? '\u00bfQuitar "' + (fRec.name || 'archivo') + '" del estante?' : 'Remove "' + (fRec.name || 'file') + '" from the shelf?')) return;
+      w.cfg.files.splice(itemIdx, 1);
+      if (fRec.fileId) post({ action: 'pwsDeleteFile', sessionId: _session, requestingMemberId: _memberId, fileId: fRec.fileId }).catch(function(){});
+    } else if (kind === 'link') {
+      if (!w.cfg.links) return;
+      w.cfg.links.splice(itemIdx, 1);
+    } else if (kind === 'ec') {
+      if (!w.cfg.ecLinks) return;
+      w.cfg.ecLinks.splice(itemIdx, 1);
+    } else if (kind === 'contact') {
+      if (!w.cfg.contacts) return;
+      w.cfg.contacts.splice(itemIdx, 1);
+    }
+    pwsEquipSaveCfg_(w.label).catch(function(){});
+    pwsEquipRerender_();
+  };
+  window.pwsEquipSaveLink = function pwsEquipSaveLink(fsIdx) {
+    var w = pwsEquipCfg_(fsIdx); if (!w) return;
+    var nEl = document.getElementById('pwsEquipLinkName' + fsIdx);
+    var uEl = document.getElementById('pwsEquipLinkUrl' + fsIdx);
+    var url = uEl ? (uEl.value || '').replace(/^\s+|\s+$/g, '') : '';
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    if (!w.cfg.links) w.cfg.links = [];
+    w.cfg.links.push({ name: nEl ? (nEl.value || '').replace(/^\s+|\s+$/g, '') : '', url: url });
+    pwsEquipSaveCfg_(w.label).catch(function(){});
+    pwsEquipRerender_();
+  };
+  window.pwsEquipSaveEC = function pwsEquipSaveEC(fsIdx) {
+    var w = pwsEquipCfg_(fsIdx); if (!w) return;
+    var cEl = document.getElementById('pwsEquipECCat' + fsIdx);
+    var uEl = document.getElementById('pwsEquipECUrl' + fsIdx);
+    var nEl = document.getElementById('pwsEquipECName' + fsIdx);
+    var url = uEl ? (uEl.value || '').replace(/^\s+|\s+$/g, '') : '';
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    var key = cEl ? cEl.value : 'other';
+    var META = { music: { icon: '\uD83C\uDFB5', label: 'Music' }, games: { icon: '\uD83C\uDFAE', label: 'Games' }, news: { icon: '\uD83D\uDCFA', label: 'News' }, other: { icon: '\uD83D\uDD17', label: 'Link' } };
+    var meta = META[key] || META.other;
+    var nm = nEl ? (nEl.value || '').replace(/^\s+|\s+$/g, '') : '';
+    if (!w.cfg.ecLinks) w.cfg.ecLinks = [];
+    w.cfg.ecLinks.push({ url: url, label: nm || meta.label, icon: meta.icon, category: key });
+    pwsEquipSaveCfg_(w.label).catch(function(){});
+    pwsEquipRerender_();
+  };
+  window.pwsEquipSaveContact = function pwsEquipSaveContact(fsIdx) {
+    var w = pwsEquipCfg_(fsIdx); if (!w) return;
+    var nEl = document.getElementById('pwsEquipContactName' + fsIdx);
+    var pEl = document.getElementById('pwsEquipContactPhone' + fsIdx);
+    var cName = nEl ? (nEl.value || '').replace(/^\s+|\s+$/g, '') : '';
+    var cPhone = pEl ? (pEl.value || '').replace(/^\s+|\s+$/g, '') : '';
+    if (!cName && !cPhone) return;
+    if (!w.cfg.contacts) w.cfg.contacts = [];
+    w.cfg.contacts.push({ name: cName, phone: cPhone });
+    pwsEquipSaveCfg_(w.label).catch(function(){});
+    pwsEquipRerender_();
+  };
+  window.pwsEquipSaveAlarm = function pwsEquipSaveAlarm(fsIdx) {
+    var w = pwsEquipCfg_(fsIdx); if (!w) return;
+    var tEl = document.getElementById('pwsEquipAlarmTime' + fsIdx);
+    var nEl = document.getElementById('pwsEquipAlarmNote' + fsIdx);
+    var pEl = document.getElementById('pwsEquipAlarmPhone' + fsIdx);
+    var aTime = tEl ? tEl.value : '';
+    var aNote = nEl ? (nEl.value || '').replace(/^\s+|\s+$/g, '') : '';
+    var aPhone = pEl ? (pEl.value || '').replace(/^\s+|\s+$/g, '') : '';
+    if (!aTime || !aPhone) {
+      var stA = document.getElementById('pwsEquipFileStatus' + fsIdx);
+      if (stA) stA.textContent = !aTime ? (_lang === 'es' ? 'Elige una hora.' : 'Set a time first.') : (_lang === 'es' ? 'Falta tu celular.' : 'Add your cell number.');
+      return;
+    }
+    post({ action: 'pwsSaveReminder', sessionId: _session, requestingMemberId: _memberId,
+      memberId: _memberId, toolObligation: w.label, reminderTime: aTime, reminderNote: aNote, phone: aPhone })
+    .then(function(d) {
+      if (!d || !d.success) return;
+      if (!w.cfg.reminders) w.cfg.reminders = [];
+      w.cfg.reminders.push({ time: aTime, note: aNote, date: pwsLocalDate() });
+      w.cfg.reminderPhone = aPhone;
+      try { localStorage.setItem('4laws-alarm-phone', aPhone); } catch(e) {}
+      pwsEquipSaveCfg_(w.label).catch(function(){});
+      pwsEquipRerender_();
+    })
+    .catch(function(){});
+  };
+
+  // v99 FORGE->ACTIVATE HANDSHAKE (stage side, ratified one motion 7/24):
+  // /pws?activate=<obligation> opens that tool's activation overlay the
+  // moment the Tools tile has rendered it. DOM-driven match (the rendered
+  // .pws-tool-name text) so it survives internal index changes; retries
+  // briefly because tools render after async load. Silent no-op when the
+  // name isn't found -- a deleted tool must not strand the member in an
+  // error, the stage simply stands as normal.
+  function pwsActivateDeepLink_(tries) {
+    if (_pwsDeepLinkFired) return;
+    var m = /[?&]activate=([^&]+)/.exec(window.location.search || '');
+    if (!m) return;
+    var target = '';
+    try { target = decodeURIComponent(m[1].replace(/\+/g, ' ')); } catch(e) { return; }
+    target = target.replace(/^\s+|\s+$/g, '');
+    if (!target) return;
+    var names = document.querySelectorAll('.pws-tool-name');
+    for (var i = 0; i < names.length; i++) {
+      if ((names[i].textContent || '').replace(/^\s+|\s+$/g, '') === target) {
+        var card = names[i].parentNode ? names[i].parentNode.parentNode : null;
+        var btn = card && card.querySelector ? card.querySelector('.pws-tool-open-btn') : null;
+        if (btn) { _pwsDeepLinkFired = true; btn.click(); return; }
+      }
+    }
+    // v99.1: deep-linked arrivals deserve patience -- the Tools cards ride
+    // several sequential GAS fetches and can take well past 6s on a cold
+    // load (proven live 7/24: cards present, matcher already expired).
+    // 60 tries x 1s = a full minute of watching before giving up silently.
+    if (tries < 60) setTimeout(function() { pwsActivateDeepLink_(tries + 1); }, 1000);
+  }
+  // v99.2: the watch starts HERE, at script parse -- independent of every
+  // render path. (v99/v99.1 mounted the call inside pwsRenderAll, which
+  // the boot success path never invokes -- proven live 7/24: code present,
+  // card present, matcher never ran.) The 60s retry loop does the waiting;
+  // _pwsDeepLinkFired makes the click once-only so mid-session re-renders
+  // can never resurrect the overlay after the member closes it.
+  var _pwsDeepLinkFired = false;
+  try { pwsActivateDeepLink_(0); } catch (eDL) {}
 
   function pwsAdherenceFeedback(done, total) {
     var ratio = total > 0 ? done / total : 0;
@@ -1949,13 +2452,88 @@
     setTimeout(function() { pwsAppendBubble(_lang === 'es' ? msgES : msgEN, 'docb'); }, 400);
   }
 
+  // v106 -- TITLE PLUMBING FIX: the three tiers below (cid -> legacy index
+  // -> exact obligation text) are unchanged in order and logic -- every
+  // item that linked correctly before still links correctly now. The only
+  // change: a completion that LOOKED linked (carried a contributionCid, a
+  // legacy contributionId, or an obligation string) but matched nothing
+  // used to fail with zero signal anywhere. Now it says so.
+  function pwsBehavioralCascade(item, result, schedule) {
+    if (result === 'done' && _obsData && _obsData.confirmedObs) {
+      var obsMatched = false;
+      var hadLinkInfo = !!(item.contributionCid ||
+        (item.contributionId !== undefined && item.contributionId !== null) ||
+        item.obligation);
+
+      if (item.contributionCid) {
+        _obsData.confirmedObs.forEach(function(o) {
+          if (o && o.cid === item.contributionCid && o.state !== 'crushing') { o.state = 'crushing'; obsMatched = true; }
+        });
+      } else if (item.contributionId !== undefined && item.contributionId !== null) {
+        var ob = _obsData.confirmedObs[item.contributionId];
+        if (ob && ob.state !== 'crushing') { ob.state = 'crushing'; obsMatched = true; }
+      } else if (item.obligation) {
+        var oblText = item.obligation.toLowerCase().trim();
+        _obsData.confirmedObs.forEach(function(o) {
+          if (o.state !== 'crushing' && o.text && o.text.toLowerCase().trim() === oblText) {
+            o.state = 'crushing'; obsMatched = true;
+          }
+        });
+      }
+
+      // Bench 17 fourth tier: no link info at all - fall back to exact label.
+      // A UNIQUE match self-heals: the discovered cid is written onto the
+      // window (the member's own naming writes the fact), so next time the
+      // first tier catches it.
+      if (!obsMatched && !hadLinkInfo && item.label) {
+        var lblText = item.label.toLowerCase().trim();
+        var lblHits = _obsData.confirmedObs.filter(function(o) {
+          return o && o.text && o.text.toLowerCase().trim() === lblText;
+        });
+        if (lblHits.length) {
+          lblHits.forEach(function(o) { if (o.state !== 'crushing') { o.state = 'crushing'; obsMatched = true; } });
+          if (lblHits.length === 1 && lblHits[0].cid) {
+            item.contributionCid = lblHits[0].cid;
+            try { pwsSaveDaySchedule(); } catch (eSelfHeal) {}
+          }
+        }
+      }
+
+      if (!obsMatched && hadLinkInfo) {
+        console.warn('[pwsBehavioralCascade] DONE was marked on "' + (item.label || item.obligation || '?') +
+          '" but no matching Contribution could be found (cid=' + (item.contributionCid || 'none') +
+          ', legacy idx=' + (item.contributionId !== undefined ? item.contributionId : 'none') +
+          '). No credit was applied -- the link is likely stale, re-link by hand via the serves-picker.');
+      }
+
+      if (obsMatched) {
+        post({ action: 'pwsSaveStation', sessionId: _session, requestingMemberId: _memberId,
+          data: pwsStationPayload() });
+        pwsRenderStationTile();
+        pwsRenderToolsTile();
+        pwsRenderDayTile();
+      }
+    }
+    if (_adherenceData) {
+      var doneCount = schedule.filter(function(s) { return s._checkedIn === 'done'; }).length;
+      var totalCount = schedule.length;
+      if (totalCount > 0 && doneCount === totalCount && !_adherenceData.allWindowsComplete) {
+        _adherenceData.allWindowsComplete = true;
+        pwsRenderToolsTile();
+      }
+    }
+    var allChecked = schedule.filter(function(s) { return s._checkedIn; });
+    if (allChecked.length === schedule.length && !_endOfDayFired) {
+      pwsEndOfDaySummary(schedule);
+    }
+  }
+
   function pwsUpdateSavedLabel(elId, isoStr) {
     var el = document.getElementById(elId);
     if (!el || !isoStr) return;
     try { var d = new Date(isoStr); var mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]; el.textContent = (_lang === 'es' ? 'Guardado ' : 'Saved ') + mo + ' ' + d.getDate(); } catch(e) {}
   }
 
-  // BUILD 3: DocBCore integration for header Doc B
   function initDocBCoreHeader() {
     if (typeof DocBCore === 'undefined') { setTimeout(initDocBCoreHeader, 200); return; }
     DocBCore.init({
@@ -1970,7 +2548,6 @@
   }
   setTimeout(initDocBCoreHeader, 400);
 
-  // BUILD 3: Doc B voice greeting on open
   function pwsDocBSpeakGreeting() {
     var now = new Date();
     var h = now.getHours();
@@ -1997,7 +2574,6 @@
     }
   }
 
-  // BUILD 3: Keyword-based navigation routing (fast, no AI)
   function pwsDocBCheckNavCmd(text) {
     var lower = text.toLowerCase().trim();
     var navTrigger = /^(take me to|open|go to|navigate to|launch|start)\s+(.+)$/.exec(lower);
@@ -2026,7 +2602,6 @@
     return false;
   }
 
-  // BUILD 3: Quick tool shortcuts inline in Doc B feed
   window.pwsDocBQuickTool = function pwsDocBQuickTool(tool) {
     pwsAppendBubble(_lang==='es'?'Abre tu actividad para esto.':'Open your activity for this.','docb');
     if(tool==='cash'||tool==='todos')window.location.href='/todos';
@@ -2256,7 +2831,6 @@
       var openingEN, openingES, openingMsg;
 
       // -------------------------------------------------------
-      // MENTAL FILTER — Item 1
       // If the tool has a saved mentalFilter frame, show it first
       // before the activating question. Provides the reframe on
       // every LAUNCH without the member having to think about it.
@@ -2280,7 +2854,6 @@
       _useHistory.push({ role: 'assistant', content: openingMsg });
 
       // -------------------------------------------------------
-      // MENTAL FILTER DREAD PROMPT
       // For newly added tools that don't yet have a mentalFilter,
       // ask the dread question after the opening message so Doc B
       // can capture a frame and save it.
@@ -2342,7 +2915,7 @@
       btnPlay.className = 'pws-use-footer-btn open-music';
       btnPlay.id = 'pwsUsePlayBtn';
       btnPlay.textContent = _lang === 'es' ? '\u25b6 Reproducir' : '\u25b6 Play';
-      btnPlay.onclick = function() { pwsOpenDeparture(savedLink, (_useTool && _useTool.en) ? _useTool.en : savedLink); };
+      btnPlay.onclick = function() { window.open(savedLink, '_blank', 'noopener'); };
       footer.appendChild(btnPlay);
     }
 
@@ -2352,7 +2925,7 @@
     var btnMusic = document.createElement('button');
     btnMusic.className = 'pws-use-footer-btn pws-launcher-btn' + (presel.music ? ' pws-launcher-presel' : '');
     btnMusic.textContent = '\uD83C\uDFB5 ' + (_lang === 'es' ? 'Sala de M\u00fasica' : 'Music Room');
-    btnMusic.onclick = function() { pwsOpenDeparture('/music', _lang === 'es' ? 'Sala de Musica' : 'Music Room'); };
+    btnMusic.onclick = function() { pwsToggleECMenu('music', '/music', _lang === 'es' ? 'Sala de Musica' : 'Music Room'); };
     grid.appendChild(btnMusic);
 
     var pbLabel = _usePB
@@ -2370,10 +2943,10 @@
     btnGames.className = 'pws-use-footer-btn pws-launcher-btn';
     if (counts.total > 0 && counts.crushing === counts.total) {
       btnGames.textContent = '\uD83C\uDFAE ' + (_lang === 'es' ? 'Jugar' : 'Play Games');
-      btnGames.onclick = function() { pwsOpenDeparture('/games?unlock=scheduled', 'Games'); };
+      btnGames.onclick = function() { pwsToggleECMenu('games', '/games?unlock=scheduled', 'Games'); };
     } else if (counts.crushing > 0) {
       btnGames.textContent = '\uD83C\uDFAE ' + (_lang === 'es' ? 'Jugar' : 'Play Games');
-      btnGames.onclick = function() { pwsOpenDeparture('/games?unlock=free', 'Games'); };
+      btnGames.onclick = function() { pwsToggleECMenu('games', '/games?unlock=free', 'Games'); };
     } else {
       btnGames.textContent = '\uD83C\uDFAE ' + (_lang === 'es' ? 'Juegos \u2014 termina tu d\u00eda primero' : 'Games \u2014 finish your day first');
       btnGames.disabled = true;
@@ -2385,7 +2958,7 @@
     var btnReminders = document.createElement('button');
     btnReminders.className = 'pws-use-footer-btn pws-launcher-btn' + (presel.remind ? ' pws-launcher-presel' : '');
     btnReminders.textContent = '\uD83D\uDD14 ' + (_lang === 'es' ? 'Recordatorios' : 'Reminders');
-    btnReminders.addEventListener('click', pwsToggleReminderPanel);
+    btnReminders.addEventListener('click', pwsToggleAlarmsMenu);
     grid.appendChild(btnReminders);
 
     var btnLinks = document.createElement('button');
@@ -2468,7 +3041,7 @@
       var url2 = URL.createObjectURL(blob2);
       var a2 = document.createElement('a');
       a2.href = url2;
-      a2.download = winName.replace(/\s+/g,'_') + '_chat_' + new Date().toISOString().substring(0,10) + '.txt';
+      a2.download = winName.replace(/\s+/g,'_') + '_chat_' + pwsLocalDate() + '.txt';
       a2.click();
       URL.revokeObjectURL(url2);
     });
@@ -2490,7 +3063,7 @@
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
         a.href = url;
-        a.download = projName.replace(/\s+/g,'_') + '_session_' + new Date().toISOString().substring(0,10) + '.txt';
+        a.download = projName.replace(/\s+/g,'_') + '_session_' + pwsLocalDate() + '.txt';
         a.click();
         URL.revokeObjectURL(url);
       });
@@ -2570,7 +3143,6 @@
     _useHistory.push({ role: 'user', content: userContent });
 
     // -------------------------------------------------------
-    // MENTAL FILTER INTERCEPTS
     // -------------------------------------------------------
     if (_useAwaitingDread && _useTool) {
       _useAwaitingDread = false;
@@ -2601,7 +3173,6 @@
       _useAwaitingReframe = false;
       var theFrame = text.trim();
       if (theFrame.length > 1) {
-        // Save the mental filter to the tool object
         _useTool.mentalFilter = theFrame;
         if (_toolsData && _toolsData.confirmedTools) {
           var mfIdx;
@@ -2821,13 +3392,37 @@
 
   function pwsLawTag(tool) {
     if (!tool) return 'responsibility';
+    if (pwsToolTracesToContribution(tool)) return 'contribution';
     if (tool.isTalent === true || tool.type === 'talent') return 'talent';
     if (tool.lawTag) return tool.lawTag;
     return 'responsibility';
   }
 
+  // v91: a tool traces to a Contributions dot when it carries a cid link
+  // (future foundry builds) or its obligation text matches a dot's text.
+  // Matched tools log lawTag:'contribution' so the engine can split the
+  // act into Respect + Responsibility (ratified constants, GamesCode v3.3).
+  function pwsToolTracesToContribution(tool) {
+    if (!tool) return false;
+    if (tool.contributionCid) return true;
+    if (!_obsData || !_obsData.confirmedObs || !_obsData.confirmedObs.length) return false;
+    var tObl = ((tool.obligation || '') + '').toLowerCase().trim();
+    if (!tObl) return false;
+    for (var ci = 0; ci < _obsData.confirmedObs.length; ci++) {
+      var ob = _obsData.confirmedObs[ci];
+      var oText = ob && ob.text ? (ob.text + '').toLowerCase().trim() : '';
+      if (oText && oText === tObl) return true;
+    }
+    return false;
+  }
+
   function pwsLawTagFromSlot(s) {
     if (!s) return 'responsibility';
+    if (s.contributionCid) return 'contribution';
+    if (s.contributionId !== undefined && s.contributionId !== null) return 'contribution';
+    // v92: a slot may declare its own law -- 'Clinical Work + Academy Open'
+    // is Talent because the member says so. Validated to the four laws.
+    if (s.lawTag === 'talent' || s.lawTag === 'respect' || s.lawTag === 'responsibility' || s.lawTag === 'limits') return s.lawTag;
     if (s.isProjectSlot === true) return 'talent';
     if (s.isMastery === true) return 'talent';
     var validTools = _toolsData && _toolsData.confirmedTools ? _toolsData.confirmedTools.filter(pwsIsValidTool) : [];
@@ -2872,7 +3467,7 @@
     if (_obsData && _obsData.confirmedObs && oblLabel) {
       _obsData.confirmedObs.forEach(function(o) { if (o.text && o.text.toLowerCase().trim() === oblLabel.toLowerCase().trim()) { o.state = 'crushing'; matched = true; } });
       if (matched) {
-        post({ action: 'pwsSaveStation', sessionId: _session, requestingMemberId: _memberId, data: pwsStationData() });
+        post({ action: 'pwsSaveStation', sessionId: _session, requestingMemberId: _memberId, data: pwsStationPayload() });
         pwsRenderStationTile(); pwsRenderToolsTile();
       }
     }
@@ -3031,8 +3626,8 @@
     var tileContext = '';
     if (_modifyTile === 'station' && _obsData) { var obs = (_obsData.confirmedObs || []).filter(function(o){ return pwsIsValidObligation(o.text); }); tileContext = 'Current obligations: ' + obs.map(function(o){ return o.text + ' (' + (o.state || 'not-started') + ')'; }).join(', ') + '. whatMatters: ' + (_obsData.whatMatters || 'not set') + '.'; }
     else if (_modifyTile === 'tools' && _toolsData) { var tools = (_toolsData.confirmedTools || []).filter(pwsIsValidTool); tileContext = 'Current tools: ' + tools.map(function(t){ return t.obligation + ' -> ' + t.en; }).join(', ') + '.'; }
-    else if (_modifyTile === 'day' && _dayData) { var sched = (_dayData.finalSchedule || []).filter(function(s){ return s.ownsIt !== false; }); tileContext = 'Current schedule: ' + sched.map(function(s){ return s.derivedTime + ' ' + s.label; }).join(', ') + '.'; }
-    var systemPrompt = 'You are Doc B on the 4 LAWS Academy platform. Member wants to update their ' + _modifyTile + ' tile. ' + tileContext + ' Ask what changed, understand the reason, then propose the specific update. When ready, end with READY_TO_SAVE followed by a JSON block. Respond in ' + (_lang === 'es' ? 'Spanish' : 'English') + '.';
+    else if (_modifyTile === 'day' && _dayData) { pwsEnsureSlotIds_(_dayData.finalSchedule); var sched = (_dayData.finalSchedule || []).filter(function(s){ return s.ownsIt !== false; }); tileContext = 'Current schedule: ' + sched.map(function(s){ return '[id:' + s.id + '] ' + s.derivedTime + ' ' + s.label + (s.lawTag ? ' [law:' + s.lawTag + ']' : '') + (s.contributionCid ? ' [already linked]' : ''); }).join(', ') + pwsRegistryPromptBlock() + '. Each slot in finalSchedule may carry an optional lawTag field (one of "talent","respect","responsibility","limits") which credits that law in the Trust Score. If the member asks to mark or credit a window as one of the four laws, set lawTag on that slot. CRITICAL: every slot listed above has an id shown as [id:...] -- when you return finalSchedule, you MUST include that exact same id value on that slot, unchanged, even if you reword its label or change its time. Only leave id out for a genuinely brand-new slot that did not exist above. Always return the COMPLETE schedule as finalSchedule, keeping every slot with its exact label, time, and id.'; }
+    var systemPrompt = 'You are Doc B on the 4 LAWS Academy platform. Member wants to update their ' + _modifyTile + ' tile. ' + tileContext + ' Ask what changed, understand the reason, then propose the specific update. When ready, end with READY_TO_SAVE followed by the raw JSON object only -- no markdown, no code fences, no commentary after it. NEVER tell the member a change is saved or done: saving happens only when they press the SAVE button that appears after your READY_TO_SAVE block. Respond in ' + (_lang === 'es' ? 'Spanish' : 'English') + '.';
     post({ action: 'cftConvTurn', sessionId: _session, requestingMemberId: _memberId, projectId: '', systemPrompt: systemPrompt, conversationHistory: _modifyHistory })
     .then(function(d) {
       var reply = ''; if (d && d.reply) reply = d.reply; else if (d && d.content) { try { reply = JSON.parse(d.content).reply || d.content; } catch(e) { reply = d.content; } }
@@ -3043,8 +3638,19 @@
       if (markerIdx !== -1) {
         var displayMsg = reply.substring(0, markerIdx).trim();
         var jsonStr = reply.substring(markerIdx + 'READY_TO_SAVE'.length).trim();
-        try { _modifyDraft = JSON.parse(jsonStr); var actions = document.getElementById('pwsModifyActions'); if (actions) actions.style.display = 'flex'; } catch(e) { _modifyDraft = null; }
-        modifyAppendBubble(displayMsg || (_lang === 'es' ? 'Cambios listos.' : 'Changes ready.'), 'docb');
+        // v93: Doc B sometimes wraps the JSON in markdown code fences -- strip
+        // them, then isolate first { .. last } as belt-and-suspenders.
+        jsonStr = jsonStr.replace(/^```[a-zA-Z]*\s*/, '').replace(/```\s*$/, '').trim();
+        var _fb = jsonStr.indexOf('{'); var _lb = jsonStr.lastIndexOf('}');
+        if (_fb !== -1 && _lb > _fb) jsonStr = jsonStr.substring(_fb, _lb + 1);
+        try { _modifyDraft = JSON.parse(jsonStr); } catch(e) { _modifyDraft = null; }
+        if (_modifyDraft) {
+          var actions = document.getElementById('pwsModifyActions'); if (actions) actions.style.display = 'flex';
+          modifyAppendBubble(displayMsg || (_lang === 'es' ? 'Cambios listos.' : 'Changes ready.'), 'docb');
+        } else {
+          // v93: honest failure instead of a false 'Changes ready.'
+          modifyAppendBubble(_lang === 'es' ? 'No pude preparar el cambio \u2014 p\u00eddemelo de nuevo.' : 'I could not prepare that change \u2014 please ask me again.', 'docb');
+        }
       } else { modifyAppendBubble(reply, 'docb'); }
     }).catch(function() {
       var typingEl = document.getElementById(typingId); if (typingEl) typingEl.parentNode.removeChild(typingEl);
@@ -3056,13 +3662,13 @@
     if (!_modifyDraft || !_modifyTile) return;
     var actionMap = { station: 'pwsSaveStation', tools: 'pwsSaveTools', day: 'pwsSaveDay' };
     var action = actionMap[_modifyTile]; if (!action) return;
-    if (_modifyTile === 'station' && _obsData) { if (_modifyDraft.confirmedObs) _obsData.confirmedObs = _modifyDraft.confirmedObs; if (_modifyDraft.whatMatters !== undefined) _obsData.whatMatters = _modifyDraft.whatMatters; }
+    if (_modifyTile === 'station' && _obsData) { if (_modifyDraft.confirmedObs) _obsData.confirmedObs = pwsCarryCids(_obsData.confirmedObs, _modifyDraft.confirmedObs); if (_modifyDraft.whatMatters !== undefined) _obsData.whatMatters = _modifyDraft.whatMatters; }
     else if (_modifyTile === 'tools' && _toolsData) { if (_modifyDraft.confirmedTools) _toolsData.confirmedTools = _modifyDraft.confirmedTools; }
-    else if (_modifyTile === 'day' && _dayData) { if (_modifyDraft.finalSchedule) _dayData.finalSchedule = _modifyDraft.finalSchedule; }
+    else if (_modifyTile === 'day' && _dayData) { if (_modifyDraft.finalSchedule) { _dayData.finalSchedule = pwsCarrySlotFields(_dayData.finalSchedule, pwsResolveServesIndex(_modifyDraft.finalSchedule)); pwsEnsureSlotIds_(_dayData.finalSchedule); } }
     var saveData = {};
-    if (_modifyTile === 'station') saveData = { confirmedObs: _obsData.confirmedObs, hateList: _obsData.hateList || [], wishList: _obsData.wishList || [], whatMatters: _obsData.whatMatters || '' };
+    if (_modifyTile === 'station') saveData = pwsStationPayload();
     else if (_modifyTile === 'tools') saveData = pwsToolsPayload();
-    else if (_modifyTile === 'day') saveData = { finalSchedule: _dayData.finalSchedule, wakeTime: _dayData.wakeTime || '', bedTime: _dayData.bedTime || '', rankedPriorities: _dayData.rankedPriorities || [], howGoodCould: _dayData.howGoodCould || '', howGoodWant: _dayData.howGoodWant || '' };
+    else if (_modifyTile === 'day') saveData = { finalSchedule: _dayData.finalSchedule, wakeTime: _dayData.wakeTime || '', bedTime: _dayData.bedTime || '', rankedPriorities: _dayData.rankedPriorities || [], howGoodCould: _dayData.howGoodCould || '', howGoodWant: _dayData.howGoodWant || '', _manualOrder: _dayData._manualOrder || false };
     post({ action: action, sessionId: _session, requestingMemberId: _memberId, data: saveData });
     if (_modifyTile === 'station') pwsRenderStationTile(); else if (_modifyTile === 'tools') pwsRenderToolsTile(); else if (_modifyTile === 'day') pwsRenderDayTile();
     modifyAppendBubble(_lang === 'es' ? 'Guardado. Tu ' + _modifyTile + ' ha sido actualizado.' : 'Saved. Your ' + _modifyTile + ' has been updated.', 'docb');
@@ -3082,10 +3688,8 @@
     if (!inp || (!inp.value.trim() && !hasPending)) return;
     var text = inp.value.trim(); inp.value = ''; pwsStopMic();
 
-    // BUILD 3: Fast nav keyword routing — no AI round trip needed
     if (text && pwsDocBCheckNavCmd(text)) return;
 
-    // BUILD 3: DocBCore handles image content and display text
     var displayText = (typeof DocBCore !== 'undefined') ? DocBCore.displayText(text, function(){ return _lang; }) : text;
     var userContent = (typeof DocBCore !== 'undefined') ? DocBCore.buildContent(text, function(){ return _lang; }) : text;
 
@@ -3979,7 +4583,7 @@
         panel.appendChild(confirm);
         if (_twsProject) {
           if (!_twsProject.attachments) _twsProject.attachments = [];
-          _twsProject.attachments.push({ name: file.name, type: file.type, date: new Date().toISOString().substring(0,10) });
+          _twsProject.attachments.push({ name: file.name, type: file.type, date: pwsLocalDate() });
           post({ action: 'projectCreate', sessionId: _session, requestingMemberId: _memberId, name: _twsProject.title || 'Project', lawTag: 'talent', projectData: _twsProject }).catch(function() {});
         }
       });
@@ -4074,9 +4678,7 @@
     var j = idx + dir;
     if (j < 0 || j >= sched.length) return;
     var tmp = sched[idx]; sched[idx] = sched[j]; sched[j] = tmp;
-    // Unscheduled items stick where you put them; timed items answer to
-    // their clocks (change times on /todos to reorder those).
-    pwsNormalizeSchedule();
+    _dayData._manualOrder = true; // same dialect the drag speaks
     pwsSaveDaySchedule();
     pwsRenderDayTile();
   };
@@ -4088,6 +4690,8 @@
       _ac.appendChild(document.createTextNode('.pws-seq-arrows{display:flex;flex-direction:column;gap:3px;margin-right:8px;flex:0 0 auto;}.pws-seq-arrow{width:34px;height:26px;background:rgba(200,168,75,0.10);border:1px solid rgba(200,168,75,0.45);border-radius:4px;color:#c8a84b;font-size:12px;line-height:1;cursor:pointer;padding:0;}.pws-seq-arrow:active{background:rgba(200,168,75,0.35);}'));
       document.head.appendChild(_ac);
     }
+    if (container._dragWired) return;
+    container._dragWired = true;
     var dragSrcIdx = null;
     container.addEventListener('dragstart', function(ev) { var row = ev.target.closest ? ev.target.closest('.pws-plan-seq-row') : null; if (!row) return; dragSrcIdx = parseInt(row.getAttribute('data-idx'), 10); row.classList.add('dragging'); ev.dataTransfer.effectAllowed = 'move'; });
     container.addEventListener('dragover', function(ev) { ev.preventDefault(); ev.dataTransfer.dropEffect = 'move'; var rows = container.querySelectorAll('.pws-plan-seq-row'); for (var i = 0; i < rows.length; i++) rows[i].classList.remove('drag-over'); var row = ev.target.closest ? ev.target.closest('.pws-plan-seq-row') : null; if (row) row.classList.add('drag-over'); });
@@ -4097,6 +4701,7 @@
       var row = ev.target.closest ? ev.target.closest('.pws-plan-seq-row') : null; if (!row || dragSrcIdx === null) return;
       var dropIdx = parseInt(row.getAttribute('data-idx'), 10); if (dragSrcIdx === dropIdx) return;
       var sched = _dayData.finalSchedule; var moved = sched.splice(dragSrcIdx, 1)[0]; sched.splice(dropIdx, 0, moved); dragSrcIdx = null;
+      _dayData._manualOrder = true;
       pwsSaveDaySchedule(); pwsRenderDayTile();
     });
     container.addEventListener('dragend', function() { var rows = container.querySelectorAll('.pws-plan-seq-row'); for (var i = 0; i < rows.length; i++) { rows[i].classList.remove('dragging'); rows[i].classList.remove('drag-over'); } dragSrcIdx = null; });
@@ -4104,17 +4709,60 @@
       var ta = ev.target; if (!ta || !ta.classList.contains('pws-item-note')) return;
       var id = ta.id || ''; var match = id.match(/^pwsNote(\d+)$/); if (!match) return; pwsSaveNote(parseInt(match[1], 10));
     });
+    container.addEventListener('change', function(ev) {
+      // v97 UNIFICATION: one picker -- contribution cid (dot + split),
+      // legacy index fallback, bare law (bar only), or the mint door.
+      // Precedence made physical: setting one field deletes the others.
+      var sel = ev.target;
+      if (!sel || !sel.getAttribute || sel.getAttribute('data-serves-select') === null) return;
+      var lsi = parseInt(sel.getAttribute('data-serves-select'), 10);
+      if (isNaN(lsi) || !_dayData || !_dayData.finalSchedule || !_dayData.finalSchedule[lsi]) return;
+      var slot = _dayData.finalSchedule[lsi];
+      var lv = sel.value;
+      var mintRow = document.getElementById('pwsServesMint' + lsi);
+      if (lv === '__mint__') {
+        // Mint guard: nothing is assigned until Create succeeds.
+        if (mintRow) { mintRow.style.display = 'block'; var mIn = document.getElementById('pwsServesMintInput' + lsi); if (mIn) { try { mIn.focus(); } catch(e) {} } }
+        return;
+      }
+      if (mintRow) mintRow.style.display = 'none';
+      if (lv.indexOf('cid_') === 0) {
+        slot.contributionCid = lv;
+        delete slot.contributionId;
+        delete slot.lawTag;
+      } else if (lv.indexOf('idx_') === 0) {
+        slot.contributionId = parseInt(lv.substring(4), 10);
+        delete slot.contributionCid;
+        delete slot.lawTag;
+      } else if (lv === 'talent' || lv === 'respect' || lv === 'responsibility' || lv === 'limits') {
+        slot.lawTag = lv;
+        delete slot.contributionCid;
+        delete slot.contributionId;
+      } else {
+        delete slot.lawTag;
+        delete slot.contributionCid;
+        delete slot.contributionId;
+      }
+      pwsSaveDaySchedule();
+      pwsRenderDayTile();
+    });
     container.addEventListener('click', function(ev) {
       var btn = ev.target.closest ? ev.target.closest('[data-gaming-play]') : null;
       if (btn) { ev.stopPropagation(); pwsOpenDeparture('https://4lawsacademy.com/games?unlock=' + btn.getAttribute('data-gaming-play'), 'Games'); return; }
       var mBtn = ev.target.closest ? ev.target.closest('[data-music-link]') : null;
-      if (mBtn) { ev.stopPropagation(); pwsOpenDeparture('/music', _lang === 'es' ? 'Sala de Musica' : 'Music Room'); return; }
+      if (mBtn) { ev.stopPropagation(); pwsToggleECMenu('music', '/music', _lang === 'es' ? 'Sala de Musica' : 'Music Room'); return; }
       var cBtn = ev.target.closest ? ev.target.closest('[data-mastery-checkin]') : null;
       if (cBtn) {
         ev.stopPropagation();
         var mStage = parseInt(cBtn.getAttribute('data-mastery-stage'), 10) || 1;
         var mProjId = cBtn.getAttribute('data-mastery-projid') || '';
-        pwsOpenMasteryCheckIn(mProjId, mStage);
+        // v104.1: pwsOpenMasteryCheckIn was stubbed in v83 and never rebuilt.
+        // Say so rather than swallow the tap -- a button that does nothing
+        // silently is the same lie the Self Encouragement card was telling.
+        useAppendBubble(_lang === 'es'
+          ? 'El registro de maestria aun no esta construido - viene con PWS Trust.'
+          : 'Mastery check-in isn\'t built yet - it comes with PWS Trust.', 'docb');
+        void mStage; void mProjId;
         return;
       }
       var lBtn = ev.target.closest ? ev.target.closest('[data-launch-tool]') : null;
@@ -4124,7 +4772,6 @@
         var btnObligation = lBtn.getAttribute('data-obligation') || '';
         var validTools = _toolsData && _toolsData.confirmedTools ? _toolsData.confirmedTools.filter(pwsIsValidTool) : [];
         var launchTool = validTools[tIdx];
-        // Fix 4: If stored index points to wrong tool, find by obligation label
         if (!launchTool || (btnObligation && launchTool.obligation !== btnObligation && launchTool.en !== btnObligation)) {
           launchTool = null;
           if (btnObligation) {
@@ -4144,14 +4791,21 @@
           pwsOpenPlanUse(tIdx);
         }
       }
+      var tBtn = ev.target.closest ? ev.target.closest('[data-todo-url]') : null;
+      if (tBtn) {
+        ev.stopPropagation();
+        var todoLabel = decodeURIComponent(tBtn.getAttribute('data-todo-url') || '');
+        window.location.href = '/todos?open=' + encodeURIComponent(todoLabel);
+        return;
+      }
       var wBtn = ev.target.closest ? ev.target.closest('[data-launch-window]') : null;
       if (wBtn) {
         ev.stopPropagation();
         var wLabel = wBtn.getAttribute('data-launch-window') || '';
         // PLUMBING FIX: always fetch fresh window config at launch time — never rely on stale cache
-        post({ action: 'pwsGetWindowConfig', sessionId: _session, requestingMemberId: _memberId })
+        post({ action: 'pwsGetEquipAll', sessionId: _session, requestingMemberId: _memberId })
         .then(function(wd) {
-          if (wd && wd.status === 'ok' && wd.data) _windowConfig = wd.data;
+          if (wd && wd.status === 'ok') _windowConfig = pwsEquipMerge_(wd.data, wd.legacy);
           var wCfg = (_windowConfig && wLabel && _windowConfig[wLabel]) ? _windowConfig[wLabel] : {};
           var synth = {
             obligation:  wLabel,
@@ -4240,7 +4894,7 @@
       }
       return clean;
     });
-    post({ action: 'pwsSaveDay', sessionId: _session, requestingMemberId: _memberId, data: { finalSchedule: cleanSchedule, wakeTime: _dayData.wakeTime || '', bedTime: _dayData.bedTime || '', rankedPriorities: _dayData.rankedPriorities || [], howGoodCould: _dayData.howGoodCould || '', howGoodWant: _dayData.howGoodWant || '' } });
+    post({ action: 'pwsSaveDay', sessionId: _session, requestingMemberId: _memberId, data: { finalSchedule: cleanSchedule, wakeTime: _dayData.wakeTime || '', bedTime: _dayData.bedTime || '', rankedPriorities: _dayData.rankedPriorities || [], howGoodCould: _dayData.howGoodCould || '', howGoodWant: _dayData.howGoodWant || '', _manualOrder: _dayData._manualOrder || false } });
     pwsUpdateSavedLabel('pwsDaySaved', new Date().toISOString());
   }
 
@@ -4418,7 +5072,7 @@
         var url3 = URL.createObjectURL(blob3);
         var a3 = document.createElement('a');
         a3.href = url3; a3.target = '_blank';
-        a3.download = winName2.replace(/\s+/g,'_') + '_chat_' + new Date().toISOString().substring(0,10) + '.txt';
+        a3.download = winName2.replace(/\s+/g,'_') + '_chat_' + pwsLocalDate() + '.txt';
         a3.click();
         URL.revokeObjectURL(url3);
         useAppendBubble(_lang === 'es' ? 'Chat guardado. \u00bfSeguimos?' : 'Chat saved. Ready to continue?', 'docb');
@@ -4510,7 +5164,7 @@
     document.body.style.overflow='';
     if (_depSeconds>0) {
       pwsShowLaunchToast(_depSiteName+' \u2014 '+Math.floor(_depSeconds/60)+'m '+(_depSeconds%60)+'s');
-      post({action:'handleECLogSession',memberId:_memberId,sessionId:_session,room:'tool',siteName:_depSiteName,url:_depUrl,durationSeconds:_depSeconds,sessionDate:new Date().toISOString().slice(0,10),sessionTime:new Date().toTimeString().slice(0,8)});
+      post({action:'handleECLogSession',memberId:_memberId,sessionId:_session,room:'tool',siteName:_depSiteName,url:_depUrl,durationSeconds:_depSeconds,sessionDate:pwsLocalDate(),sessionTime:new Date().toTimeString().slice(0,8)});
     }
     _depSeconds=0;
   }
@@ -4633,6 +5287,257 @@
     });
   }
 
+  /* ================================================================
+     v103 THE REAL ALARM IN THE LAUNCHER.
+     The old launcher reminder was a v83-era stopgap: two prompt()
+     boxes, a browser Notification and a setTimeout that died the
+     moment the tab closed or navigated -- and four buttons beside it
+     navigated away. It promised a member with executive-function load
+     that it would remember for them, and then silently did not.
+     This panel is the SAME wire the wall uses: pwsSaveReminder into
+     the Reminders sheet, fired by the five-minute server heartbeat,
+     delivered by Twilio (honest stub queue until Twilio goes live).
+     Time, message, and phone -- the phone remembered after once.
+     ================================================================ */
+  function pwsToggleAlarmsMenu() {
+    var feed = pwsTWSGetFeed();
+    if (!feed) return;
+    var existing = document.getElementById('pwsAlarmMenuInner');
+    if (existing) { existing.parentNode.removeChild(existing); return; }
+    pwsTWSClosePanels('pwsAlarmMenuInner');
+
+    var name = pwsECName_();
+    var panel = document.createElement('div');
+    panel.className = 'pws-links-panel';
+    panel.id = 'pwsAlarmMenuInner';
+
+    var listDiv = document.createElement('div');
+    panel.appendChild(listDiv);
+
+    function cfgFor_() {
+      if (!name) return null;
+      if (!_windowConfig) _windowConfig = {};
+      if (!_windowConfig[name]) _windowConfig[name] = {};
+      return _windowConfig[name];
+    }
+
+    function renderAlarms() {
+      listDiv.innerHTML = '';
+      var cfg = cfgFor_();
+      var rems = (cfg && cfg.reminders) ? cfg.reminders : [];
+      var today = pwsLocalDate();
+      var shown = 0;
+      for (var i = 0; i < rems.length; i++) {
+        var r = rems[i];
+        if (!r || !r.time) continue;
+        if (r.date && r.date !== today) continue;
+        var row = document.createElement('div');
+        row.className = 'pws-links-row';
+        var lab = document.createElement('span');
+        lab.className = 'pws-links-label';
+        lab.textContent = '\u23F0 ' + r.time + (r.note ? ' \u2014 ' + r.note : '');
+        row.appendChild(lab);
+        listDiv.appendChild(row);
+        shown++;
+      }
+      if (!shown) {
+        var none = document.createElement('div');
+        none.className = 'pws-links-empty';
+        none.textContent = _lang === 'es' ? 'Sin alarmas hoy.' : 'No alarms today.';
+        listDiv.appendChild(none);
+      }
+    }
+    renderAlarms();
+
+    var savedPhone = '';
+    var cfg0 = cfgFor_();
+    if (cfg0 && cfg0.reminderPhone) { savedPhone = cfg0.reminderPhone; }
+    else { try { savedPhone = localStorage.getItem('4laws-alarm-phone') || ''; } catch (e) { savedPhone = ''; } }
+
+    var form = document.createElement('div');
+    form.className = 'pws-links-add-form';
+    var ti = document.createElement('input');
+    ti.type = 'time'; ti.className = 'pws-links-input';
+    var mi = document.createElement('input');
+    mi.type = 'text'; mi.className = 'pws-links-input';
+    mi.placeholder = _lang === 'es' ? 'Mensaje' : 'Message';
+    var pi = document.createElement('input');
+    pi.type = 'text'; pi.className = 'pws-links-input';
+    pi.value = savedPhone;
+    pi.placeholder = _lang === 'es' ? 'Tu celular (una vez)' : 'Your cell (asked once)';
+    var note = document.createElement('div');
+    note.className = 'pws-links-empty';
+    note.textContent = _lang === 'es'
+      ? 'Llega como texto hoy a esa hora \u2014 aunque cierres la p\u00e1gina.'
+      : 'Arrives as a text today at that time \u2014 even if you close the page.';
+    var sb = document.createElement('button');
+    sb.className = 'pws-links-save-btn';
+    sb.textContent = _lang === 'es' ? 'PONER ALARMA' : 'SET ALARM';
+    sb.addEventListener('click', function() {
+      var aTime  = ti.value || '';
+      var aNote  = (mi.value || '').replace(/^\s+|\s+$/g, '');
+      var aPhone = (pi.value || '').replace(/^\s+|\s+$/g, '');
+      if (!aTime)  { note.textContent = _lang === 'es' ? 'Elige una hora.' : 'Set a time first.'; return; }
+      if (!aPhone) { note.textContent = _lang === 'es' ? 'Falta tu celular.' : 'Add your cell number.'; return; }
+      sb.disabled = true;
+      post({ action: 'pwsSaveReminder', sessionId: _session, requestingMemberId: _memberId,
+        memberId: _memberId, toolObligation: name, reminderTime: aTime, reminderNote: aNote, phone: aPhone })
+      .then(function(d) {
+        sb.disabled = false;
+        if (!d || !d.success) { note.textContent = _lang === 'es' ? 'No se guard\u00f3. Intenta de nuevo.' : 'Not saved. Try again.'; return; }
+        var cfg = cfgFor_();
+        if (cfg) {
+          if (!cfg.reminders) cfg.reminders = [];
+          cfg.reminders.push({ time: aTime, note: aNote, date: pwsLocalDate() });
+          cfg.reminderPhone = aPhone;
+          if (name) pwsEquipSaveCfg_(name).catch(function(){});
+        }
+        try { localStorage.setItem('4laws-alarm-phone', aPhone); } catch (e2) {}
+        ti.value = ''; mi.value = '';
+        note.textContent = _lang === 'es' ? 'Alarma puesta.' : 'Alarm set.';
+        renderAlarms();
+      })
+      .catch(function() {
+        sb.disabled = false;
+        note.textContent = _lang === 'es' ? 'No se guard\u00f3. Intenta de nuevo.' : 'Not saved. Try again.';
+      });
+    });
+    form.appendChild(ti); form.appendChild(mi); form.appendChild(pi);
+    form.appendChild(sb);
+    panel.appendChild(form);
+    panel.appendChild(note);
+
+    feed.appendChild(panel);
+    feed.scrollTop = feed.scrollHeight;
+  }
+
+  /* ================================================================
+     v102 THE MENU THAT KEEPS YOU -- no more jarring jumps.
+     A launcher button opens the links YOU saved for THIS activity,
+     right here in the feed. OPEN goes straight to that link in a new
+     tab; the overlay stays exactly where it was. The Entertainment
+     Center is the LAST row, a door you choose -- never one you fall
+     through. Reads and writes cfg.ecLinks on the activity's equip: row,
+     the same store the wall and /todos both use.
+     ================================================================ */
+  function pwsECName_() {
+    if (!_useTool) return '';
+    return _useTool.obligation || _useTool.en || _useTool.label || '';
+  }
+  function pwsECList_() {
+    var n = pwsECName_();
+    if (!n || !_windowConfig || !_windowConfig[n]) return [];
+    return _windowConfig[n].ecLinks || [];
+  }
+  function pwsECSave_(list) {
+    var n = pwsECName_(); if (!n) return;
+    if (!_windowConfig) _windowConfig = {};
+    if (!_windowConfig[n]) _windowConfig[n] = {};
+    _windowConfig[n].ecLinks = list;
+    pwsEquipSaveCfg_(n).catch(function(){});
+  }
+  var PWS_EC_META = {
+    music: { icon: '\uD83C\uDFB5', label: 'Music' },
+    games: { icon: '\uD83C\uDFAE', label: 'Games' },
+    news:  { icon: '\uD83D\uDCFA', label: 'News'  },
+    other: { icon: '\uD83D\uDD17', label: 'Link'  }
+  };
+  function pwsToggleECMenu(cat, roomPath, roomLabel) {
+    var feed = pwsTWSGetFeed();
+    if (!feed) return;
+    var existing = document.getElementById('pwsECMenuInner');
+    if (existing) { existing.parentNode.removeChild(existing); return; }
+    pwsTWSClosePanels('pwsECMenuInner');
+
+    var meta  = PWS_EC_META[cat] || PWS_EC_META.other;
+    var panel = document.createElement('div');
+    panel.className = 'pws-links-panel';
+    panel.id = 'pwsECMenuInner';
+
+    var listDiv = document.createElement('div');
+    panel.appendChild(listDiv);
+
+    function renderEC() {
+      listDiv.innerHTML = '';
+      var all = pwsECList_();
+      var mine = [];
+      for (var i = 0; i < all.length; i++) {
+        if (all[i] && all[i].category === cat) mine.push({ it: all[i], idx: i });
+      }
+      if (!mine.length) {
+        var none = document.createElement('div');
+        none.className = 'pws-links-empty';
+        none.textContent = _lang === 'es'
+          ? 'Nada guardado aqu\u00ed todav\u00eda \u2014 agrega uno abajo.'
+          : 'Nothing saved here yet \u2014 add one below.';
+        listDiv.appendChild(none);
+        return;
+      }
+      for (var j = 0; j < mine.length; j++) {
+        (function(entry) {
+          var row = document.createElement('div');
+          row.className = 'pws-links-row';
+          var lab = document.createElement('span');
+          lab.className = 'pws-links-label';
+          lab.textContent = (entry.it.icon || meta.icon) + ' ' + (entry.it.label || entry.it.url);
+          row.appendChild(lab);
+          var op = document.createElement('button');
+          op.className = 'pws-links-open-btn';
+          op.textContent = _lang === 'es' ? 'ABRIR' : 'OPEN';
+          op.addEventListener('click', function() {
+            window.open(entry.it.url, '_blank', 'noopener');
+          });
+          row.appendChild(op);
+          listDiv.appendChild(row);
+        }(mine[j]));
+      }
+    }
+    renderEC();
+
+    var form = document.createElement('div');
+    form.className = 'pws-links-add-form';
+    var ui = document.createElement('input');
+    ui.type = 'text'; ui.className = 'pws-links-input';
+    ui.placeholder = _lang === 'es' ? 'Pega un enlace\u2026' : 'Paste a URL\u2026';
+    var ni = document.createElement('input');
+    ni.type = 'text'; ni.className = 'pws-links-input';
+    ni.placeholder = _lang === 'es' ? 'Nombre (opcional)' : 'Name (optional)';
+    var sb = document.createElement('button');
+    sb.className = 'pws-links-save-btn';
+    sb.textContent = _lang === 'es' ? 'GUARDAR' : 'SAVE';
+    sb.addEventListener('click', function() {
+      var u = (ui.value || '').replace(/^\s+|\s+$/g, '');
+      if (!u) return;
+      if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+      var nm = (ni.value || '').replace(/^\s+|\s+$/g, '');
+      var list = pwsECList_().slice();
+      list.push({ url: u, label: nm || meta.label, icon: meta.icon, category: cat });
+      pwsECSave_(list);
+      ui.value = ''; ni.value = '';
+      renderEC();
+    });
+    form.appendChild(ui); form.appendChild(ni); form.appendChild(sb);
+    panel.appendChild(form);
+
+    // v104.2: the door must not look like the SAVE button. Outlined, not
+    // filled; cream on felt; big enough to read without leaning in. Font
+    // family unquoted in cssText per the standing watch item.
+    var ecBtn = document.createElement('button');
+    ecBtn.style.cssText = 'display:block;width:100%;box-sizing:border-box;margin:16px 0 4px;padding:14px 16px;background:transparent;border:1px solid rgba(200,168,75,0.55);border-radius:4px;color:#f0e6cc;font-family:Cinzel,serif;font-size:17px !important;letter-spacing:0.12em;text-transform:uppercase;text-align:center;cursor:pointer;line-height:1.35;';
+    ecBtn.textContent = _lang === 'es'
+      ? 'Centro de Entretenimiento \u2192'
+      : 'Entertainment Center \u2192';
+    ecBtn.addEventListener('click', function() {
+      pwsOpenDeparture(roomPath, roomLabel);
+    });
+    panel.appendChild(ecBtn);
+
+    feed.appendChild(panel);
+    // scroll after layout so the last row is never clipped at the panel edge
+    feed.scrollTop = feed.scrollHeight;
+    setTimeout(function() { feed.scrollTop = feed.scrollHeight; }, 60);
+  }
+
   /* LINKS PANEL -- toggled from launcher Links button */
   function pwsToggleLinksPanel() {
     var feed = pwsTWSGetFeed();
@@ -4753,8 +5658,10 @@
       var wl = _useTool._windowLabel;
       if (!_windowConfig[wl]) _windowConfig[wl] = {};
       _windowConfig[wl].links = _useTool.links;
-      post({ action: 'pwsSaveWindowConfig', sessionId: _session, requestingMemberId: _memberId,
-        windowLabel: wl, config: _windowConfig[wl] }).catch(function() {});
+      // v100: branch 2 of the three-store problem now rides the funnel --
+      // its migration starts a sprint early. Branches 1 (TWS project) and
+      // 3 (tool.links) stay untouched; they are the room rebuild's business.
+      pwsEquipSaveCfg_(wl).catch(function() {});
     } else if (_toolsData && _toolsData.confirmedTools) {
       _toolsData.confirmedTools.forEach(function(t) {
         if (t.obligation === _useTool.obligation && t.en === _useTool.en) { t.links = _useTool.links; }
@@ -4845,150 +5752,7 @@
   }
 
   /* REMINDERS PANEL */
-  function pwsToggleReminderPanel() {
-    var feed = pwsTWSGetFeed();
-    if (!feed) return;
-    var existing = document.getElementById('pwsReminderPanelInner');
-    if (existing) { existing.parentNode.removeChild(existing); return; }
-    pwsTWSClosePanels('pwsReminderPanelInner');
 
-    var wLabel    = _useTool ? (_useTool.obligation || _useTool.en || '') : '';
-    var wCfg      = (_windowConfig && wLabel && _windowConfig[wLabel]) ? _windowConfig[wLabel] : {};
-    var savedRems = (wCfg.reminders && Array.isArray(wCfg.reminders)) ? wCfg.reminders : [];
-    var savedPhone = wCfg.reminderPhone || (_useTool && _useTool.parentPhone) || '';
-
-    var panel = document.createElement('div');
-    panel.className = 'pws-links-panel';
-    panel.id = 'pwsReminderPanelInner';
-
-    var header = document.createElement('div');
-    header.style.cssText = "font-family:'Cinzel',serif;font-size:12px !important;letter-spacing:0.18em;text-transform:uppercase;color:rgba(200,168,75,0.7);margin-bottom:10px;";
-    header.textContent = (_lang === 'es' ? 'RECORDATORIOS \u2014 ' : 'REMINDERS \u2014 ') + (wLabel || (_lang === 'es' ? 'Esta Ventana' : 'This Window'));
-    panel.appendChild(header);
-
-    var listDiv = document.createElement('div');
-    listDiv.id = 'pwsReminderList';
-    listDiv.style.cssText = 'margin-bottom:10px;';
-
-    function renderReminderList() {
-      listDiv.innerHTML = '';
-      if (!savedRems.length) {
-        var empty = document.createElement('div');
-        empty.style.cssText = "font-family:'Cormorant Garamond',serif;font-size:18px !important;font-style:italic;color:rgba(240,230,204,0.3);padding:4px 0 8px;";
-        empty.textContent = _lang === 'es' ? 'Sin recordatorios guardados.' : 'No saved reminders yet.';
-        listDiv.appendChild(empty);
-        return;
-      }
-      savedRems.forEach(function(rem, idx) {
-        var row = document.createElement('div');
-        row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(200,168,75,0.08);';
-        var hh = parseInt((rem.time || '00:00').split(':')[0], 10);
-        var mm2 = (rem.time || '00:00').split(':')[1] || '00';
-        var ampm = hh >= 12 ? 'PM' : 'AM';
-        var h12 = hh % 12 || 12;
-        var displayTime = h12 + ':' + mm2 + ' ' + ampm;
-
-        var timeLabel = document.createElement('div');
-        timeLabel.style.cssText = "font-family:'Playfair Display',serif;font-size:22px !important;font-weight:700;color:#c8a84b;width:80px;flex-shrink:0;";
-        timeLabel.textContent = displayTime;
-
-        var noteLabel = document.createElement('div');
-        noteLabel.style.cssText = "font-family:'Cormorant Garamond',serif;font-size:18px !important;font-style:italic;color:rgba(240,230,204,0.55);flex:1;";
-        noteLabel.textContent = rem.note || wLabel || '';
-
-        var isActive = rem.activeToday !== false;
-        var toggle = document.createElement('button');
-        toggle.style.cssText = "font-family:'Cinzel',serif;font-size:11px !important;letter-spacing:0.1em;padding:4px 8px;border-radius:2px;cursor:pointer;border:1px solid;transition:all 0.2s;background:" +
-          (isActive ? 'rgba(76,175,82,0.2)' : 'transparent') + ';border-color:' +
-          (isActive ? '#4caf82' : 'rgba(200,168,75,0.25)') + ';color:' +
-          (isActive ? '#4caf82' : 'rgba(200,168,75,0.45)') + ';';
-        toggle.textContent = isActive ? 'TODAY \u2713' : 'SKIP';
-        (function(i){ toggle.addEventListener('click', function() {
-          savedRems[i].activeToday = !savedRems[i].activeToday;
-          pwsSaveWindowReminders(wLabel, savedRems, savedPhone);
-          renderReminderList();
-        }); })(idx);
-
-        var delBtn = document.createElement('button');
-        delBtn.style.cssText = 'background:transparent;border:none;color:rgba(240,230,204,0.25);cursor:pointer;font-size:16px !important;padding:0 4px;line-height:1;flex-shrink:0;';
-        delBtn.textContent = '\u2715';
-        (function(i){ delBtn.addEventListener('click', function() {
-          savedRems.splice(i, 1);
-          pwsSaveWindowReminders(wLabel, savedRems, savedPhone);
-          renderReminderList();
-        }); })(idx);
-
-        row.appendChild(timeLabel); row.appendChild(noteLabel); row.appendChild(toggle); row.appendChild(delBtn);
-        listDiv.appendChild(row);
-      });
-    }
-    renderReminderList();
-    panel.appendChild(listDiv);
-
-    var addLabel = document.createElement('div');
-    addLabel.style.cssText = "font-family:'Cinzel',serif;font-size:11px !important;letter-spacing:0.16em;text-transform:uppercase;color:rgba(200,168,75,0.5);margin-bottom:6px;margin-top:4px;";
-    addLabel.textContent = _lang === 'es' ? 'A\u00d1ADIR RECORDATORIO' : 'ADD REMINDER';
-    panel.appendChild(addLabel);
-
-    var addRow = document.createElement('div');
-    addRow.style.cssText = 'display:flex;gap:6px;align-items:center;margin-bottom:8px;';
-    var timeInp = document.createElement('input');
-    timeInp.type = 'time'; timeInp.className = 'pws-links-input'; timeInp.id = 'pwsReminderTime';
-    timeInp.style.cssText = 'flex:0 0 110px;';
-    var noteInp = document.createElement('input');
-    noteInp.type = 'text'; noteInp.className = 'pws-links-input'; noteInp.id = 'pwsReminderNote';
-    noteInp.placeholder = _lang === 'es' ? 'Nota (opcional)' : 'Note (optional)';
-    noteInp.style.cssText = 'flex:1;';
-    var addBtn = document.createElement('button');
-    addBtn.className = 'pws-links-save-btn';
-    addBtn.textContent = '+';
-    addBtn.style.cssText = 'flex:0 0 auto;padding:8px 14px;font-size:18px !important;';
-    addBtn.addEventListener('click', function() {
-      var t = timeInp.value; if (!t) return;
-      savedRems.push({ time: t, note: noteInp.value.trim(), activeToday: true });
-      pwsSaveWindowReminders(wLabel, savedRems, savedPhone);
-      pwsFireSingleReminder(t, noteInp.value.trim() || wLabel || '', savedPhone);
-      timeInp.value = ''; noteInp.value = '';
-      renderReminderList();
-    });
-    addRow.appendChild(timeInp); addRow.appendChild(noteInp); addRow.appendChild(addBtn);
-    panel.appendChild(addRow);
-
-    var phoneLabel = document.createElement('div');
-    phoneLabel.style.cssText = "font-family:'Cinzel',serif;font-size:11px !important;letter-spacing:0.16em;text-transform:uppercase;color:rgba(200,168,75,0.5);margin-bottom:6px;margin-top:8px;";
-    phoneLabel.textContent = _lang === 'es' ? 'TEL\u00c9FONO PARA SMS' : 'PHONE FOR SMS';
-    panel.appendChild(phoneLabel);
-
-    var phoneRow = document.createElement('div');
-    phoneRow.style.cssText = 'display:flex;gap:6px;align-items:center;';
-    var phoneInp = document.createElement('input');
-    phoneInp.type = 'tel'; phoneInp.className = 'pws-links-input'; phoneInp.id = 'pwsReminderPhone';
-    phoneInp.placeholder = _lang === 'es' ? 'Tu n\u00famero' : 'Your number';
-    phoneInp.value = savedPhone; phoneInp.style.cssText = 'flex:1;';
-    var phoneSaveBtn = document.createElement('button');
-    phoneSaveBtn.className = 'pws-links-save-btn';
-    phoneSaveBtn.textContent = _lang === 'es' ? 'GUARDAR' : 'SAVE';
-    phoneSaveBtn.addEventListener('click', function() {
-      var ph = phoneInp.value.trim(); if (!ph) return;
-      savedPhone = ph;
-      pwsSaveWindowReminders(wLabel, savedRems, savedPhone);
-      savedRems.forEach(function(rem) {
-        if (rem.activeToday !== false) { pwsFireSingleReminder(rem.time, rem.note || wLabel || '', savedPhone); }
-      });
-      var conf = document.getElementById('pwsReminderConfirm');
-      if (conf) { conf.textContent = _lang === 'es' ? 'Tel\u00e9fono guardado. Recordatorios activos enviados.' : 'Phone saved. Active reminders queued.'; conf.style.color = '#4caf82'; }
-    });
-    phoneRow.appendChild(phoneInp); phoneRow.appendChild(phoneSaveBtn);
-    panel.appendChild(phoneRow);
-
-    var confirmDiv = document.createElement('div');
-    confirmDiv.className = 'pws-reminder-confirm';
-    confirmDiv.id = 'pwsReminderConfirm';
-    panel.appendChild(confirmDiv);
-
-    feed.appendChild(panel);
-    feed.scrollTop = feed.scrollHeight;
-  }
 
   function pwsSaveWindowReminders(wLabel, rems, phone) {
     if (!wLabel) return;
@@ -4996,8 +5760,7 @@
     if (!_windowConfig[wLabel]) _windowConfig[wLabel] = {};
     _windowConfig[wLabel].reminders     = rems;
     _windowConfig[wLabel].reminderPhone = phone;
-    post({ action: 'pwsSaveWindowConfig', sessionId: _session, requestingMemberId: _memberId,
-      windowLabel: wLabel, config: _windowConfig[wLabel] }).catch(function(){});
+    pwsEquipSaveCfg_(wLabel).catch(function(){});
   }
 
   function pwsFireSingleReminder(time, note, phone) {
@@ -5370,7 +6133,7 @@
     _obsData   = null;
     _toolsData = null;
     _dayData   = null;
-    var emptyObs  = { confirmedObs: [], hateList: [], wishList: [], whatMatters: '', _lastResetDate: pwsLocalDate() };
+    var emptyObs  = { confirmedObs: [], hateList: [], wishList: [], whatMatters: '' };
     var emptyTools = { confirmedTools: [], addedToolNames: [], _items: [] };
     var emptyDay  = { finalSchedule: [], wakeTime: '', bedTime: '', rankedPriorities: [], howGoodCould: '', howGoodWant: '' };
     post({ action: 'pwsSaveStation', sessionId: _session, requestingMemberId: _memberId, data: emptyObs });
@@ -5447,53 +6210,7 @@
 
   var _masteryCheckHistory = [];
 
-  function pwsOpenMasteryCheckIn(projectId, stage) {
-    _masteryCheckHistory = [];
-    var proj = _twsProject || {};
-    var projTitle = proj.title || 'your project';
-    var sessionNum = (proj.sessionCount || 0) + 1;
-    var feed = document.getElementById('pwsMasteryFeed');
-    if (feed) feed.innerHTML = '';
-    var ov = document.getElementById('pwsMasteryOverlay');
-    if (ov) ov.classList.add('open');
-    var stageLabel = ['', 'Discovery', 'Practice', 'Competence', 'Automaticity'][stage] || 'Practice';
-    var openEN = 'Session ' + sessionNum + ' of "' + projTitle + '" \u2014 Stage ' + stage + ': ' + stageLabel + '.\n\nHow did it go? What did you notice?';
-    var openES = 'Sesi\u00f3n ' + sessionNum + ' de "' + projTitle + '" \u2014 Etapa ' + stage + ': ' + stageLabel + '.\n\n\u00bfC\u00f3mo te fue? \u00bfQu\u00e9 notaste?';
-    var openMsg = _lang === 'es' ? openES : openEN;
-    pwsMasteryAppendBubble(openMsg, 'docb');
-    _masteryCheckHistory.push({ role: 'assistant', content: openMsg });
-    var closeBtn = document.getElementById('pwsMasteryCloseBtn');
-    if (closeBtn) {
-      var cClone = closeBtn.cloneNode(true);
-      closeBtn.parentNode.replaceChild(cClone, closeBtn);
-      cClone.addEventListener('click', function() {
-        var mo = document.getElementById('pwsMasteryOverlay');
-        if (mo) mo.classList.remove('open');
-      });
-    }
-    var sendBtn = document.getElementById('pwsMasterySendBtn');
-    if (sendBtn) {
-      var sClone = sendBtn.cloneNode(true);
-      sendBtn.parentNode.replaceChild(sClone, sendBtn);
-      sClone.addEventListener('click', function() { pwsSendMasteryCheckIn(stage); });
-    }
-    var inp = document.getElementById('pwsMasteryInput');
-    if (inp) {
-      inp.value = '';
-      var iClone = inp.cloneNode(true);
-      inp.parentNode.replaceChild(iClone, inp);
-      iClone.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); pwsSendMasteryCheckIn(stage); }
-      });
-      setTimeout(function() { iClone.focus(); }, 80);
-    }
-    var micBtn = document.getElementById('pwsMasteryMic');
-    if (micBtn) {
-      var mClone = micBtn.cloneNode(true);
-      micBtn.parentNode.replaceChild(mClone, micBtn);
-      mClone.addEventListener('click', function() { pwsToggleMasteryMic(); });
-    }
-  }
+
 
   var _masteryMicActive = false;
   var _masteryRecognizer = null;
@@ -5896,46 +6613,6 @@
 
   window.pwsRestoreAll = pwsLoadAll;
 
-  var _seQuotes=[],_seCurrentIdx=0,_sePinned=false,_seHistory=[];
-  var SE_Q=['You were made for this. Not despite the difficulty — because of it.','The work you do in private is the person you become in public.','Every window you honor is a promise you keep to yourself.','Your talent is not a gift. It is a responsibility you choose every day.','Trust is built one window at a time.'];
-
-  function pwsOpenSelfEncouragement(){
-    var ov=document.getElementById('pwsSelfEncourOverlay');
-
-    ov.classList.add('open');_seHistory=[];
-    var stmtEl=document.getElementById('pwsSEStatement'),savedStmt=(_toolsData&&_toolsData.selfEncouragementStatement)||'';
-    if(stmtEl)stmtEl.value=savedStmt;
-    _sePinned=!!(_toolsData&&_toolsData.sePinned);
-    var pb=document.getElementById('pwsSEPinnedBadge');if(pb)pb.style.display=_sePinned?'block':'none';
-    pwsSELoadQuotes(function(){pwsSEShowQuote();});
-    var feed=document.getElementById('pwsSEFeed');if(feed)feed.innerHTML='';
-    var msg=_lang==='es'?(savedStmt?'Tu declaración está lista. Siéntate con ella.':'Construyamos tu declaración.'):(savedStmt?'Your statement is ready. Sit with the quote.':'Let’s build your statement.');
-    setTimeout(function(){pwsSEAppend(msg,'docb');_seHistory.push({role:'assistant',content:msg});},300);
-    ov.addEventListener('click',function(ev){
-      var id=ev.target.id||'';
-      if(id==='pwsSECloseBtn'){ov.classList.remove('open');}
-      else if(id==='pwsSEPinBtn'){_sePinned=!_sePinned;if(_toolsData){_toolsData.sePinned=_sePinned;_toolsData.sePinnedIdx=_seCurrentIdx;}post({action:'pwsSaveTools',sessionId:_session,requestingMemberId:_memberId,data:pwsToolsPayload()}).catch(function(){});if(pb)pb.style.display=_sePinned?'block':'none';}
-      else if(id==='pwsSERotateBtn'){_sePinned=false;if(_toolsData)_toolsData.sePinned=false;if(pb)pb.style.display='none';_seCurrentIdx=(_seCurrentIdx+1)%(_seQuotes.length||1);pwsSEShowQuote();}
-      else if(id==='pwsSESaveStmt'){var v=(stmtEl?stmtEl.value:'').trim();if(!v)return;if(_toolsData)_toolsData.selfEncouragementStatement=v;post({action:'pwsSaveTools',sessionId:_session,requestingMemberId:_memberId,data:pwsToolsPayload()}).catch(function(){});pwsSEAppend(_lang==='es'?'✨ Guardado.':'✨ Saved.','docb');}
-      else if(id==='pwsSESendBtn'){pwsSESend();}
-    });
-    var si=document.getElementById('pwsSEInput');if(si)si.onkeydown=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();pwsSESend();}};
-  }
-  function pwsSELoadQuotes(cb){
-    if(!_seQuotes.length){_seQuotes=SE_Q;_seCurrentIdx=Math.floor(Math.random()*SE_Q.length);}
-    cb();
-  }
-  function pwsSEShowQuote(){var el=document.getElementById('pwsSEQuoteText');if(!el)return;el.style.opacity='0';setTimeout(function(){el.textContent=_seQuotes[_seCurrentIdx]||SE_Q[0];el.style.transition='opacity 0.5s ease';el.style.opacity='1';},150);}
-  function pwsSEAppend(text,role){var f=document.getElementById('pwsSEFeed');if(!f)return;var b=document.createElement('div');b.className='pws-docb-bubble '+role;b.textContent=text;f.appendChild(b);f.scrollTop=f.scrollHeight;}
-  function pwsSESend(){
-    var inp=document.getElementById('pwsSEInput'),text=inp?inp.value.trim():'';if(!text)return;if(inp)inp.value='';
-    pwsSEAppend(text,'member');_seHistory.push({role:'user',content:text});
-    var q=_seQuotes[_seCurrentIdx]||'',st=(_toolsData&&_toolsData.selfEncouragementStatement)||'';
-    var sys='Doc B Self Encouragement.'+(q?' Quote: "'+q+'".':'')+(st?' Statement: "'+st+'".':'')+'Brief. Respond in '+(_lang==='es'?'Spanish':'English')+'.';
-    var tid='se-'+Date.now(),tp=document.createElement('div');tp.className='pws-docb-bubble docb';tp.id=tid;tp.textContent='…';
-    var f=document.getElementById('pwsSEFeed');if(f){f.appendChild(tp);f.scrollTop=f.scrollHeight;}
-    post({action:'cftConvTurn',sessionId:_session,requestingMemberId:_memberId,projectId:'',systemPrompt:sys,conversationHistory:_seHistory.slice(-10)}).then(function(d){var r=(d&&d.reply)?d.reply:'';var t=document.getElementById(tid);if(t)t.parentNode.removeChild(t);if(!r){pwsSEAppend(_lang==='es'?'Intenta de nuevo.':'Try again.','docb');return;}_seHistory.push({role:'assistant',content:r});pwsSEAppend(r,'docb');}).catch(function(){var t=document.getElementById(tid);if(t)t.parentNode.removeChild(t);});
-  }
 
   var _handoffHistory=[],_handoffFocusItem=null;
   function pwsOpenHandoff(schedule){
@@ -5968,6 +6645,63 @@
     var tid='ho-'+Date.now(),tp=document.createElement('div');tp.className='pws-docb-bubble docb';tp.id=tid;tp.textContent='…';
     var f=document.getElementById('pwsHandoffDocBFeed');if(f){f.appendChild(tp);f.scrollTop=f.scrollHeight;}
     post({action:'cftConvTurn',sessionId:_session,requestingMemberId:_memberId,projectId:'',systemPrompt:sys,conversationHistory:_handoffHistory.slice(-10)}).then(function(d){var r=(d&&d.reply)?d.reply:'';var t=document.getElementById(tid);if(t)t.parentNode.removeChild(t);if(!r){pwsHandoffDocBAppend(_lang==='es'?'Intenta de nuevo.':'Try again.','docb');return;}_handoffHistory.push({role:'assistant',content:r});pwsHandoffDocBAppend(r,'docb');}).catch(function(){var t=document.getElementById(tid);if(t)t.parentNode.removeChild(t);});
+  }
+
+  // v103: pwsToggleReminderPanel DELETED. It was prompt() + Notification +
+  // setTimeout -- a timer that died on tab close while telling a member it
+  // would remember for them. Replaced by pwsToggleAlarmsMenu (server-side
+  // Reminders sheet + heartbeat + Twilio). Never reintroduce a client-side
+  // timer as a reminder: if the promise outlives the tab, so must the timer.
+
+
+
+
+  function pwsOpenMasteryCheckIn(projectId, stage) {
+    _masteryCheckHistory = [];
+    var proj = _twsProject || {};
+    var projTitle = proj.title || 'your project';
+    var sessionNum = (proj.sessionCount || 0) + 1;
+    var feed = document.getElementById('pwsMasteryFeed');
+    if (feed) feed.innerHTML = '';
+    var ov = document.getElementById('pwsMasteryOverlay');
+    if (ov) ov.classList.add('open');
+    var stageLabel = ['', 'Discovery', 'Practice', 'Competence', 'Automaticity'][stage] || 'Practice';
+    var openEN = 'Session ' + sessionNum + ' of "' + projTitle + '" \u2014 Stage ' + stage + ': ' + stageLabel + '.\n\nHow did it go? What did you notice?';
+    var openES = 'Sesi\u00f3n ' + sessionNum + ' de "' + projTitle + '" \u2014 Etapa ' + stage + ': ' + stageLabel + '.\n\n\u00bfC\u00f3mo te fue? \u00bfQu\u00e9 notaste?';
+    var openMsg = _lang === 'es' ? openES : openEN;
+    pwsMasteryAppendBubble(openMsg, 'docb');
+    _masteryCheckHistory.push({ role: 'assistant', content: openMsg });
+    var closeBtn = document.getElementById('pwsMasteryCloseBtn');
+    if (closeBtn) {
+      var cClone = closeBtn.cloneNode(true);
+      closeBtn.parentNode.replaceChild(cClone, closeBtn);
+      cClone.addEventListener('click', function() {
+        var mo = document.getElementById('pwsMasteryOverlay');
+        if (mo) mo.classList.remove('open');
+      });
+    }
+    var sendBtn = document.getElementById('pwsMasterySendBtn');
+    if (sendBtn) {
+      var sClone = sendBtn.cloneNode(true);
+      sendBtn.parentNode.replaceChild(sClone, sendBtn);
+      sClone.addEventListener('click', function() { pwsSendMasteryCheckIn(stage); });
+    }
+    var inp = document.getElementById('pwsMasteryInput');
+    if (inp) {
+      inp.value = '';
+      var iClone = inp.cloneNode(true);
+      inp.parentNode.replaceChild(iClone, inp);
+      iClone.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); pwsSendMasteryCheckIn(stage); }
+      });
+      setTimeout(function() { iClone.focus(); }, 80);
+    }
+    var micBtn = document.getElementById('pwsMasteryMic');
+    if (micBtn) {
+      var mClone = micBtn.cloneNode(true);
+      micBtn.parentNode.replaceChild(mClone, micBtn);
+      mClone.addEventListener('click', function() { pwsToggleMasteryMic(); });
+    }
   }
 
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', pwsInit); } else { pwsInit(); }
