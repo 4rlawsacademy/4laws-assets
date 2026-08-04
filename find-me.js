@@ -1,4 +1,10 @@
-/* 4 LAWS ACADEMY — find-me.js — v1 THE ARRIVAL (Bench 17/A, Aug 3 2026)
+/* 4 LAWS ACADEMY — find-me.js — v2 THE FIRST WORDS (Bench 17/B-front, Aug 4 2026)
+ * v2 adds the mouth: a gold message bubble beside the spark, and the first
+ * client-side voice — first-ever arrival, daily first touch, return after
+ * absence — sparse by law (at most one ambient line per day per device),
+ * rotating variants (a repeated phrase stops reinforcing), fully bilingual,
+ * honoring the off-switch. Adds FindME.say(en,es) and FindME.quiet() for
+ * page wiring. Lineage: v1 THE ARRIVAL —
  * Find ME — The Quest for Favorite Day. The ambient layer, first breath.
  * One script line per page and the presence arrives: a small gold spark,
  * the ME door (revelation behind it), the gold opt-out exactly as ruled,
@@ -122,6 +128,12 @@
     + 'box-shadow:0 0 14px rgba(200,168,75,0.25);animation:fmBreath 4s ease-in-out infinite;'
     + 'font-family:Georgia,serif;user-select:none;}'
     + '.fm-emblem.fm-resting{animation:none;opacity:0.35;}'
+    + '.fm-bubble{position:fixed;bottom:70px;left:16px;max-width:280px;background:rgba(10,10,12,0.96);'
+    + 'border:1px solid rgba(200,168,75,0.55);border-radius:10px;padding:12px 16px;z-index:11001;'
+    + 'font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:17px;line-height:1.45;'
+    + 'color:#f0e6cc;box-shadow:0 4px 24px rgba(0,0,0,0.6);cursor:pointer;opacity:0;'
+    + 'transform:translateY(8px);transition:opacity 0.6s ease,transform 0.6s ease;}'
+    + '.fm-bubble.show{opacity:1;transform:translateY(0);}'
     + '@keyframes fmBreath{0%,100%{box-shadow:0 0 10px rgba(200,168,75,0.2);}50%{box-shadow:0 0 22px rgba(200,168,75,0.5);}}'
     + '.fm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(4,6,8,0.96);'
     + 'z-index:12000;display:none;align-items:center;justify-content:center;padding:18px;}'
@@ -319,6 +331,64 @@
     restOv.className = 'fm-overlay';
   });
 
+  // ── The mouth: a gold bubble beside the spark ──────────────────
+  var bubbleEl = null, bubbleTimer = null;
+  function say(en, esTxt) {
+    if (isOff()) return;
+    if (!bubbleEl) {
+      bubbleEl = document.createElement('div');
+      bubbleEl.className = 'fm-bubble';
+      bubbleEl.addEventListener('click', hideBubble);
+      document.body.appendChild(bubbleEl);
+    }
+    bubbleEl.textContent = (lang() === 'es') ? esTxt : en;
+    if (bubbleTimer) clearTimeout(bubbleTimer);
+    setTimeout(function() { bubbleEl.className = 'fm-bubble show'; }, 50);
+    bubbleTimer = setTimeout(hideBubble, 9000);
+  }
+  function hideBubble() {
+    if (bubbleEl) bubbleEl.className = 'fm-bubble';
+    if (bubbleTimer) { clearTimeout(bubbleTimer); bubbleTimer = null; }
+  }
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  // ── The first words: arrival / daily / return — sparse by law ───────
+  var LINES = {
+    born: [
+      { en: 'I\u2019ll be around \u2014 mostly quiet. When you\u2019re working, I notice. That\u2019s all this is.',
+        es: 'Voy a estar por aqu\u00ed \u2014 casi siempre en silencio. Cuando trabajas, me doy cuenta. Eso es todo.' }
+    ],
+    daily: [
+      { en: 'New day on the board. Activity one is waiting.', es: 'D\u00eda nuevo en la mesa. La actividad uno te espera.' },
+      { en: 'The day\u2019s open. Start anywhere \u2014 one is right there.', es: 'El d\u00eda est\u00e1 abierto. Empieza donde sea \u2014 la uno est\u00e1 ah\u00ed mismo.' },
+      { en: 'Camp\u2019s pitched. Trail\u2019s yours.', es: 'El campamento est\u00e1 listo. El camino es tuyo.' }
+    ],
+    back: [
+      { en: 'Good to see you. The board kept your place.', es: 'Qu\u00e9 bueno verte. La mesa te guard\u00f3 el lugar.' },
+      { en: 'Back on the trail. Nothing here expired \u2014 it all waited.', es: 'De vuelta al camino. Nada se venci\u00f3 \u2014 todo te esper\u00f3.' }
+    ]
+  };
+  function localDay() {
+    var d = new Date(); var m = d.getMonth() + 1, day = d.getDate();
+    return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+  }
+  function firstWords() {
+    if (isOff()) return;
+    var today = localDay();
+    var seen = '', lastTs = 0;
+    try { seen = localStorage.getItem('4laws-findme-seen') || ''; lastTs = parseInt(localStorage.getItem('4laws-findme-last') || '0', 10) || 0; } catch (e) {}
+    if (seen === today) return; // one ambient line per day per device — sparse is precious
+    var now = new Date().getTime();
+    var gapDays = lastTs ? (now - lastTs) / 86400000 : 0;
+    var line;
+    if (!seen && !lastTs) line = pick(LINES.born);
+    else if (gapDays >= 3) line = pick(LINES.back);
+    else line = pick(LINES.daily);
+    try { localStorage.setItem('4laws-findme-seen', today); localStorage.setItem('4laws-findme-last', String(now)); } catch (e2) {}
+    setTimeout(function() { say(line.en, line.es); }, 2200);
+  }
+  firstWords();
+
   // ── Public API ──────────────────────────────────────────────────────
   window.FindME = {
     gauntlet:  function(funny) { play(funny ? 'gauntletFunny' : 'gauntlet', true); },
@@ -334,6 +404,8 @@
       var k = (name === 'salvage') ? 'chimeSalvage' : ((name === 'tool') ? 'chimeTool' : 'chimeDone');
       play(k, false);
     },
+    quiet:     function() { stopLoop(false); },
+    say:       say,
     offerRest: showOptOut,
     open:      openPanel,
     isOff:     isOff
