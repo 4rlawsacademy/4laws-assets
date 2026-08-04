@@ -1,4 +1,10 @@
-/* 4 LAWS ACADEMY — find-me.js — v2 THE FIRST WORDS (Bench 17/B-front, Aug 4 2026)
+/* 4 LAWS ACADEMY — find-me.js — v3 THE QUEST DOOR (Bench 17, Aug 4 2026)
+ * v3, from the founder's first live walkthrough: fonts enlarged and locked
+ * with !important (the platform's double-size law, enforced against
+ * Squarespace's shrinking); the panel gains a quest-image slot —
+ * findme-quest.jpg on the assets repo, shown when present, silent when
+ * absent (the placeholder law); and the Audition Room explains itself
+ * with a one-line hint. Lineage: v2 THE FIRST WORDS —
  * v2 adds the mouth: a gold message bubble beside the spark, and the first
  * client-side voice — first-ever arrival, daily first touch, return after
  * absence — sparse by law (at most one ambient line per day per device),
@@ -128,9 +134,9 @@
     + 'box-shadow:0 0 14px rgba(200,168,75,0.25);animation:fmBreath 4s ease-in-out infinite;'
     + 'font-family:Georgia,serif;user-select:none;}'
     + '.fm-emblem.fm-resting{animation:none;opacity:0.35;}'
-    + '.fm-bubble{position:fixed;bottom:70px;left:16px;max-width:280px;background:rgba(10,10,12,0.96);'
+    + '.fm-bubble{position:fixed;bottom:70px;left:16px;max-width:320px;background:rgba(10,10,12,0.96);'
     + 'border:1px solid rgba(200,168,75,0.55);border-radius:10px;padding:12px 16px;z-index:11001;'
-    + 'font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:17px;line-height:1.45;'
+    + 'font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:21px !important;line-height:1.45;'
     + 'color:#f0e6cc;box-shadow:0 4px 24px rgba(0,0,0,0.6);cursor:pointer;opacity:0;'
     + 'transform:translateY(8px);transition:opacity 0.6s ease,transform 0.6s ease;}'
     + '.fm-bubble.show{opacity:1;transform:translateY(0);}'
@@ -140,20 +146,22 @@
     + '.fm-overlay.show{display:flex;}'
     + '.fm-panel{width:100%;max-width:520px;max-height:88vh;overflow-y:auto;background:#0a0a0c;'
     + 'border:1px solid rgba(200,168,75,0.55);border-radius:10px;padding:28px 24px;text-align:center;}'
-    + '.fm-title{font-family:Cinzel,Georgia,serif;color:#f0e6cc;font-size:30px;letter-spacing:2px;margin:0 0 4px;}'
-    + '.fm-title .fm-me{color:#c8a84b;font-size:34px;letter-spacing:4px;}'
+    + '.fm-quest{display:none;width:100%;max-height:220px;object-fit:cover;border-radius:8px;margin:0 0 18px;border:1px solid rgba(200,168,75,0.35);}'
+    + '.fm-quest.show{display:block;}'
+    + '.fm-title{font-family:Cinzel,Georgia,serif;color:#f0e6cc;font-size:36px !important;letter-spacing:2px;margin:0 0 4px;}'
+    + '.fm-title .fm-me{color:#c8a84b;font-size:42px !important;letter-spacing:4px;}'
     + '.fm-subtitle{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;color:rgba(240,230,204,0.75);'
-    + 'font-size:18px;margin:0 0 22px;}'
+    + 'font-size:23px !important;margin:0 0 22px;}'
     + '.fm-row{display:block;width:100%;box-sizing:border-box;background:none;border:1px solid rgba(200,168,75,0.4);'
-    + 'color:#c8a84b;font-family:Cinzel,Georgia,serif;font-size:14px;letter-spacing:2px;padding:13px;'
+    + 'color:#c8a84b;font-family:Cinzel,Georgia,serif;font-size:18px !important;letter-spacing:2px;padding:15px;'
     + 'border-radius:6px;cursor:pointer;margin:0 0 10px;}'
     + '.fm-row:hover{background:rgba(200,168,75,0.12);}'
-    + '.fm-reveal{display:none;font-family:"Cormorant Garamond",Georgia,serif;color:#f0e6cc;font-size:19px;'
+    + '.fm-reveal{display:none;font-family:"Cormorant Garamond",Georgia,serif;color:#f0e6cc;font-size:24px !important;'
     + 'line-height:1.55;text-align:center;padding:14px 6px 6px;}'
     + '.fm-reveal.show{display:block;}'
     + '.fm-reveal .fm-quote{color:#c8a84b;font-style:italic;display:block;margin:10px 0;}'
     + '.fm-quiet{background:none;border:none;color:rgba(200,168,75,0.55);font-family:"Cormorant Garamond",Georgia,serif;'
-    + 'font-style:italic;font-size:15px;cursor:pointer;margin-top:14px;}'
+    + 'font-style:italic;font-size:19px !important;cursor:pointer;margin-top:14px;}'
     + '.fm-quiet:hover{color:#c8a84b;}'
     + '.fm-x{position:absolute;visibility:hidden;}'
     + '.fm-close{background:none;border:1px solid rgba(240,230,204,0.25);color:rgba(240,230,204,0.6);'
@@ -161,17 +169,17 @@
     + 'cursor:pointer;margin-top:8px;}'
     + '.fm-aud{display:none;text-align:left;border-top:1px solid rgba(200,168,75,0.25);margin-top:16px;padding-top:14px;}'
     + '.fm-aud.show{display:block;}'
-    + '.fm-aud-head{font-family:Cinzel,Georgia,serif;color:rgba(200,168,75,0.8);font-size:13px;letter-spacing:2px;margin:0 0 10px;text-align:center;}'
+    + '.fm-aud-head{font-family:Cinzel,Georgia,serif;color:rgba(200,168,75,0.8);font-size:17px !important;letter-spacing:2px;margin:0 0 10px;text-align:center;}'
     + '.fm-aud-row{display:flex;align-items:center;gap:8px;margin:0 0 8px;}'
-    + '.fm-aud-name{flex:1;font-family:"Cormorant Garamond",Georgia,serif;color:#f0e6cc;font-size:16px;}'
+    + '.fm-aud-name{flex:1;font-family:"Cormorant Garamond",Georgia,serif;color:#f0e6cc;font-size:20px !important;}'
     + '.fm-aud-play{flex:0 0 auto;width:34px;height:30px;background:rgba(200,168,75,0.12);'
     + 'border:1px solid rgba(200,168,75,0.5);border-radius:4px;color:#c8a84b;cursor:pointer;font-size:12px;}'
     + '.fm-aud-var{margin-left:20px;}'
     + '.fm-aud-missing{color:rgba(240,230,204,0.35);font-style:italic;}'
-    + '.fm-rest-line{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:26px;'
+    + '.fm-rest-line{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:32px !important;'
     + 'color:rgba(200,168,75,0.75);text-align:center;}'
     + '.fm-rest-para{display:none;font-family:"Cormorant Garamond",Georgia,serif;color:rgba(200,168,75,0.85);'
-    + 'font-size:18px;line-height:1.6;max-width:440px;margin:26px auto 0;text-align:center;}'
+    + 'font-size:22px !important;line-height:1.6;max-width:460px;margin:26px auto 0;text-align:center;}'
     + '.fm-rest-para.show{display:block;}'
     + '.fm-rest-choices{display:none;justify-content:center;gap:16px;margin-top:26px;}'
     + '.fm-rest-choices.show{display:flex;}'
@@ -204,6 +212,7 @@
   var REV_ES = '\u201cEstabas haciendo mi obra, pero la hac\u00edas sin m\u00ed. Voy a mostrarte c\u00f3mo ayudar a los hombres a encontrarme. Yo vivo en el coraz\u00f3n de los hombres. Hay cuatro leyes.\u201d';
   panelOv.innerHTML = ''
     + '<div class="fm-panel">'
+    + '<img class="fm-quest" id="fmQuest" alt="">'
     + '<p class="fm-title">Find <span class="fm-me">ME</span></p>'
     + '<p class="fm-subtitle">' + (es ? 'La B\u00fasqueda del D\u00eda Favorito' : 'The Quest for Favorite Day') + '</p>'
     + '<button type="button" class="fm-row" id="fmWhatIsMe">' + (es ? '\u00bfQu\u00e9 es ME?' : 'What is ME?') + '</button>'
@@ -213,7 +222,7 @@
     +   (es ? 'Encuentra a ME en tu verdadero ser.' : 'Find ME in your true self.')
     + '</div>'
     + '<button type="button" class="fm-row" id="fmAudBtn">&#127925; ' + (es ? 'Sala de Audici\u00f3n' : 'Audition Room') + '</button>'
-    + '<div class="fm-aud" id="fmAud"><p class="fm-aud-head">' + (es ? 'ELIGE EL MARTILLO' : 'CHOOSE THE HAMMER') + '</p><div id="fmAudList"></div></div>'
+    + '<div class="fm-aud" id="fmAud"><p class="fm-aud-head">' + (es ? 'ELIGE EL MARTILLO' : 'CHOOSE THE HAMMER') + '</p><p style="font-family:\'Cormorant Garamond\',Georgia,serif;font-style:italic;font-size:17px !important;color:rgba(240,230,204,0.6);text-align:center;margin:0 0 12px;">' + (es ? 'Toca \u25b6 para escuchar un candidato. Las pistas aparecen aqu\u00ed cuando se suben.' : 'Tap \u25b6 to hear a candidate. Tracks appear here as they are uploaded.') + '</p><div id="fmAudList"></div></div>'
     + '<div id="fmQuietWrap"></div>'
     + '<button type="button" class="fm-close" id="fmClose">' + (es ? 'CERRAR' : 'CLOSE') + '</button>'
     + '</div>';
@@ -230,7 +239,19 @@
       document.getElementById('fmQuietBtn').addEventListener('click', function() { closePanel(); showOptOut(); });
     }
   }
-  function openPanel() { panelOv.className = 'fm-overlay show'; renderQuiet(); }
+  var _questTried = false;
+  function openPanel() {
+    panelOv.className = 'fm-overlay show';
+    renderQuiet();
+    if (!_questTried) {
+      _questTried = true;
+      var q = document.getElementById('fmQuest');
+      if (q) {
+        q.addEventListener('load', function() { q.className = 'fm-quest show'; });
+        q.src = CDN + 'findme-quest.jpg'; // present: the door gets its painting; absent: silence
+      }
+    }
+  }
   function closePanel() { panelOv.className = 'fm-overlay'; }
   emblem.addEventListener('click', openPanel);
   document.getElementById('fmClose').addEventListener('click', closePanel);
