@@ -1,4 +1,13 @@
-/* 4 LAWS ACADEMY — find-me.js — v4 THE CROWN'S BODY (Bench 17/D, Aug 4 2026)
+/* 4 LAWS ACADEMY — find-me.js — v6 THE MASTER'S IMAGE (Bench 17/D, Aug 4 2026)
+ * v6: the ceremony gains its icon — a large crown-image frame above the
+ * liturgy, wired to findme-master.jpg on the assets repo (placeholder law:
+ * silent when absent, crowned when present; swappable forever by upload).
+ * Lineage: v5 THE MAJESTY —
+ * v5, from the founder's first witnessing: the coronation now SPEAKS —
+ * built-in speechSynthesis reads each liturgy line aloud (lang-aware,
+ * slow, solemn; no files needed; fanfare slot still reserved for Dro,
+ * to one day play beneath the voice). Fonts go imperial: heavy weight,
+ * MASTER near full-screen, deeper glow. Lineage: v4 THE CROWN'S BODY —
  * v4 builds the coronation machinery: the ONE firework (gold particle sky),
  * the surprise preface, the founder's verbatim liturgy one sentence at a
  * time in flashing gold, Portador de la Cultura conferred, once-ever-per-
@@ -189,12 +198,15 @@
     + '.fm-aud-missing{color:rgba(240,230,204,0.35);font-style:italic;}'
     + '.fm-coro{position:fixed;top:0;left:0;right:0;bottom:0;background:#040608;z-index:13000;display:none;align-items:center;justify-content:center;overflow:hidden;}'
     + '.fm-coro.show{display:flex;}'
+    + '.fm-coro-stack{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;max-height:100vh;padding:20px 0;}'
+    + '.fm-master{display:none;max-width:min(78vw,560px);max-height:52vh;border-radius:12px;border:1px solid rgba(200,168,75,0.5);box-shadow:0 0 60px rgba(200,168,75,0.45);margin-bottom:34px;}'
+    + '.fm-master.show{display:block;}'
     + '.fm-coro-line{position:relative;z-index:2;font-family:Cinzel,Georgia,serif;color:#c8a84b;text-align:center;'
     + 'padding:0 24px;text-shadow:0 0 30px rgba(200,168,75,0.8);opacity:0;transform:scale(0.92);'
-    + 'transition:opacity 0.7s ease,transform 0.7s ease;font-size:34px !important;letter-spacing:3px;line-height:1.35;}'
-    + '.fm-coro-line.big{font-size:64px !important;letter-spacing:8px;}'
+    + 'transition:opacity 0.7s ease,transform 0.7s ease;font-size:46px !important;font-weight:700;letter-spacing:3px;line-height:1.3;}'
+    + '.fm-coro-line.big{font-size:96px !important;font-weight:900;letter-spacing:12px;}'
     + '.fm-coro-line.on{opacity:1;transform:scale(1);animation:fmCoroPulse 1.6s ease-in-out infinite;}'
-    + '@keyframes fmCoroPulse{0%,100%{text-shadow:0 0 24px rgba(200,168,75,0.6);}50%{text-shadow:0 0 60px rgba(240,230,204,1);}}'
+    + '@keyframes fmCoroPulse{0%,100%{text-shadow:0 0 24px rgba(200,168,75,0.6);}50%{text-shadow:0 0 80px rgba(240,230,204,1), 0 0 140px rgba(200,168,75,0.9);}}'
     + '.fm-spark{position:absolute;width:7px;height:7px;border-radius:50%;background:#c8a84b;z-index:1;pointer-events:none;}'
     + '.fm-coro-close{position:absolute;bottom:34px;left:0;right:0;text-align:center;z-index:2;opacity:0;transition:opacity 1s ease;}'
     + '.fm-coro-close.on{opacity:1;}'
@@ -475,18 +487,39 @@
     var es2 = lang() === 'es';
     var ov = document.createElement('div');
     ov.className = 'fm-coro show';
+    var stack = document.createElement('div');
+    stack.className = 'fm-coro-stack';
+    ov.appendChild(stack);
+    var masterImg = document.createElement('img');
+    masterImg.className = 'fm-master';
+    masterImg.alt = '';
+    masterImg.addEventListener('load', function() { masterImg.className = 'fm-master show'; });
+    masterImg.src = CDN + 'findme-master.jpg'; // placeholder law: silent until it exists
+    stack.appendChild(masterImg);
     var lineEl = document.createElement('div');
     lineEl.className = 'fm-coro-line';
-    ov.appendChild(lineEl);
+    stack.appendChild(lineEl);
     var closeWrap = document.createElement('div');
     closeWrap.className = 'fm-coro-close';
     closeWrap.innerHTML = '<button type="button">' + (es2 ? 'LLEVARLO CONMIGO' : 'CARRY IT WITH ME') + '</button>';
     ov.appendChild(closeWrap);
     document.body.appendChild(ov);
     closeWrap.getElementsByTagName('button')[0].addEventListener('click', function() {
+      try { if (canSpeak) window.speechSynthesis.cancel(); } catch (eC) {}
       if (ov.parentNode) ov.parentNode.removeChild(ov);
     });
     play('coronation', false);
+    var canSpeak = false;
+    try { canSpeak = !!(window.speechSynthesis && window.SpeechSynthesisUtterance); } catch (eS) {}
+    function speak(text) {
+      if (!canSpeak) return;
+      try {
+        var u = new SpeechSynthesisUtterance(text);
+        u.lang = es2 ? 'es-ES' : 'en-US';
+        u.rate = 0.82; u.pitch = 0.9; u.volume = 1;
+        window.speechSynthesis.speak(u);
+      } catch (eU) {}
+    }
     fireworks(ov, 10);
     var lines = es2 ? [
       { t: '\u00bfSabes qu\u00e9? Llevas tiempo listo.', big: false },
@@ -514,6 +547,7 @@
       var L = lines[li++];
       lineEl.className = 'fm-coro-line' + (L.big ? ' big' : '');
       lineEl.textContent = L.t;
+      speak(L.t);
       setTimeout(function() { lineEl.className += ' on'; }, 60);
       setTimeout(function() {
         lineEl.className = lineEl.className.replace(' on', '');
