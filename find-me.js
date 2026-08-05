@@ -1,4 +1,13 @@
-/* 4 LAWS ACADEMY — find-me.js — v3 THE QUEST DOOR (Bench 17, Aug 4 2026)
+/* 4 LAWS ACADEMY — find-me.js — v4 THE CROWN'S BODY (Bench 17/D, Aug 4 2026)
+ * v4 builds the coronation machinery: the ONE firework (gold particle sky),
+ * the surprise preface, the founder's verbatim liturgy one sentence at a
+ * time in flashing gold, Portador de la Cultura conferred, once-ever-per-
+ * device enforced. DELIBERATELY TRIGGERLESS: nothing in the UI can fire
+ * it — only the future Ledger (Bench B back half) crowns for real.
+ * Preview door: FindME.coronate({preview:true}) or ?findme-preview=coronation
+ * — previews never burn the once-ever. Fanfare slot opens:
+ * findme-coronation.mp3 (Dro's reserved masterpiece; silent until it
+ * exists). Lineage: v3 THE QUEST DOOR —
  * v3, from the founder's first live walkthrough: fonts enlarged and locked
  * with !important (the platform's double-size law, enforced against
  * Squarespace's shrinking); the panel gains a quest-image slot —
@@ -42,7 +51,8 @@
     arrive:        'findme-arrive.mp3',
     chimeDone:     'findme-chime-done.mp3',
     chimeSalvage:  'findme-chime-salvage.mp3',
-    chimeTool:     'findme-chime-tool.mp3'
+    chimeTool:     'findme-chime-tool.mp3',
+    coronation:    'findme-coronation.mp3'
   };
   var SLOT_LABELS = [
     { key: 'gauntlet',      en: 'The Gauntlet (thinking, suspense)', es: 'El Guante (pensando, suspenso)' },
@@ -52,7 +62,8 @@
     { key: 'arrive',        en: 'The Arrival (Find ME appears)',     es: 'La Llegada (Find ME aparece)' },
     { key: 'chimeDone',     en: 'Chime: done-done',                  es: 'Campanita: hecho' },
     { key: 'chimeSalvage',  en: 'Chime: salvage credit',             es: 'Campanita: rescate' },
-    { key: 'chimeTool',     en: 'Chime: tool activated',             es: 'Campanita: herramienta' }
+    { key: 'chimeTool',     en: 'Chime: tool activated',             es: 'Campanita: herramienta' },
+    { key: 'coronation',    en: 'The Coronation fanfare (reserved)', es: 'La Coronaci\u00f3n (reservada)' }
   ];
 
   var players = {};
@@ -176,6 +187,19 @@
     + 'border:1px solid rgba(200,168,75,0.5);border-radius:4px;color:#c8a84b;cursor:pointer;font-size:12px;}'
     + '.fm-aud-var{margin-left:20px;}'
     + '.fm-aud-missing{color:rgba(240,230,204,0.35);font-style:italic;}'
+    + '.fm-coro{position:fixed;top:0;left:0;right:0;bottom:0;background:#040608;z-index:13000;display:none;align-items:center;justify-content:center;overflow:hidden;}'
+    + '.fm-coro.show{display:flex;}'
+    + '.fm-coro-line{position:relative;z-index:2;font-family:Cinzel,Georgia,serif;color:#c8a84b;text-align:center;'
+    + 'padding:0 24px;text-shadow:0 0 30px rgba(200,168,75,0.8);opacity:0;transform:scale(0.92);'
+    + 'transition:opacity 0.7s ease,transform 0.7s ease;font-size:34px !important;letter-spacing:3px;line-height:1.35;}'
+    + '.fm-coro-line.big{font-size:64px !important;letter-spacing:8px;}'
+    + '.fm-coro-line.on{opacity:1;transform:scale(1);animation:fmCoroPulse 1.6s ease-in-out infinite;}'
+    + '@keyframes fmCoroPulse{0%,100%{text-shadow:0 0 24px rgba(200,168,75,0.6);}50%{text-shadow:0 0 60px rgba(240,230,204,1);}}'
+    + '.fm-spark{position:absolute;width:7px;height:7px;border-radius:50%;background:#c8a84b;z-index:1;pointer-events:none;}'
+    + '.fm-coro-close{position:absolute;bottom:34px;left:0;right:0;text-align:center;z-index:2;opacity:0;transition:opacity 1s ease;}'
+    + '.fm-coro-close.on{opacity:1;}'
+    + '.fm-coro-close button{background:none;border:1px solid rgba(200,168,75,0.5);color:#c8a84b;'
+    + 'font-family:Cinzel,Georgia,serif;font-size:15px !important;letter-spacing:2px;padding:11px 26px;border-radius:6px;cursor:pointer;}'
     + '.fm-rest-line{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:32px !important;'
     + 'color:rgba(200,168,75,0.75);text-align:center;}'
     + '.fm-rest-para{display:none;font-family:"Cormorant Garamond",Georgia,serif;color:rgba(200,168,75,0.85);'
@@ -410,7 +434,101 @@
   }
   firstWords();
 
-  // ── Public API ──────────────────────────────────────────────────────
+  // -- THE CROWN'S BODY (Bench 17/D) -----------------------------------
+  var CROWN_KEY = '4laws-findme-crowned';
+  function fireworks(host, bursts) {
+    var W = window.innerWidth, H = window.innerHeight;
+    function burst(cx, cy, n) {
+      for (var i = 0; i < n; i++) {
+        (function() {
+          var s = document.createElement('div');
+          s.className = 'fm-spark';
+          var hue = Math.random();
+          s.style.background = hue < 0.5 ? '#c8a84b' : (hue < 0.8 ? '#f0e6cc' : '#ffffff');
+          s.style.left = cx + 'px'; s.style.top = cy + 'px';
+          host.appendChild(s);
+          var ang = Math.random() * 6.28318, v = 60 + Math.random() * 240;
+          var dx = Math.cos(ang) * v, dy = Math.sin(ang) * v - 40;
+          var t0 = new Date().getTime(), life = 1200 + Math.random() * 900;
+          var tick = setInterval(function() {
+            var t = (new Date().getTime() - t0) / life;
+            if (t >= 1) { clearInterval(tick); if (s.parentNode) s.parentNode.removeChild(s); return; }
+            s.style.left = (cx + dx * t) + 'px';
+            s.style.top  = (cy + dy * t + 140 * t * t) + 'px';
+            s.style.opacity = String(1 - t);
+          }, 33);
+        })();
+      }
+    }
+    var b = 0;
+    var timer = setInterval(function() {
+      if (b >= bursts) { clearInterval(timer); return; }
+      burst(W * (0.15 + Math.random() * 0.7), H * (0.12 + Math.random() * 0.5), 26 + Math.floor(Math.random() * 22));
+      b++;
+    }, 420);
+  }
+  function coronate(opts) {
+    opts = opts || {};
+    var preview = !!opts.preview;
+    try { if (!preview && localStorage.getItem(CROWN_KEY) === '1') return; } catch (e) {}
+    if (!preview) { try { localStorage.setItem(CROWN_KEY, '1'); } catch (e2) {} }
+    var es2 = lang() === 'es';
+    var ov = document.createElement('div');
+    ov.className = 'fm-coro show';
+    var lineEl = document.createElement('div');
+    lineEl.className = 'fm-coro-line';
+    ov.appendChild(lineEl);
+    var closeWrap = document.createElement('div');
+    closeWrap.className = 'fm-coro-close';
+    closeWrap.innerHTML = '<button type="button">' + (es2 ? 'LLEVARLO CONMIGO' : 'CARRY IT WITH ME') + '</button>';
+    ov.appendChild(closeWrap);
+    document.body.appendChild(ov);
+    closeWrap.getElementsByTagName('button')[0].addEventListener('click', function() {
+      if (ov.parentNode) ov.parentNode.removeChild(ov);
+    });
+    play('coronation', false);
+    fireworks(ov, 10);
+    var lines = es2 ? [
+      { t: '\u00bfSabes qu\u00e9? Llevas tiempo listo.', big: false },
+      { t: 'MAESTRO.', big: true },
+      { t: 'Ahora eres Maestro de Las 4 LEYES.', big: false },
+      { t: 'Eso significa que puedes ense\u00f1arlas.', big: false },
+      { t: 'Puedes vivirlas.', big: false },
+      { t: 'Puedes crear culturas de Las 4 LEYES.', big: false },
+      { t: 'Portador de la Cultura', big: true }
+    ] : [
+      { t: 'Guess what. You\u2019ve been ready for a while.', big: false },
+      { t: 'MASTER.', big: true },
+      { t: 'You are now a Four Laws Master.', big: false },
+      { t: 'That means you can teach it.', big: false },
+      { t: 'You can live it.', big: false },
+      { t: 'You can create Four Laws cultures.', big: false },
+      { t: 'Portador de la Cultura', big: true }
+    ];
+    var li = 0;
+    function next() {
+      if (li >= lines.length) {
+        closeWrap.className = 'fm-coro-close on';
+        return;
+      }
+      var L = lines[li++];
+      lineEl.className = 'fm-coro-line' + (L.big ? ' big' : '');
+      lineEl.textContent = L.t;
+      setTimeout(function() { lineEl.className += ' on'; }, 60);
+      setTimeout(function() {
+        lineEl.className = lineEl.className.replace(' on', '');
+        setTimeout(next, 700);
+      }, L.big ? 3000 : 2600);
+    }
+    setTimeout(next, 900);
+  }
+  try {
+    if (window.location.search.indexOf('findme-preview=coronation') !== -1) {
+      setTimeout(function() { coronate({ preview: true }); }, 1500);
+    }
+  } catch (ePrev) {}
+
+  // -- Public API -─────────────────────────────────────────────────────
   window.FindME = {
     gauntlet:  function(funny) { play(funny ? 'gauntletFunny' : 'gauntlet', true); },
     swell:     function() {
@@ -425,6 +543,7 @@
       var k = (name === 'salvage') ? 'chimeSalvage' : ((name === 'tool') ? 'chimeTool' : 'chimeDone');
       play(k, false);
     },
+    coronate:  coronate,
     quiet:     function() { stopLoop(false); },
     say:       say,
     offerRest: showOptOut,
