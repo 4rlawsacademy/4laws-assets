@@ -1,4 +1,14 @@
-/* 4 LAWS ACADEMY — winston-badge.js v3 THE FIRST HELLO (8/1/26)
+/* 4 LAWS ACADEMY — winston-badge.js v4 THE POLITE GUEST (Bench 21, 8/15/26)
+ * v4 medicine, two lines, both field-convicted:
+ *  1) z-index 9400 -> 950: Winston no longer floats above open Doc B chats
+ *     and veils — he steps behind them (never covers a send button again;
+ *     the Barranquilla wound) and returns when they close.
+ *  2) Mobile bottom gains safe-area padding — on modern iPhones bottom:12px
+ *     sat under the home bar, which is exactly the founder's disappearing
+ *     Winston. He now stands above the bar on every phone.
+ * Everything else verbatim v3.
+ *
+ * 4 LAWS ACADEMY — winston-badge.js v3 THE FIRST HELLO (8/1/26)
  * THE WINSTON BADGE — the IT guy, everywhere.
  * Director's ruling: "a small avatar button somewhere obvious...
  * Winston's face shows up... you click, and you get a chat."
@@ -27,7 +37,7 @@
   }
 
   var css = '' +
-    '#wnBadge{position:fixed;right:18px;bottom:18px;z-index:9400;' +
+    '#wnBadge{position:fixed;right:18px;bottom:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:950;' +
     'display:flex;align-items:center;gap:10px;cursor:pointer;' +
     'text-decoration:none;border:none;background:transparent;padding:0;}' +
     '#wnBadge .wnb-col{display:flex;flex-direction:column;align-items:center;gap:5px;}' +
@@ -54,7 +64,7 @@
     '60%{transform:translateX(-10px);opacity:1;}80%{transform:translateX(4px);}' +
     '100%{transform:translateX(0);}}' +
     '#wnBadge.wnb-arriving{animation:wnbArrive .9s ease-out;}' +
-    '@media (max-width:640px){#wnBadge{right:12px;bottom:12px;}' +
+    '@media (max-width:640px){#wnBadge{right:12px;bottom:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));}' +
     '#wnBadge .wnb-face{width:46px;height:46px;}' +
     '#wnBadge .wnb-whisper{display:none;}' +
     '#wnBadge .wnb-chip{font-size:10px;}}';
