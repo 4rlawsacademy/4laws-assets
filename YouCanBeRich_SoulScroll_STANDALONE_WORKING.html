@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>You Can Be Rich / Puedes Ser Rico</title>
 </head>
 <body style="margin:0; padding:0;">
@@ -23,7 +23,7 @@
   ============================================================
 -->
 <style>
-  .ycbr-origin-section { background: #0a0a0a; height: 100vh; padding: 0; position: relative; text-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .ycbr-origin-section { background: #0a0a0a; height: 100vh; height: 100dvh; padding: 0; position: relative; text-align: center; display: flex; align-items: center; justify-content: center; overflow: hidden; }
   .ycbr-origin-content { position: relative; z-index: 10; width: 100%; height: 100%; max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; padding: 0.5in 20px 25px; }
   .ycbr-origin-tagline-top { flex: 0 0 auto; font-family: 'Cormorant Garamond', Georgia, serif !important; font-size: 1.4rem !important; font-style: italic; color: #ffffff; margin: 0 0 20px 0; text-shadow: 0 2px 15px rgba(0,0,0,0.6); }
   .ycbr-origin-image-wrap { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
@@ -33,17 +33,17 @@
   .ycbr-read-btn { flex: 0 0 auto; background: rgba(212,175,55,0.2); border: 1px solid rgba(212,175,55,0.7); color: #d4af37; font-family: 'Cormorant Garamond', Georgia, serif !important; font-size: 0.75rem !important; font-weight: 600; letter-spacing: 2px; padding: 10px 24px; border-radius: 4px; cursor: pointer; transition: all 0.3s ease; margin-bottom: 0; text-shadow: 0 0 10px rgba(212,175,55,0.3); }
   .ycbr-read-btn:hover { background: rgba(212,175,55,0.35); border-color: #d4af37; box-shadow: 0 0 30px rgba(212,175,55,0.4); transform: translateY(-2px); }
 
-  .ycbr-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; z-index: 9999; display: none; }
+  .ycbr-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; height: 100dvh; background: #0a0a0a; z-index: 9999; display: none; }
   .ycbr-overlay.active { display: block; }
 
-  .ycbr-language-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0d0d0d 0%, #1a1a18 50%, #0d0d0d 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10002; transition: opacity 1s ease, visibility 1s ease; }
+  .ycbr-language-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; height: 100dvh; background: linear-gradient(135deg, #0d0d0d 0%, #1a1a18 50%, #0d0d0d 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10002; transition: opacity 1s ease, visibility 1s ease; }
   .ycbr-language-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
   .ycbr-language-overlay h1 { font-family: 'Cormorant Garamond', Georgia, serif !important; font-size: 2.6rem !important; font-weight: 700; color: #d4af37; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 50px; text-shadow: 0 0 40px rgba(212,175,55,0.3); }
   .ycbr-language-buttons { display: flex; gap: 30px; }
   .ycbr-lang-btn { background: rgba(212,175,55,0.1); border: 2px solid rgba(212,175,55,0.5); color: #d4af37; font-family: 'Cormorant Garamond', Georgia, serif !important; font-size: 1.7rem !important; font-weight: 600; letter-spacing: 3px; padding: 24px 48px; border-radius: 4px; cursor: pointer; transition: all 0.4s ease; }
   .ycbr-lang-btn:hover { background: rgba(212,175,55,0.25); border-color: #d4af37; box-shadow: 0 0 30px rgba(212,175,55,0.4); transform: translateY(-3px); }
 
-  .ycbr-listen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0d0d0d 0%, #1a1a18 50%, #0d0d0d 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 1s ease, visibility 1s ease; }
+  .ycbr-listen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; height: 100dvh; background: linear-gradient(135deg, #0d0d0d 0%, #1a1a18 50%, #0d0d0d 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10000; transition: opacity 1s ease, visibility 1s ease; }
   .ycbr-listen-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
   .ycbr-listen-overlay h1 { font-family: 'Cormorant Garamond', Georgia, serif !important; font-size: 3.6rem !important; font-weight: 700; color: #d4af37; text-transform: uppercase; letter-spacing: 6px; margin-bottom: 15px; text-shadow: 0 0 40px rgba(212,175,55,0.3); }
   .ycbr-listen-overlay p { font-family: 'Cormorant Garamond', Georgia, serif !important; font-size: 1.5rem !important; color: rgba(255,255,255,0.6); font-style: italic; margin-bottom: 50px; }
@@ -65,7 +65,7 @@
   .ycbr-image-zone img.visible { opacity: 1; }
 
   .ycbr-caption-zone { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 14px 40px 92px 40px; background: linear-gradient(180deg, #0a0a0a 0%, #100f0c 100%); position: relative; box-sizing: border-box; }
-  .ycbr-caption-text { font-family: 'Cormorant Garamond', Georgia, serif !important; font-size: clamp(1.15rem, 3.4vh, 2.5rem); line-height: 1.4; text-align: center; max-width: 1000px; color: #e8e8e8; opacity: 0; transform: translateY(15px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .ycbr-caption-text { font-family: 'Cormorant Garamond', Georgia, serif !important; font-size: clamp(1.15rem, 3.4vh, 2.5rem); line-height: 1.4; text-align: center; max-width: 1000px; width: 100%; min-width: 0; box-sizing: border-box; color: #e8e8e8; opacity: 0; transform: translateY(15px); transition: opacity 0.8s ease, transform 0.8s ease; }
   .ycbr-caption-text.visible { opacity: 1; transform: translateY(0); }
 
   .ycbr-closing-wrap { position: absolute; top: 14px; left: 40px; right: 40px; bottom: 92px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; pointer-events: none; }
@@ -87,29 +87,29 @@
   @media (max-width: 768px) {
     /* entry screen */
     .ycbr-origin-content { padding: max(20px, env(safe-area-inset-top)) 16px 20px; }
-    .ycbr-origin-tagline-top, .ycbr-origin-tagline-bottom { font-size: 1.15rem !important; }
-    .ycbr-read-btn { font-size: 0.7rem !important; padding: 12px 22px; }
+    .ycbr-origin-tagline-top, .ycbr-origin-tagline-bottom { font-size: 1.85rem !important; line-height: 1.3; }
+    .ycbr-read-btn { font-size: 0.95rem !important; padding: 16px 28px; letter-spacing: 2.5px; }
 
     /* language choice screen */
-    .ycbr-language-overlay h1 { font-size: 1.8rem !important; letter-spacing: 3px; padding: 0 24px; text-align: center; }
+    .ycbr-language-overlay h1 { font-size: 2.2rem !important; letter-spacing: 3px; padding: 0 24px; text-align: center; }
     .ycbr-language-buttons { flex-direction: column; gap: 18px; width: 100%; padding: 0 30px; box-sizing: border-box; }
-    .ycbr-lang-btn { width: 100%; box-sizing: border-box; padding: 20px 30px; font-size: 1.4rem !important; }
+    .ycbr-lang-btn { width: 100%; box-sizing: border-box; padding: 22px 30px; font-size: 1.6rem !important; }
 
     /* listen (play) screen */
-    .ycbr-listen-overlay h1 { font-size: 2rem !important; letter-spacing: 3px; padding: 0 24px; text-align: center; }
-    .ycbr-listen-overlay p { font-size: 1.05rem !important; padding: 0 30px; text-align: center; }
+    .ycbr-listen-overlay h1 { font-size: 2.4rem !important; letter-spacing: 3px; padding: 0 24px; text-align: center; }
+    .ycbr-listen-overlay p { font-size: 1.25rem !important; padding: 0 30px; text-align: center; }
     .ycbr-listen-btn { width: 105px; height: 105px; }
 
     /* playback stage: image + caption */
     .ycbr-image-zone { flex: 0 0 46%; }
     .ycbr-caption-zone { padding: 10px 18px calc(138px + env(safe-area-inset-bottom)) 18px; }
-    .ycbr-caption-text { font-size: clamp(1rem, 3.2vh, 1.6rem); }
+    .ycbr-caption-text { font-size: clamp(2.2rem, 6.5vh, 3.4rem); line-height: 1.3; }
 
     /* scrubber — was overlapping captions; now clears them with room to spare */
     .ycbr-scrubber { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) 16px; }
     .ycbr-scrubber-bar { height: 16px; }
     .ycbr-scrubber-bar::-webkit-slider-thumb { width: 26px; height: 26px; }
-    .ycbr-scrubber-time { font-size: 0.85rem !important; }
+    .ycbr-scrubber-time { font-size: 1rem !important; }
 
     /* pause / back controls — sit just above the scrubber, safe-area aware */
     .ycbr-control-btn { width: 48px; height: 48px; bottom: calc(80px + env(safe-area-inset-bottom)); font-size: 1.1rem !important; }
@@ -118,9 +118,9 @@
 
     /* closing screen */
     .ycbr-closing-wrap { left: 16px; right: 16px; bottom: calc(138px + env(safe-area-inset-bottom)); }
-    .ycbr-closing-text { font-size: clamp(0.9rem, 2vh, 1.2rem); }
-    .ycbr-closing-title { font-size: clamp(1.1rem, 2.8vh, 1.8rem); }
-    .ycbr-continue-link a { font-size: clamp(0.85rem, 1.8vh, 1.1rem); }
+    .ycbr-closing-text { font-size: clamp(1.05rem, 2.4vh, 1.4rem); }
+    .ycbr-closing-title { font-size: clamp(1.3rem, 3.2vh, 2.1rem); }
+    .ycbr-continue-link a { font-size: clamp(1rem, 2.2vh, 1.3rem); }
   }
 </style>
 
@@ -538,8 +538,10 @@
 
   // Some browser-recorded .webm files don't report duration until you seek near
   // the end once. This forces the real duration to resolve instead of Infinity.
+  // BENCH 22 GUARD: only run while paused. On iOS the metadata loads AFTER play
+  // begins, so the unguarded seek was jumping live audio to the end mid-playback.
   function fixDuration(aud) {
-    if (aud.duration === Infinity || isNaN(aud.duration)) {
+    if ((aud.duration === Infinity || isNaN(aud.duration)) && aud.paused) {
       aud.currentTime = 1e101;
       aud.addEventListener('durationchange', function onDur() {
         aud.removeEventListener('durationchange', onDur);
@@ -551,11 +553,13 @@
   audioES.addEventListener('loadedmetadata', function() { fixDuration(audioES); });
 
   setInterval(function() {
-    if (activeAudio.duration) {
+    if (activeAudio.duration && isFinite(activeAudio.duration)) {
       scrubberBar.max = activeAudio.duration;
       scrubberBar.value = activeAudio.currentTime;
       currentTimeEl.textContent = formatTime(activeAudio.currentTime);
       totalTimeEl.textContent = formatTime(activeAudio.duration);
+    } else {
+      currentTimeEl.textContent = formatTime(activeAudio.currentTime);
     }
   }, 200);
 
