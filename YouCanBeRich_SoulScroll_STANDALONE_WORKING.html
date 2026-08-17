@@ -1,3 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>You Can Be Rich / Puedes Ser Rico</title>
+</head>
+<body style="margin:0; padding:0;">
+<!-- BENCH 22 - PHONE CLOTHES PASS 8/17/26: added DOCTYPE/html/head/viewport wrapper (was missing entirely — root cause of desktop-width mobile rendering) + expanded mobile @media coverage for image zone, caption zone, scrubber, control buttons + safe-area-inset handling for notched phones. -->
 <!-- BENCH 21 - THE TOUR (You Can Be Rich) - THE FOREVER WELLS 8/16/26: pipes only, the ceremony's grand finale. EN: Soul Scroll introducing PWS platform (1). ES: the renamed sibling from the founder's upload batch. Both verified 206. The last Dropbox well on the site, sealed. -->
 <!--
   ============================================================
@@ -76,11 +85,42 @@
   .ycbr-scrubber-time { display: flex; justify-content: space-between; color: #888; font-size: 0.95rem !important; margin-top: 8px; }
 
   @media (max-width: 768px) {
-    .ycbr-origin-tagline { font-size: 2rem !important; }
-    .ycbr-language-overlay h1 { font-size: 2rem !important; letter-spacing: 3px; }
-    .ycbr-language-buttons { flex-direction: column; gap: 20px; }
-    .ycbr-listen-overlay h1 { font-size: 2.4rem !important; letter-spacing: 4px; }
-    .ycbr-closing-wrap { left: 16px; right: 16px; }
+    /* entry screen */
+    .ycbr-origin-content { padding: max(20px, env(safe-area-inset-top)) 16px 20px; }
+    .ycbr-origin-tagline-top, .ycbr-origin-tagline-bottom { font-size: 1.15rem !important; }
+    .ycbr-read-btn { font-size: 0.7rem !important; padding: 12px 22px; }
+
+    /* language choice screen */
+    .ycbr-language-overlay h1 { font-size: 1.8rem !important; letter-spacing: 3px; padding: 0 24px; text-align: center; }
+    .ycbr-language-buttons { flex-direction: column; gap: 18px; width: 100%; padding: 0 30px; box-sizing: border-box; }
+    .ycbr-lang-btn { width: 100%; box-sizing: border-box; padding: 20px 30px; font-size: 1.4rem !important; }
+
+    /* listen (play) screen */
+    .ycbr-listen-overlay h1 { font-size: 2rem !important; letter-spacing: 3px; padding: 0 24px; text-align: center; }
+    .ycbr-listen-overlay p { font-size: 1.05rem !important; padding: 0 30px; text-align: center; }
+    .ycbr-listen-btn { width: 105px; height: 105px; }
+
+    /* playback stage: image + caption */
+    .ycbr-image-zone { flex: 0 0 46%; }
+    .ycbr-caption-zone { padding: 10px 18px calc(138px + env(safe-area-inset-bottom)) 18px; }
+    .ycbr-caption-text { font-size: clamp(1rem, 3.2vh, 1.6rem); }
+
+    /* scrubber — was overlapping captions; now clears them with room to spare */
+    .ycbr-scrubber { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) 16px; }
+    .ycbr-scrubber-bar { height: 16px; }
+    .ycbr-scrubber-bar::-webkit-slider-thumb { width: 26px; height: 26px; }
+    .ycbr-scrubber-time { font-size: 0.85rem !important; }
+
+    /* pause / back controls — sit just above the scrubber, safe-area aware */
+    .ycbr-control-btn { width: 48px; height: 48px; bottom: calc(80px + env(safe-area-inset-bottom)); font-size: 1.1rem !important; }
+    .ycbr-pause-btn { right: 16px; }
+    .ycbr-back-btn { left: 16px; }
+
+    /* closing screen */
+    .ycbr-closing-wrap { left: 16px; right: 16px; bottom: calc(138px + env(safe-area-inset-bottom)); }
+    .ycbr-closing-text { font-size: clamp(0.9rem, 2vh, 1.2rem); }
+    .ycbr-closing-title { font-size: clamp(1.1rem, 2.8vh, 1.8rem); }
+    .ycbr-continue-link a { font-size: clamp(0.85rem, 1.8vh, 1.1rem); }
   }
 </style>
 
@@ -527,3 +567,5 @@
 
 })();
 </script>
+</body>
+</html>
