@@ -1,3 +1,14 @@
+/* 4 LAWS ACADEMY - pws-talent-v86.js - THE SLEEPING SHELF
+ * v86 (Bench 23, 8/21/26): the permanent sleeping shelf from /todos
+ * (key '4laws-sleeping') was invisible to the PWS Talent brain — items
+ * the founder put to sleep on /todos still appeared in MY DAY here,
+ * defeating the purpose of sleeping them. Root cause: this brain only
+ * knew the OLD daily-reset skip key ('4laws-skipped-YYYY-MM-DD'),
+ * while /todos v50.10 moved to a permanent undated key. Fix: _isSkipped
+ * now checks BOTH lists. One function, six render paths, all honor
+ * sleep instantly. Per-device (both pages read the same browser
+ * storage), same as the /todos design.
+ * Lineage: v85 THE AWAKENED MIND
 /* 4 LAWS ACADEMY - pws-talent-v85.js - THE AWAKENED MIND (Bench 17/C, 8/4/26)
  * v85: THE LENS — the untrapped doctrine, the four shadows named gently,
  * name-the-need, Ace's summons, the crisis floor — injected at the ONE
@@ -77,7 +88,20 @@
   function _saveSkipped(arr) {
     try { localStorage.setItem(_todayKey(), JSON.stringify(arr)); } catch(e) {}
   }
-  function _isSkipped(label) { return _loadSkipped().indexOf(label) !== -1; }
+  // v86 THE SLEEPING SHELF (Bench 23 port, 8/21/26): /todos' permanent
+  // sleep list ('4laws-sleeping') was invisible to this brain -- it only
+  // knew the old daily-reset skip key. Now _isSkipped checks BOTH: the
+  // daily skip (for single-day hides via the brain's own UI) AND the
+  // permanent sleeping shelf (for items the founder put to sleep on
+  // /todos). One function change; every filter in this file already
+  // calls _isSkipped, so all six render paths honor sleep instantly.
+  var _TD_SLEEP_KEY = '4laws-sleeping';
+  function _loadSleeping() {
+    try { return JSON.parse(localStorage.getItem(_TD_SLEEP_KEY) || '[]'); } catch(e) { return []; }
+  }
+  function _isSkipped(label) {
+    return _loadSkipped().indexOf(label) !== -1 || _loadSleeping().indexOf(label) !== -1;
+  }
   function _skipToday(label) {
     var arr = _loadSkipped();
     if (arr.indexOf(label) === -1) arr.push(label);
