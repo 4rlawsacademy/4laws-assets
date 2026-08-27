@@ -1,0 +1,898 @@
+<!-- BENCH 25 /pws v115.25 — THE FRAMED WALL: shell-only (same brain, no
+     JS upload). Founder's verdict on v115.24's full-bleed: "wide and
+     ugly." Target ratified: the /pws-trust look — a contained ~1400px
+     dark panel, dead center, art framing both sides. The measuring hand
+     now hangs exactly that: width = min(1400px, viewport), left edge
+     pinned to true center by measurement, re-checked at 400ms/1500ms
+     and on resize. Cumulative — paste THIS one. -->
+<!-- BENCH 25 /pws v115.24 — THE TRUE CENTER: shell-only (same brain,
+     no JS upload). The v115.23 calc breakout assumed a centered parent;
+     the Squarespace section parks LEFT, so the wall stayed off-center
+     on ultra-wide screens. Now a measuring hand pins #pwsRoot's left
+     edge to the true viewport edge at load, after Squarespace settles
+     (400ms/1500ms re-checks), and on every resize. Exact on any
+     monitor. Cumulative — paste THIS one. -->
+<!-- BENCH 25 /pws v115.23 — THE WIDE WALL: shell-only cut (same brain,
+     pws-talent-v91_4.js — NO JS upload needed). Full-bleed breakout on
+     #pwsRoot so the page centers on ultra-wide screens (Mac Studio)
+     instead of hugging the left of a narrow Squarespace section.
+     Cumulative — paste THIS one. -->
+<!-- BENCH 25 /pws v115.22 — THE POINTER: brain to pws-talent-v91_4.js
+     THE ARCHES OPEN THE RESTAURANT (the overlay flag is now a true
+     bucket: tap -> photo road, drop -> Doc B reads it). Upload JS FIRST,
+     confirm serves, then paste. -->
+<!-- BENCH 25 /pws v115.21 — THE POINTER: brain to pws-talent-v91_3.js
+     THE DRESSED BUCKET (the shelf mouth wears the dashed zone + caption,
+     matching /todos). Upload the JS FIRST, confirm serves, then paste. -->
+<!-- BENCH 25 /pws v115.20 — THE POINTER: brain flipped to
+     pws-talent-v91_2.js THE REACHABLE DOOR (overlay panel constrained to
+     the viewport so the ✕ can never leave the screen; footer scrolls its
+     own overflow; body locks behind an open overlay, unlocks on close).
+     DEPLOY PAIRED: upload pws-talent-v91_2.js FIRST (exact name),
+     confirm at raw.githubusercontent.com/4rlawsacademy/4laws-assets/main/pws-talent-v91_2.js,
+     THEN paste this shell. -->
+<!-- BENCH 25 /pws v115.19.1 — BENCH ERROR OWNED AND FIXED: v115.19's
+     script src said pws-talent-v91.js, but BD's fix renamed the brain to
+     pws-talent-v91_1.js — the shell called a name the CDN doesn't serve
+     and the page went dark. The pointer now matches the uploaded file
+     exactly. Nothing else changed. -->
+<!-- BENCH 25 /pws v115.19 — THE POINTER (deep night): brain flipped to
+     pws-talent-v91.js THE STAGE ENTRANCE — the storefront (duo badge,
+     capture row, recognition, Living Ledger) now stands at the head of
+     the Tools tile on the /pws stage itself, above the existing
+     "+ New Activity Tool" Foundry door. Talent Hub (/talent-1) shares
+     this same brain and inherits automatically — no separate cut
+     needed. DEPLOY PAIRED: upload pws-talent-v91.js to the repo FIRST
+     (exact filename), confirm it serves at
+     raw.githubusercontent.com/4rlawsacademy/4laws-assets/main/pws-talent-v91.js,
+     THEN paste this shell. Cumulative — paste THIS one. -->
+<!-- BENCH 25 /pws v115.14 — THE FLEET PASS (the founder's order, 8/21:
+     "get those TODO and TRUST pills rendering right." Three cures on this
+     shell, shell-only, v85.js untouched. (1) THE CHOOSER: the TODOS pill
+     sheds its plain-link skin — tap blooms the two doors (+ TODO ->
+     /todos#quick, SUPER TOOL -> /todos#forge; Bruno's workshop lives on
+     /todos, so this shell's chips TRAVEL — both roads live in todos
+     v51.13) with the KILL THE PROBLEM creed stacked above the chips
+     (v51.13 founder-ratified design); desktop hover = creed alone; armored
+     with guarded attach + DOMContentLoaded re-attach (idempotent flag).
+     (2) ONE TONGUE, THE LAST PATIENT: this shell had the same accident-of-
+     scope disease cured on /todos v51.12 and /pws-trust v12 — the creeds
+     live OUTSIDE #pwsRoot, the data-lang toggle never reached them, both
+     languages stacked. Cure in the /todos body-mirror dialect: a shell
+     watcher mirrors #pwsRoot[data-lang] onto body.lang-es (MutationObserver
+     + initial read from localStorage '4laws-lang'), and creed-scoped CSS
+     shows one tongue per render (EN default). (3) ELDER'S EYES PARITY: the
+     TRUST creed grows to house type (body 18->22px, title 15->18px) per
+     the font law and the v51.10 precedent; the new TODOS creed is born
+     elder-sized with Bruno + Ace at 60px. The yielding law extends:
+     pw-overlay-open hides the new TODOS creed too. UNCHANGED: TRUST pill
+     ask-first bloom (organs now armored in try/catch isolation).
+     Cumulative on v115.13 — paste THIS one. -->
+<!-- BENCH 23 /pws v115.13 — YIELDING COMPANIONS, THE WATCHER (Field List #4, founder's 8/19 phone catch: the TODOS/TRUST pill pair sat on the open Doc B room): companions exist to open rooms; once any overlay is open they have no job and must vanish, returning on close. This block owns the eleven rooms' markup but the brain rides the CDN (pws-talent-v85.js), so no open/close road can be wired from this paste — instead a watcher judges by ground truth: any room visibly open -> body.pw-overlay-open -> one CSS rule hides #pwsCompanions and #pwsTrustCreed. Instant via MutationObserver; 900ms sweep backstops. -->
+<!-- BENCH 21 /pws v115.12 — THE HEADER SEATS (fleet pass): Winston + the Find ME spark adopted into #pwsTopbarDoors beside the native Doc B button; corners freed for the two buckles -->
+<!-- BENCH 21 /pws v115.11 — THE SECOND BUCKLE: + TODO becomes the TODOS buckle (blue accents, EARN AS YOU GROW) -->
+<!-- BENCH 21 /pws v115.10 — THE VISIBLE BLOOM (BD11 catch): ring flares + glow carry the ask; storage-lockout closed -->
+<!-- BENCH 21 /pws v115.9 — THE BUCKLE BUTTON: the TRUST pill becomes the heart-jeweled emblem (center TRUST, subtitle DRAW THE LINE); creed, ask-first flag, and companion-pair geometry kept -->
+<!-- BENCH 21 /pws v115.8 — DRAW THE LINE (8/15/26): THE CREED joins the companion pair on its home page — approach TRUST and the doctrine whispers in gold (hover; rides the first-tap bloom on phones). Creed v2: the command leads, the revelation's verbs carry the body, 'for the light of all' closes -->
+<!-- 4 LAWS ACADEMY - /pws - pws_TALENT_v115_7_ASK_FIRST (Bench 20, 8/15/26; v115.7 = founder's human correction - never kidnap the curious: first tap BLOOMS the pill (YOUR AI COMPANION ->) and WAITS; the bloomed pill is the question - tap again to go, ignore and it folds back to TRUST after 5s, no trip taken, name learned; flag set on reveal so every later tap is instant; v115.6 auto-nav retired; v115.5.1 = BD11 wording catch - tooltip no longer wears the retired Trust Repair phrase; now Your AI Companion - Trust Mode; v115.5 = founder's correction - Doc B has doors everywhere; the buried breakthrough is the AI COMPANION (in PWS Trust's Limits country). The second pill is now TRUST -> straight to /ai-companion, his exact words ('call it trust'); ES CONFIANZA ->; v115.4 = founder's priority ruling - the saw and the companion outrank the decorations: + TODO and DOC B now ride together as a quiet pill pair, center-bottom, always in reach (DOC B fires the existing pwsOpenDocB); sparkle and Winston keep their corners for now - their relocation lives in their own CDN files, banked; v115.3 = My Day rows stack on mobile - dead-on-touch drag handle hidden, num+arrows as slim header line, body takes full width, inputs/selects/textareas capped at the glass, page overflow-x hidden; founder's half-visible-item screenshot answered; v115.2 = the + TODO pill halved (19px/13x28 -> 13px/7x15) - discovered tools don't shout, and the bottom shelf (sparkle / TODO / Winston) stops crowding the screen's working land; v115.1 = the topbar door to /pws-trust renamed 'TR ->' both languages - the old 'Trust Repair' label named a DIFFERENT page (/trust-repair) than its destination (the Trust Station); terse per founder's wording law, tooltip carries the full name; full renaming pass still banked): founder's phone walk convicted the topbar - ES, STUDIO's tail, and Doc B ran off the east edge on mobile (doors-always-visible law broken). The right cluster now wears id pwsTopbarDoors and a shell-scoped media rule gives it a full-width wrapping second row on <=768px, every door thumb-sized and on-screen; logo trimmed to 40px. Shell-only; pws-talent.css and v85.js untouched. Lineage: v114 THE_RUNWAY (Bench 20, 8/6/26): the "+ TODO ->" quick-capture button now carries #quick, and /todos v49 reads it — arrival auto-opens My Todos and lands the thumb at CHAINSAW / + NEW TODO, one tap from either saw. Deploy PAIRED with todos v49 (the hash is harmless to v48, but the landing only works once v49 is live). Lineage: v113 THE_OPEN_DOOR (Bench 20, 8/6/26): Player One's field test answered — a fixed gold "+ TODO ->" quick-capture button, bottom-center, thumb-reachable on any phone, always visible, straight to /todos; the accordion's unlabeled "-> Smart Day" door renamed "MY TODOS ->" so it says what it is. Shell-only cut; pws-talent-v85.js untouched. Lineage: v112 THE_AWAKENED_SHELL (Bench 17/C, 8/4/26): pointer to v85 — Doc B carries THE LENS. Lineage: v111 (B-front, 8/4/26): pointer flipped to pws-talent-v84.js - the Nerve Endings brain: Find ME chimes on done, the Gauntlet hums while Doc B cogitates. Lineage: v110 THE_HONEST_CLOCK SHELL (8/3/26): the externalization staged two weeks ago finally completes - the 383KB inline brain moves to pws-talent-v83.js on the CDN, carrying the three Bench 17 fixes (no 99:99 exile; mobile arrow reorder in the drag's own _manualOrder dialect; cascade fourth-tier label credit with self-healing cids). This shell is the skeleton plus pointers. Lineage: v109 TRUE_CLEAR + winston badge. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/pws-talent.css">
+
+<div translate="no" id="pwsRoot" data-lang="en">
+  <div class="pws-redirect" id="pwsRedirect">
+    <div class="pws-redirect-msg en">Starting your day requires signing in first.</div>
+    <div class="pws-redirect-msg es">Para comenzar tu d&#237;a necesitas iniciar sesi&#243;n primero.</div>
+    <a href="/studio" class="pws-redirect-link"><span class="en">Go to Studio</span><span class="es">Ir al Estudio</span></a>
+  </div>
+  <div class="pws-topbar">
+    <a href="/studio" class="pws-topbar-logo">
+      <img src="https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/a2eea043-07f6-47c0-8b79-85b1f4b886da/4LAWS+logo+print.jpg?format=1000w" alt="4 LAWS Academy" style="height:56px;width:auto;vertical-align:middle;filter:drop-shadow(0 0 10px rgba(200,168,75,0.55)) brightness(1.08);border-radius:3px;">
+    </a>
+    <div class="pws-topbar-title"><span class="en">Personal Work Station</span><span class="es">Estaci&#243;n de Trabajo</span></div>
+    <div id="pwsTopbarDoors" style="display:flex;align-items:center;gap:10px;">
+      <div class="pws-lang-toggle">
+        <button class="pws-lang-btn active" id="pwsLangEn" onclick="pwsSetLang('en')">EN</button>
+        <button class="pws-lang-btn" id="pwsLangEs" onclick="pwsSetLang('es')">ES</button>
+      </div>
+      <a href="https://www.4lawsacademy.com/pws-trust" target="_blank" rel="noopener noreferrer" class="pws-modify-btn" style="font-size:18px !important;letter-spacing:0.14em;padding:5px 12px;border-color:rgba(200,168,75,0.3);color:rgba(200,168,75,0.7);" title="Trust Mode — PWS Trust Station">TR &rarr;</a>
+      <a href="/studio" target="_blank" rel="noopener noreferrer" class="pws-modify-btn" style="font-size:18px !important;letter-spacing:0.14em;padding:5px 12px;border-color:rgba(200,168,75,0.3);color:rgba(200,168,75,0.7);" title="Go to Studio">STUDIO</a>
+      <button class="pws-docb-btn" onclick="pwsOpenDocB()"><div class="pws-docb-dot"></div><span class="en">Doc B</span><span class="es">Doc B</span></button>
+      <span id="pwSeats"></span>
+    </div>
+  </div>
+  <style>
+    /* ── BENCH 25 v115.23 THE WIDE WALL: on ultra-wide screens (Mac
+       Studio), the Squarespace section holding this code block is
+       narrower than the viewport and parks LEFT, so the whole dark
+       page hung off-center while .pws-page centered correctly inside
+       it. This full-bleed breakout makes #pwsRoot span the true
+       viewport regardless of the section's width — the felt fills
+       edge to edge, and .pws-page (max-width 860, margin auto)
+       centers against the real screen. Mobile unaffected (100vw
+       there equals what it already had). ── */
+    /* v115.25 THE FRAMED WALL: the founder's verdict on full-bleed —
+       "wide and ugly." The beauty standard is /pws-trust: a contained
+       dark panel ~1400px, centered, with the site's art framing both
+       sides. The measuring hand below hangs exactly that painting,
+       dead center, on any monitor — regardless of where Squarespace
+       parks the section. */
+    html, body { overflow-x: hidden; }
+
+    /* BENCH 20 v115 THE FOUR DOORS — doors-always-visible law, mobile.
+       The right cluster (EN/ES · Trust Repair · STUDIO · Doc B) was one
+       rigid row; on phones it ran off the east edge, hiding ES and Doc B
+       entirely. On ≤768px the cluster now takes its own full-width
+       wrapping row beneath the logo, every door shrunk to thumb size and
+       none ever off-screen. Shell-scoped; pws-talent.css untouched. */
+    @media (max-width: 768px) {
+      #pwsRoot .pws-topbar { flex-wrap: wrap; height: auto; padding: 8px 10px; row-gap: 6px; }
+      #pwsRoot #pwsTopbarDoors { flex: 1 1 100%; flex-wrap: wrap; justify-content: center; gap: 6px; row-gap: 6px; }
+      #pwsRoot #pwsTopbarDoors .pws-modify-btn { font-size: 13px !important; padding: 4px 8px !important; letter-spacing: 0.08em; white-space: nowrap; }
+      #pwsRoot #pwsTopbarDoors .pws-docb-btn { font-size: 13px !important; padding: 4px 10px !important; }
+      #pwsRoot #pwsTopbarDoors .pws-lang-btn { font-size: 13px !important; padding: 4px 8px !important; }
+      #pwsRoot .pws-topbar-logo img { height: 40px !important; }
+
+      /* v115.3 THE FULL PLATE — My Day rows rode one rigid line
+         ([drag][num][arrows][wide body]) and the body ran off the east
+         edge: DONE/MISSED clipped, LAUNCH half-gone, note boxes bleeding.
+         The brain's own header says HTML5 drag never fires on touch, so
+         the ≡ handle is dead weight here — hidden; number + ▲▼ become a
+         slim header line and the body takes the full plate beneath. */
+      #pwsRoot .pws-plan-seq-row { display: flex !important; flex-wrap: wrap !important; align-items: center; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
+      #pwsRoot .pws-drag-handle { display: none !important; }
+      #pwsRoot .pws-plan-seq-num { flex: 0 0 auto; }
+      #pwsRoot .pws-seq-arrows { flex: 0 0 auto; display: flex; flex-direction: row; gap: 8px; }
+      #pwsRoot .pws-plan-seq-body { flex: 1 1 100% !important; min-width: 0 !important; max-width: 100% !important; box-sizing: border-box; }
+      #pwsRoot .pws-plan-seq-body textarea,
+      #pwsRoot .pws-plan-seq-body select,
+      #pwsRoot .pws-plan-seq-body input { width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
+      #pwsRoot .pws-plan-seq-body .pws-day-launch-btn { max-width: 100%; }
+      #pwsRoot .pws-page { overflow-x: hidden; }
+    }
+  /* BENCH 21 BD11 fix - THE VISIBLE BLOOM: the ask-first answer paints on
+   layers the eye can see (ring flares cream, emblem glows gold), not on
+   hidden spans and covered backgrounds. */
+#pwsTrustFab.trust-bloom { filter: drop-shadow(0 0 12px rgba(200,168,75,0.95)) drop-shadow(0 3px 10px rgba(0,0,0,0.6)) !important; }
+#pwsTrustFab.trust-bloom svg ellipse:last-of-type { stroke: #f0e6cc; stroke-width: 3px; }
+/* BENCH 21 - THE HEADER SEATS (fleet pass): docked companions wear header
+   clothes; parent-scoped so the spark's class rewrites can never undress it. */
+#pwSeats { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; vertical-align: middle; }
+#pwSeats .fm-emblem { position: static !important; width: 32px !important; height: 32px !important; line-height: 32px !important; font-size: 17px !important; bottom: auto !important; left: auto !important; }
+#pwSeats #wnBadge { position: static !important; right: auto !important; bottom: auto !important; z-index: auto !important; }
+#pwSeats #wnBadge .wnb-chip { display: none !important; }
+#pwSeats #wnBadge .wnb-whisper { display: none !important; }
+#pwSeats #wnBadge .wnb-face { width: 32px !important; height: 32px !important; }
+</style>
+  <div class="pws-page">
+    <div class="pws-welcome" id="pwsWelcome"><span class="en">Your station is ready.</span><span class="es">Tu estaci&#243;n est&#225; lista.</span></div>
+    <div class="pws-follow-title"><span class="en">Follow the 4 LAWS</span><span class="es">Sigue Las 4 LEYES</span></div>
+    <!-- PWS BUCKLE -->
+
+<div id="pwsBuckleRoot">
+  <div class="pws-rule"></div>
+  <a class="pws-buckle-link" href="/pws" target="_blank" rel="noopener noreferrer" title="Personal Work Station">
+    <svg viewBox="0 0 140 56" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="70" cy="28" rx="67" ry="25" fill="#040608" stroke="#c8a84b" stroke-width="2"/>
+      <ellipse cx="70" cy="28" rx="60" ry="18" fill="none" stroke="rgba(200,168,75,0.28)" stroke-width="0.75"/>
+      <circle cx="11" cy="16" r="2.5" fill="rgba(200,168,75,0.6)"/>
+      <circle cx="129" cy="16" r="2.5" fill="rgba(200,168,75,0.6)"/>
+      <circle cx="11" cy="40" r="2.5" fill="rgba(200,168,75,0.6)"/>
+      <circle cx="129" cy="40" r="2.5" fill="rgba(200,168,75,0.6)"/>
+      <polygon points="70,2 73,7 70,12 67,7" fill="rgba(200,168,75,0.7)"/>
+      <text x="70" y="34" text-anchor="middle" font-family="Cinzel,serif" font-size="18" font-weight="900" fill="#f0e6cc" letter-spacing="4">PWS</text>
+    </svg>
+  </a>
+  <div class="pws-rule pws-rule-right"></div>
+</div>
+    <div class="pws-now-hero" id="pwsNowHero">
+      <div class="pws-now-eyebrow"><span class="en">Right Now</span><span class="es">Ahora Mismo</span></div>
+      <div style="display:flex;align-items:center;gap:20px;">
+        <div style="flex:1;">
+          <div class="pws-now-time" id="pwsNowTime">--:--</div>
+          <div class="pws-now-activity" id="pwsNowActivity"></div>
+          <div id="pwsNowChem"></div>
+          </div>
+        <button id="pwsECJewel" style="flex-shrink:0;background:transparent;border:none;cursor:pointer;padding:0;">
+          <svg viewBox="0 0 110 56" width="110" height="56" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="2" width="106" height="52" rx="2" fill="#8B0000"/>
+            <rect x="5" y="5" width="100" height="46" rx="1" fill="none" stroke="#c8a84b" stroke-width="0.75"/>
+            <rect x="2" y="2" width="106" height="52" rx="2" fill="none" stroke="#c8a84b" stroke-width="1.2"/>
+            <line x1="5" y1="5" x2="14" y2="5" stroke="#c8a84b" stroke-width="0.75"/>
+            <line x1="5" y1="5" x2="5" y2="14" stroke="#c8a84b" stroke-width="0.75"/>
+            <line x1="105" y1="5" x2="96" y2="5" stroke="#c8a84b" stroke-width="0.75"/>
+            <line x1="105" y1="5" x2="105" y2="14" stroke="#c8a84b" stroke-width="0.75"/>
+            <line x1="5" y1="51" x2="14" y2="51" stroke="#c8a84b" stroke-width="0.75"/>
+            <line x1="5" y1="51" x2="5" y2="42" stroke="#c8a84b" stroke-width="0.75"/>
+            <line x1="105" y1="51" x2="96" y2="51" stroke="#c8a84b" stroke-width="0.75"/>
+            <line x1="105" y1="51" x2="105" y2="42" stroke="#c8a84b" stroke-width="0.75"/>
+            <polygon points="55,10 56.2,12.8 59,13 57,15 57.6,18 55,16.5 52.4,18 53,15 51,13 53.8,12.8" fill="#c8a84b" opacity="0.85"/>
+            <text x="55" y="34" font-family="Cinzel,serif" font-size="15" font-weight="900" fill="#f0e6cc" text-anchor="middle" letter-spacing="5">EC</text>
+            <text x="55" y="45" font-family="Cinzel,serif" font-size="5.5" font-weight="600" fill="rgba(200,168,75,0.75)" text-anchor="middle" letter-spacing="2">ENTERTAINMENT CENTER</text>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div id="pwsTrustScoreCascade" style="margin-bottom:28px;"></div>
+
+    <div class="pws-accordion-card" id="pwsAccordionTalent">
+      <div class="pws-accordion-header" id="pwsAccordionTalentHdr" style="background-image:url('https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/1782501241439-3NPGCJL9KWVAR684GK8G/unsplash-image-OMKTcUnjPfU.jpg?format=1000w')">
+        <div class="pws-accordion-header-content">
+          <div class="pws-accordion-titles">
+            <div class="pws-accordion-section"><span class="en">My Projects</span><span class="es">Mis Proyectos</span></div>
+            <div class="pws-accordion-law"><span class="en">Law of Talent</span><span class="es">Ley del Talento</span></div>
+            <div class="pws-accordion-verb"><span class="en">Create</span><span class="es">Crear</span></div>
+            <div class="pws-accordion-status" id="pwsStatusTalent">—</div>
+          </div>
+          <div class="pws-accordion-chevron">▾</div>
+        </div>
+      </div>
+      <div class="pws-accordion-body">
+        <div class="pws-accordion-body-inner">
+          <div id="pwsProjectCard">
+            <div style="padding:28px 8px 20px;text-align:center;">
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:rgba(240,230,204,0.55);margin-bottom:24px;line-height:1.5;">
+                <span class="en">Chosen talent. Not forced.<br>Discover what truly turns you on.</span>
+                <span class="es">Talento elegido. No forzado.<br>Descubre lo que realmente te apasiona.</span>
+              </div>
+              <a href="/talent-1" style="display:block;width:100%;font-family:'Cinzel',serif;font-size:14px;letter-spacing:0.18em;text-transform:uppercase;color:#040608;background:#c8a84b;border:none;border-radius:3px;padding:16px 20px;cursor:pointer;text-decoration:none;box-sizing:border-box;margin-bottom:10px;">
+                <span class="en">&#9654; Open My Projects</span>
+                <span class="es">&#9654; Abrir Centro de Talento</span>
+              </a>
+              <div id="pwsGatewayProjectPreview" style="margin-top:16px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pws-accordion-card" id="pwsAccordionRespect">
+      <div class="pws-accordion-header" id="pwsAccordionRespectHdr" style="background-image:url('https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/1775864870210-8H43F3WEKJZJ0S4L4MHM/unsplash-image-zeqWK0n5PNM.jpg?format=1000w')">
+        <div class="pws-accordion-header-content">
+          <div class="pws-accordion-titles">
+            <div class="pws-accordion-section"><span class="en">My Contributions</span><span class="es">Mis Contribuciones</span></div>
+            <div class="pws-accordion-law"><span class="en">Law of Respect</span><span class="es">Ley del Respeto</span></div>
+            <div class="pws-accordion-verb"><span class="en">Give Importance</span><span class="es">Dar Importancia</span></div>
+            <div class="pws-accordion-status" id="pwsStatusRespect">—</div>
+          </div>
+          <div class="pws-accordion-chevron">▾</div>
+        </div>
+      </div>
+      <div class="pws-accordion-body">
+        <div class="pws-accordion-body-inner">
+          <div class="pws-section-header"><div></div><div></div></div>
+          <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:12px;">
+            <span id="pwsObsSaved" style="font-family:'Cinzel',serif;font-size:9px !important;color:rgba(200,168,75,0.4);letter-spacing:.12em;"></span>
+            <button class="pws-modify-btn" onclick="pwsOpenModify('station')"><span class="en">Modify</span><span class="es">Modificar</span></button>
+          </div>
+          <div class="pws-loading" style="display:none;"><div class="pws-loading-dot"></div><div class="pws-loading-dot"></div><div class="pws-loading-dot"></div><span style="font-family:'Cormorant Garamond',serif;font-size:15px !important;font-style:italic;color:rgba(240,230,204,0.3);margin-left:8px;">Loading...</span></div>
+          <div class="pws-cards-grid" id="pwsObsCards"></div>
+          <div style="padding:0 0 4px;"><div id="pwsContribCards"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pws-accordion-card" id="pwsAccordionResponsibility">
+      <div class="pws-accordion-header" id="pwsAccordionResponsibilityHdr" style="background-image:url('https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/1781988264043-5K4FAUBOBQ5XLM2ELF8Y/unsplash-image-Mf23RF8xArY.jpg?format=750w')">
+        <div class="pws-accordion-header-content">
+          <div class="pws-accordion-titles">
+            <div class="pws-accordion-section"><span class="en">My Tools &amp; Entertainment</span><span class="es">Mis Herramientas y Entretenimiento</span></div>
+            <div class="pws-accordion-law"><span class="en">Law of Responsibility</span><span class="es">Ley de Responsabilidad</span></div>
+            <div class="pws-accordion-verb"><span class="en">Earn</span><span class="es">Ganar</span></div>
+            <div class="pws-accordion-status" id="pwsStatusResponsibility">—</div>
+          </div>
+          <div class="pws-accordion-chevron">▾</div>
+        </div>
+      </div>
+      <div class="pws-accordion-body">
+        <div class="pws-accordion-body-inner">
+          <div class="pws-section-header"><div></div><div></div></div>
+          <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:12px;">
+            <span id="pwsToolsSaved" style="font-family:'Cinzel',serif;font-size:9px !important;color:rgba(200,168,75,0.4);letter-spacing:.12em;"></span>
+            <button class="pws-plan-day-btn" id="pwsAddTalentBtn"><span class="en">+ Talent Tool</span><span class="es">+ Herramienta de Talento</span></button>
+            <button class="pws-modify-btn" onclick="pwsOpenModify('tools')"><span class="en">Modify</span><span class="es">Modificar</span></button>
+            <button class="pws-start-fresh-btn" id="pwsStartFreshBtn"><span class="en">Start Fresh</span><span class="es">Empezar de Nuevo</span></button>
+          </div>
+          <div class="pws-loading" style="display:none;"><div class="pws-loading-dot"></div><div class="pws-loading-dot"></div><div class="pws-loading-dot"></div><span style="font-family:'Cormorant Garamond',serif;font-size:15px !important;font-style:italic;color:rgba(240,230,204,0.3);margin-left:8px;">Loading...</span></div>
+          <div class="pws-cards-grid" id="pwsToolCards"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCORDION CARD 4: Law of Limits — My Day (open) -->
+    <div class="pws-accordion-card" id="pwsAccordionLimits">
+      <div class="pws-accordion-header" id="pwsAccordionLimitsHdr" style="background-image:url('https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/1782499825092-7RAMOM7AZYS24VQPVUI2/unsplash-image-dvXGnwnYweM.jpg?format=1000w')">
+        <div class="pws-accordion-header-content">
+          <div class="pws-accordion-titles">
+            <div class="pws-accordion-section"><span class="en">My Day</span><span class="es">Mi Día</span></div>
+            <div class="pws-accordion-law"><span class="en">Law of Limits</span><span class="es">Ley de Límites</span></div>
+            <div class="pws-accordion-verb"><span class="en">Obey</span><span class="es">Obedecer</span></div>
+            <div class="pws-accordion-status" id="pwsStatusLimits">—</div>
+          </div>
+          <div class="pws-accordion-chevron">▾</div>
+        </div>
+      </div>
+      <div class="pws-accordion-body">
+        <div class="pws-accordion-body-inner">
+          <div class="pws-section-header">
+            <div></div>
+            <div style="display:flex;gap:8px;align-items:center;"></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(200,168,75,0.15);">
+            <a class="pws-plan-day-btn" href="/todos" style="text-decoration:none;display:inline-block;"><span class="en">Plan My Day</span><span class="es">Planea Mi D&#237;a</span></a>
+            <button class="pws-modify-btn" onclick="pwsOpenModify('day')"><span class="en">Modify</span><span class="es">Modificar</span></button>
+          </div>
+          <div class="pws-day-list" id="pwsDayList"></div>
+          <div id="pwsDayTodos"></div>
+          <div class="pws-add-todo-row" id="pwsAddTodoRow">
+            <a href="/todos" style="text-decoration:none;display:inline-block;" class="pws-add-todo-btn"><span class="en">MY TODOS &#8594;</span><span class="es">MIS TAREAS &#8594;</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <div class="pws-docb-overlay" id="pwsDocBOverlay">
+    <div class="pws-docb-panel">
+      <div class="pws-docb-panel-header">
+        <div class="pws-docb-panel-title"><span class="en">Doc B Co-Pilot</span><span class="es">Doc B Co-Piloto</span></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="pws-voice-btn" id="pwsDocBVoiceBtn style="width:32px;height:32px;font-size:16px !important;">&#128266;</button>
+          <button class="pws-docb-close" onclick="pwsCloseDocB()">&#x2715;</button>
+        </div>
+      </div>
+      <!-- BUILD 3: Inline tool shortcuts (data-action delegation, no inline onclick) -->
+      <div id="pwsDocBShortcuts" style="display:flex;gap:6px;padding:8px 14px 0;flex-wrap:wrap;">
+        <button data-docb-shortcut="links" style="font-family:'Cinzel',serif;font-size:13px !important;letter-spacing:0.1em;color:rgba(200,168,75,0.7);background:transparent;border:1px solid rgba(200,168,75,0.2);border-radius:3px;padding:4px 10px;cursor:pointer;">&#128279; Links</button>
+        <button data-docb-shortcut="remind" style="font-family:'Cinzel',serif;font-size:13px !important;letter-spacing:0.1em;color:rgba(200,168,75,0.7);background:transparent;border:1px solid rgba(200,168,75,0.2);border-radius:3px;padding:4px 10px;cursor:pointer;">&#128276; Reminders</button>
+        <button data-docb-shortcut="cash" style="font-family:'Cinzel',serif;font-size:13px !important;letter-spacing:0.1em;color:rgba(200,168,75,0.7);background:transparent;border:1px solid rgba(200,168,75,0.2);border-radius:3px;padding:4px 10px;cursor:pointer;">&#128176; Cash</button>
+        <button data-docb-shortcut="todos" style="font-family:'Cinzel',serif;font-size:13px !important;letter-spacing:0.1em;color:rgba(200,168,75,0.7);background:transparent;border:1px solid rgba(200,168,75,0.2);border-radius:3px;padding:4px 10px;cursor:pointer;">&#128203; Todos</button>
+      </div>
+      <div class="pws-docb-feed" id="pwsDocBFeed"></div>
+      <!-- BUILD 3: Image preview row -->
+      <div id="pwsDocBImgPreview" style="display:none;align-items:center;gap:8px;padding:6px 14px;background:rgba(200,168,75,0.06);border-top:1px solid rgba(200,168,75,0.12);flex-shrink:0;">
+        <img id="pwsDocBImgThumb" src="" alt="screenshot" style="width:48px;height:36px;object-fit:cover;border-radius:3px;border:1px solid rgba(200,168,75,0.3);">
+        <div style="font-family:'Cinzel',serif;font-size:13px !important;letter-spacing:0.12em;color:rgba(200,168,75,0.7);flex:1;"><span class="en">Screenshot ready</span><span class="es">Captura lista</span></div>
+        <button id="pwsDocBImgClear" style="background:transparent;border:none;color:rgba(240,230,204,0.35);cursor:pointer;font-size:16px !important;padding:0 4px;line-height:1;">&#x2715;</button>
+      </div>
+      <input type="file" id="pwsDocBCamInput" accept="image/*" style="display:none;">
+      <div class="pws-docb-input-row">
+        <button class="pws-cam-btn" id="pwsDocBCamBtn" title="Share a photo" onclick="document.getElementById('pwsDocBCamInput').click()" style="width:36px;height:36px;font-size:16px !important;">&#128247;</button>
+        <textarea class="pws-docb-textarea" id="pwsDocBInput" placeholder="Talk to Doc B..." rows="1"></textarea>
+        <button class="pws-mic-btn" id="pwsDocBMic" onclick="pwsToggleMic()"><div class="pws-mic-icon"></div></button>
+        <button class="pws-docb-send-btn" onclick="pwsSendDocB()"><div class="pws-send-arrow"></div></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pws-unlock-overlay" id="pwsUseOverlay">
+    <div class="pws-unlock-panel" id="pwsUsePanel">
+      <div class="pws-unlock-header">
+        <div class="pws-unlock-title" id="pwsUseTitle"><span class="en">Activate</span><span class="es">Activar</span></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="pws-voice-btn" id="pwsVoiceBtn" title="Toggle voice">&#128266;</button>
+          <button class="pws-use-pause-btn" id="pwsUsePauseBtn"><span class="en">&#9646;&#9646; Pause</span><span class="es">&#9646;&#9646; Pausa</span></button>
+          <button class="pws-docb-close" id="pwsUseCloseBtn2">&#x2715;</button>
+        </div>
+      </div>
+      <div class="pws-docb-feed" id="pwsUseFeed"></div>
+      <div class="pws-use-footer" id="pwsUseFooter" style="display:none;"></div>
+      <div id="pwsToolPanelZone" style="flex-shrink:0;overflow-y:auto;max-height:260px;padding:0 16px 4px;"></div>
+      <div class="pws-use-timer-bar" id="pwsUseTimerBar" style="display:none;">
+        <div class="pws-timer-display" id="pwsTimerDisplay">0:00</div>
+        <div class="pws-timer-pb-label" id="pwsTimerPbLabel"></div>
+      </div>
+      <input type="file" id="pwsCamInput" accept="image/*" style="display:none;">
+      <div class="pws-use-img-preview" id="pwsUseImgPreview">
+        <img class="pws-use-img-thumb" id="pwsUseImgThumb" src="" alt="screenshot">
+        <div class="pws-use-img-label"><span class="en">Screenshot ready</span><span class="es">Captura lista</span></div>
+        <button class="pws-use-img-clear" id="pwsUseImgClear">&#x2715;</button>
+      </div>
+      <div class="pws-docb-input-row">
+        <button class="pws-mic-btn" id="pwsUseMic" onclick="pwsToggleUseMic()"><div class="pws-mic-icon"></div></button>
+        <textarea class="pws-docb-textarea" id="pwsUseInput" rows="1"></textarea>
+        <button class="pws-cam-btn" id="pwsCamBtn" title="Share a photo" onclick="document.getElementById('pwsCamInput').click()">&#128247;</button>
+        <button class="pws-docb-send-btn" onclick="pwsSendUse()"><div class="pws-send-arrow"></div></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pws-unlock-overlay" id="pwsUnlockOverlay">
+    <div class="pws-unlock-panel">
+      <div class="pws-unlock-header">
+        <div class="pws-unlock-title" id="pwsUnlockTitle"><span class="en">Unlock Tool</span><span class="es">Desbloquear Herramienta</span></div>
+        <button class="pws-docb-close" onclick="pwsCloseUnlock()">&#x2715;</button>
+      </div>
+      <div class="pws-docb-feed" id="pwsUnlockFeed"></div>
+      <div class="pws-docb-input-row">
+        <textarea class="pws-docb-textarea" id="pwsUnlockInput" rows="1"></textarea>
+        <button class="pws-mic-btn" id="pwsUnlockMic" onclick="pwsToggleUnlockMic()"><div class="pws-mic-icon"></div></button>
+        <button class="pws-docb-send-btn" onclick="pwsSendUnlock()"><div class="pws-send-arrow"></div></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pws-docb-overlay" id="pwsModifyOverlay">
+    <div class="pws-docb-panel">
+      <div class="pws-docb-panel-header">
+        <div class="pws-docb-panel-title" id="pwsModifyTitle"><span class="en">Update with Doc B</span><span class="es">Actualizar con Doc B</span></div>
+        <button class="pws-docb-close" onclick="pwsCloseModify()">&#x2715;</button>
+      </div>
+      <div class="pws-docb-feed" id="pwsModifyFeed"></div>
+      <div class="pws-docb-input-row">
+        <textarea class="pws-docb-textarea" id="pwsModifyInput" placeholder="Tell Doc B what changed..." rows="1"></textarea>
+        <button class="pws-mic-btn" id="pwsModifyMic" onclick="pwsToggleModifyMic()"><div class="pws-mic-icon"></div></button>
+        <button class="pws-docb-send-btn" onclick="pwsSendModify()"><div class="pws-send-arrow"></div></button>
+      </div>
+      <div class="pws-modify-actions" id="pwsModifyActions" style="display:none;">
+        <button class="pws-modify-save-btn" onclick="pwsSaveModify()"><span class="en">Save changes</span><span class="es">Guardar cambios</span></button>
+        <button class="pws-modify-discard-btn" onclick="pwsCloseModify()"><span class="en">Discard</span><span class="es">Descartar</span></button>
+      </div>
+    </div>
+  </div>
+
+  <a href="/pws" style="display:none;" id="pwsSelfLink"></a>
+
+
+
+  <div class="pws-invite-overlay" id="pwsInviteOverlay">
+    <div class="pws-invite-panel">
+      <div class="pws-invite-header">
+        <div class="pws-invite-title"><span class="en">Invite My Family</span><span class="es">Invitar a Mi Familia</span></div>
+        <button class="pws-invite-close" onclick="pwsCloseInvite()">&#x2715;</button>
+      </div>
+      <div class="pws-invite-body">
+        <div>
+          <div class="pws-invite-field-label"><span class="en">Their Name</span><span class="es">Su Nombre</span></div>
+          <input type="text" class="pws-invite-input" id="pwsInviteName" placeholder="First name" />
+        </div>
+        <div>
+          <div class="pws-invite-field-label"><span class="en">Phone Number</span><span class="es">N&#250;mero de Tel&#233;fono</span></div>
+          <input type="tel" class="pws-invite-input" id="pwsInvitePhone" placeholder="+1 (555) 000-0000" />
+        </div>
+        <div>
+          <div class="pws-invite-field-label"><span class="en">Who are you inviting?</span><span class="es">&#191;A qui&#233;n invitas?</span></div>
+          <select class="pws-invite-select" id="pwsInviteRelationship">
+            <option value="">-- Select --</option>
+            <option value="kid">Kid</option>
+            <option value="young_adult">Young Adult</option>
+            <option value="couple">Partner / Couple</option>
+            <option value="family">Family Member</option>
+          </select>
+        </div>
+        <div>
+          <div class="pws-invite-field-label"><span class="en">Message Preview</span><span class="es">Vista Previa del Mensaje</span></div>
+          <div class="pws-invite-preview" id="pwsInvitePreview">
+            <span class="en" style="color:rgba(240,230,204,0.3);">Select a relationship to preview the message.</span>
+            <span class="es" style="color:rgba(240,230,204,0.3);">Selecciona una relaci&#243;n para ver el mensaje.</span>
+          </div>
+        </div>
+        <div class="pws-invite-status" id="pwsInviteStatus"></div>
+        <button class="pws-invite-send-btn" id="pwsInviteSendBtn" onclick="pwsSendInvite()" disabled>
+          <span class="en">Send Invitation</span><span class="es">Enviar Invitaci&#243;n</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TALENT WORK STATION (TWS) OVERLAY -->
+  <div class="pws-unlock-overlay" id="pwsTWSOverlay">
+    <div class="pws-unlock-panel" style="max-height:88vh;">
+      <div class="pws-unlock-header">
+        <div class="pws-unlock-title" id="pwsTWSTitle">
+          <span class="en">My Projects</span>
+          <span class="es">Mis Proyectos</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button id="pwsTWSPauseBtn" style="font-family:'Cinzel',serif;font-size:11px !important;letter-spacing:0.18em;text-transform:uppercase;color:rgba(200,168,75,0.7);background:transparent;border:1px solid rgba(200,168,75,0.3);border-radius:3px;padding:6px 14px;cursor:pointer;">&#9646;&#9646; Pause</button>
+          <button class="pws-docb-close" id="pwsTWSCloseBtn">&#x2715;</button>
+        </div>
+      </div>
+      <div class="pws-docb-feed" id="pwsTWSFeed"></div>
+      <div id="pwsTWSCategoryCards" style="display:none;padding:0 16px 12px;display:none;flex-wrap:wrap;gap:8px;"></div>
+      <div class="pws-docb-input-row" id="pwsTWSInputRow">
+        <button class="pws-mic-btn" id="pwsTWSMic"><div class="pws-mic-icon"></div></button>
+        <textarea class="pws-docb-textarea" id="pwsTWSInput" rows="1"></textarea>
+        <button class="pws-cam-btn" id="pwsTWSCamBtn" title="Share a photo" onclick="document.getElementById('pwsTWSCamInput').click()">&#128247;</button>
+        <input type="file" id="pwsTWSCamInput" accept="image/*" capture="environment" style="display:none;">
+        <button class="pws-docb-send-btn" id="pwsTWSSendBtn"><div class="pws-send-arrow"></div></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TWS NOTES PANEL -->
+  <div class="pws-unlock-overlay" id="pwsTWSNotesOverlay">
+    <div class="pws-unlock-panel" style="max-height:70vh;">
+      <div class="pws-unlock-header">
+        <div class="pws-unlock-title"><span class="en">Project Notes</span><span class="es">Notas del Proyecto</span></div>
+        <button class="pws-docb-close" id="pwsTWSNotesCloseBtn">&#x2715;</button>
+      </div>
+      <div style="padding:16px 20px;flex:1;display:flex;flex-direction:column;gap:10px;">
+        <textarea id="pwsTWSNotesArea" style="flex:1;min-height:180px;background:rgba(240,230,204,0.04);border:1px solid rgba(200,168,75,0.25);border-radius:6px;padding:12px 14px;font-family:'Cormorant Garamond',serif;font-size:24px !important;color:#f0e6cc;resize:none;outline:none;box-sizing:border-box;" placeholder="Write anything..."></textarea>
+        <button id="pwsTWSNotesSaveBtn" style="font-family:'Cinzel',serif;font-size:14px !important;letter-spacing:0.16em;text-transform:uppercase;color:#040608;background:#c8a84b;border:none;border-radius:3px;padding:11px 20px;cursor:pointer;width:100%;"><span class="en">Save Notes</span><span class="es">Guardar Notas</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TALENT BUILDER OVERLAY -->
+  <div class="pws-unlock-overlay" id="pwsTalentOverlay">
+    <div class="pws-unlock-panel">
+      <div class="pws-unlock-header">
+        <div class="pws-unlock-title" id="pwsTalentTitle">
+          <span class="en">Add a Talent Tool</span>
+          <span class="es">Agregar Herramienta de Talento</span>
+        </div>
+        <button class="pws-docb-close" id="pwsTalentCloseBtn">&#x2715;</button>
+      </div>
+      <div class="pws-docb-feed" id="pwsTalentFeed"></div>
+      <div class="pws-docb-input-row">
+        <textarea class="pws-docb-textarea" id="pwsTalentInput" rows="1"></textarea>
+        <button class="pws-mic-btn" id="pwsTalentMic"><div class="pws-mic-icon"></div></button>
+        <button class="pws-docb-send-btn" id="pwsTalentSendBtn"><div class="pws-send-arrow"></div></button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- FUNDING OVERLAY — Adult CFT 5-layer conversation -->
+  <div class="pws-unlock-overlay" id="pwsFundingOverlay">
+    <div class="pws-unlock-panel" style="max-height:88vh;">
+      <div class="pws-unlock-header">
+        <div class="pws-unlock-title" id="pwsFundingTitle">
+          <span class="en">Project Funding</span>
+          <span class="es">Financiamiento del Proyecto</span>
+        </div>
+        <button class="pws-docb-close" id="pwsFundingCloseBtn">&#x2715;</button>
+      </div>
+      <div class="pws-docb-feed" id="pwsFundingFeed"></div>
+      <div id="pwsFundingLetterWrap" style="display:none;margin:0 16px 12px;background:rgba(200,168,75,0.06);border:1px solid rgba(200,168,75,0.25);border-radius:4px;padding:16px 18px;max-height:320px;overflow-y:scroll;">
+        <div style="font-family:'Cinzel',serif;font-size:11px !important;letter-spacing:0.2em;color:rgba(200,168,75,0.6);text-transform:uppercase;margin-bottom:10px;"><span class="en">Your Grant Letter</span><span class="es">Tu Carta de Solicitud</span></div>
+        <div id="pwsFundingLetterText" style="font-family:'Cormorant Garamond',serif;font-size:22px !important;color:rgba(240,230,204,0.85);line-height:1.6;white-space:pre-wrap;"></div>
+      </div>
+      <div class="pws-docb-input-row" id="pwsFundingInputRow">
+        <textarea class="pws-docb-textarea" id="pwsFundingInput" rows="1" placeholder="Talk to Doc B..."></textarea>
+        <button class="pws-mic-btn" id="pwsFundingMic"><div class="pws-mic-icon"></div></button>
+        <button class="pws-docb-send-btn" id="pwsFundingSendBtn"><div class="pws-send-arrow"></div></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MASTERY CHECK-IN OVERLAY -->
+  <div class="pws-unlock-overlay" id="pwsMasteryOverlay">
+    <div class="pws-unlock-panel" style="max-height:75vh;">
+      <div class="pws-unlock-header">
+        <div class="pws-unlock-title" id="pwsMasteryTitle">
+          <span class="en">Practice Check-In</span>
+          <span class="es">Reporte de Pr&#225;ctica</span>
+        </div>
+        <button class="pws-docb-close" id="pwsMasteryCloseBtn">&#x2715;</button>
+      </div>
+      <div class="pws-docb-feed" id="pwsMasteryFeed"></div>
+      <div class="pws-docb-input-row">
+        <textarea class="pws-docb-textarea" id="pwsMasteryInput" rows="1" placeholder="How did it go?"></textarea>
+        <button class="pws-mic-btn" id="pwsMasteryMic"><div class="pws-mic-icon"></div></button>
+        <button class="pws-docb-send-btn" id="pwsMasterySendBtn"><div class="pws-send-arrow"></div></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- v104: pwsSelfEncourOverlay removed. Self Encouragement lives on the enforcement side; working code saved to SELF_ENCOURAGEMENT_for_TRUST.js for the PWS Trust port. -->
+  <div class="pws-unlock-overlay" id="pwsHandoffOverlay"><div class="pws-unlock-panel" style="max-height:92vh;"><div class="pws-unlock-header"><div class="pws-unlock-title"><span class="en">Close the Day</span><span class="es">Cerrar el D&#237;a</span></div><button class="pws-docb-close" id="pwsHandoffCloseBtn">&#x2715;</button></div><div style="padding:12px 20px 8px;border-bottom:1px solid rgba(200,168,75,0.1);flex-shrink:0;"><div style="font-family:'Cormorant Garamond',serif;font-size:20px !important;font-style:italic;color:rgba(240,230,204,0.55);"><span class="en">Decide what travels with you to tomorrow.</span><span class="es">Decide qu&#233; te acompa&#241;a ma&#241;ana.</span></div></div><div id="pwsHandoffList" style="flex:1;overflow-y:auto;padding:14px 20px;display:flex;flex-direction:column;gap:10px;"></div><div style="padding:14px 20px;border-top:1px solid rgba(200,168,75,0.1);flex-shrink:0;display:flex;flex-direction:column;gap:10px;"><div class="pws-docb-feed" id="pwsHandoffDocBFeed" style="min-height:40px;max-height:120px;"></div><div class="pws-docb-input-row"><textarea class="pws-docb-textarea" id="pwsHandoffDocBInput" rows="1"></textarea><button class="pws-docb-send-btn" id="pwsHandoffSendBtn"><div class="pws-send-arrow"></div></button></div><button id="pwsHandoffDoneBtn" style="font-family:'Cinzel',serif;font-size:13px !important;letter-spacing:0.18em;text-transform:uppercase;color:#040608;background:#c8a84b;border:none;border-radius:3px;padding:13px 20px;cursor:pointer;width:100%;"><span class="en">&#x2713; Close the Day</span><span class="es">&#x2713; Cerrar el D&#237;a</span></button></div></div></div>
+  <div class="pws-departure" id="pwsDeparture">
+    <div class="pws-dep-inner">
+      <div class="pws-dep-orn"><div class="pws-dep-orn-line"></div><div class="pws-dep-orn-diamond"></div><div class="pws-dep-orn-line"></div></div>
+      <div class="pws-dep-label">YOU ARE LEAVING 4 LAWS ACADEMY</div>
+      <div class="pws-dep-name" id="pwsDepName"></div>
+      <div class="pws-dep-timer-wrap"><div class="pws-dep-timer-label">TIME AWAY</div><div class="pws-dep-timer" id="pwsDepTimer">0:00</div></div>
+      <a class="pws-dep-launch" id="pwsDepLaunch" href="#" target="_blank" rel="noopener noreferrer">OPEN &#x25B6;</a>
+      <button class="pws-dep-back" id="pwsDepBack">&#8592; I&#39;M BACK &#8212; LOG MY SESSION</button>
+    </div>
+  </div>
+</div>
+<!-- BENCH 20: THE OPEN DOOR — mid-day quick capture, the most trafficked need. Fixed, bottom-center, thumb country. -->
+  <div id="pwsTodosCreed" style="display:none;position:fixed;bottom:64px;bottom:calc(64px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:899;max-width:92vw;width:560px;background:rgba(4,6,8,0.97);border:1px solid rgba(200,168,75,0.6);border-radius:8px;padding:14px 18px;box-shadow:0 6px 24px rgba(0,0,0,0.7), 0 0 18px rgba(200,168,75,0.15);font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:22px;line-height:1.5;color:#f0e6cc;text-align:center;">
+  <span class="en"><strong style="font-style:normal;font-family:'Cinzel',serif;font-size:18px;letter-spacing:0.18em;color:#c8a84b;display:block;margin-bottom:8px;">KILL THE PROBLEM</strong>The splendor of your living cascade draws enemies &#8212; greedy traps, obstacles, problems that want what&#8217;s yours. Ignored, they grow like weeds and choke your cascade. One tap, one Super Tool, and &#8212; poof &#8212; they&#8217;re gone. Aqu&#237;, amigo &#8212; the only good problem is a dead problem.</span>
+  <span class="es"><strong style="font-style:normal;font-family:'Cinzel',serif;font-size:18px;letter-spacing:0.18em;color:#c8a84b;display:block;margin-bottom:8px;">MATA EL PROBLEMA</strong>El esplendor de tu cascada viva atrae enemigos &#8212; trampas codiciosas, obst&#225;culos, problemas que quieren lo tuyo. Descuidados, crecen como maleza y ahogan tu cascada. Un toque, una S&#250;per Herramienta, y &#8212; &#161;puf! &#8212; desaparecen. Aqu&#237;, amigo &#8212; el &#250;nico problema bueno es un problema muerto.</span>
+  <span style="display:flex;justify-content:center;gap:22px;margin-top:10px;font-style:normal;">
+    <span style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <span style="width:60px;height:60px;border-radius:50%;border:2px solid #c8a84b;overflow:hidden;display:block;"><img data-face="bruno" src="https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/1787345420041-NMAW13V0ZGG5L56ECQWN/unsplash-image-Jy4ELSGPHTc.jpg?format=500w" alt="Bruno" style="width:100%;height:100%;object-fit:cover;object-position:center 38%;display:block;"></span>
+      <span style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:0.18em;color:#c8a84b;">BRUNO</span>
+      <span class="en" style="font-size:16px;font-style:italic;color:rgba(240,230,204,0.6);">the Toolmaker</span><span class="es" style="font-size:16px;font-style:italic;color:rgba(240,230,204,0.6);">el Herrero</span>
+    </span>
+    <span style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <span style="width:60px;height:60px;border-radius:50%;border:2px solid #c8a84b;overflow:hidden;display:block;"><img data-face="ace" src="https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/1787330862158-JNLCRIZ7OCNNYX13R9TZ/unsplash-image-nHAukI5HFYM.jpg?format=500w" alt="Ace" style="width:100%;height:100%;object-fit:cover;object-position:center 18%;display:block;"></span>
+      <span style="font-family:'Cinzel',serif;font-size:14px;letter-spacing:0.18em;color:#c8a84b;">ACE</span>
+      <span class="en" style="font-size:16px;font-style:italic;color:rgba(240,230,204,0.6);">the Armory</span><span class="es" style="font-size:16px;font-style:italic;color:rgba(240,230,204,0.6);">la Armer&#237;a</span>
+    </span>
+  </span>
+</div>
+  <div id="pwsTrustCreed" style="display:none;position:fixed;bottom:64px;bottom:calc(64px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:899;max-width:92vw;width:560px;background:rgba(4,6,8,0.97);border:1px solid rgba(200,168,75,0.6);border-radius:8px;padding:14px 18px;box-shadow:0 6px 24px rgba(0,0,0,0.7), 0 0 18px rgba(200,168,75,0.15);font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:22px;line-height:1.5;color:#f0e6cc;text-align:center;">
+  <span class="en"><strong style="font-style:normal;font-family:'Cinzel',serif;font-size:18px;letter-spacing:0.18em;color:#c8a84b;display:block;margin-bottom:8px;">DRAW THE LINE</strong>The cascade is natural &#8212; create all day, give importance to what stands before you, earn as you grow. Talent lights it; Respect, Belonging, Responsibility follow on their own. One skill guards it all: the line &#8212; where your rights end and another&#8217;s begin. This companion helps you draw that line and hold it there &#8212; for the light of all. One tap.</span>
+  <span class="es"><strong style="font-style:normal;font-family:'Cinzel',serif;font-size:18px;letter-spacing:0.18em;color:#c8a84b;display:block;margin-bottom:8px;">TRAZA LA L&#205;NEA</strong>La cascada es natural &#8212; crea todo el d&#237;a, dale importancia a lo que tienes enfrente, g&#225;nate mientras creces. El Talento la enciende; el Respeto, la Pertenencia y la Responsabilidad la siguen solas. Una sola destreza lo protege todo: la l&#237;nea &#8212; donde terminan tus derechos y comienzan los del otro. Este compa&#241;ero te ayuda a trazar esa l&#237;nea y sostenerla &#8212; por la luz de todos. Un toque.</span>
+</div>
+  <div id="pwsCompanions" style="position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:900;display:flex;gap:8px;align-items:center;white-space:nowrap;">
+    <a href="/todos#quick" id="pwsTodoFab" title="My TODOs - Earn as you grow" style="position:relative;display:block;width:150px;height:54px;text-decoration:none;flex-shrink:0;filter:drop-shadow(0 3px 10px rgba(0,0,0,0.6));">
+  <span style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;border-radius:50%/44%;display:block;"><img src="https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/1781988264043-5K4FAUBOBQ5XLM2ELF8Y/unsplash-image-Mf23RF8xArY.jpg?format=500w" alt="TODOS" style="width:100%;height:100%;object-fit:cover;object-position:center 50%;display:block;filter:brightness(0.7);"></span>
+  <svg viewBox="0 0 150 54" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+    <ellipse cx="75" cy="27" rx="65" ry="17" fill="none" stroke="rgba(127,168,201,0.4)" stroke-width="0.75"/>
+    <circle cx="10" cy="15" r="2" fill="rgba(200,168,75,0.7)"/>
+    <circle cx="140" cy="15" r="2" fill="rgba(200,168,75,0.7)"/>
+    <circle cx="10" cy="39" r="2" fill="rgba(200,168,75,0.7)"/>
+    <circle cx="140" cy="39" r="2" fill="rgba(200,168,75,0.7)"/>
+    <polygon points="75,1.5 77.5,6.5 75,11.5 72.5,6.5" fill="rgba(127,168,201,0.9)"/>
+    <text x="75" y="25" text-anchor="middle" font-family="'Cinzel',serif" font-size="13" font-weight="900" fill="#f0e6cc" letter-spacing="3">TODOS</text>
+    <text x="75" y="39" text-anchor="middle" font-family="'Cinzel',serif" font-size="6.5" font-weight="700" fill="rgba(127,168,201,0.95)" letter-spacing="1.2">EARN AS YOU GROW</text>
+    <ellipse cx="75" cy="27" rx="72" ry="24.5" fill="none" stroke="#c8a84b" stroke-width="2"/>
+  </svg>
+  <span class="en" style="display:none;">+ TODO</span><span class="es" style="display:none;">+ TAREA</span>
+</a>
+    <a href="https://www.4lawsacademy.com/ai-companion" id="pwsTrustFab" title="Your AI Companion - Draw the Line" style="position:relative;display:block;width:150px;height:54px;text-decoration:none;flex-shrink:0;filter:drop-shadow(0 3px 10px rgba(0,0,0,0.6));">
+  <span style="position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;border-radius:50%/44%;display:block;"><img src="https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/1783471229472-6PUSV16DAG72IRZYI21Y/unsplash-image-WbTOVqKYzc4.jpg?format=500w" alt="TRUST" style="width:100%;height:100%;object-fit:cover;object-position:center 65%;display:block;filter:brightness(0.75);"></span>
+  <svg viewBox="0 0 150 54" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:100%;height:100%;">
+    <ellipse cx="75" cy="27" rx="65" ry="17" fill="none" stroke="rgba(200,168,75,0.3)" stroke-width="0.75"/>
+    <circle cx="10" cy="15" r="2" fill="rgba(200,168,75,0.7)"/>
+    <circle cx="140" cy="15" r="2" fill="rgba(200,168,75,0.7)"/>
+    <circle cx="10" cy="39" r="2" fill="rgba(200,168,75,0.7)"/>
+    <circle cx="140" cy="39" r="2" fill="rgba(200,168,75,0.7)"/>
+    <polygon points="75,1.5 77.5,6.5 75,11.5 72.5,6.5" fill="rgba(200,168,75,0.85)"/>
+    <text x="75" y="25" text-anchor="middle" font-family="'Cinzel',serif" font-size="13" font-weight="900" fill="#f0e6cc" letter-spacing="3">TRUST</text>
+    <text x="75" y="39" text-anchor="middle" font-family="'Cinzel',serif" font-size="6.5" font-weight="700" fill="rgba(200,168,75,0.95)" letter-spacing="1.5">DRAW THE LINE</text>
+    <ellipse cx="75" cy="27" rx="72" ry="24.5" fill="none" stroke="#c8a84b" stroke-width="2"/>
+  </svg>
+  <span class="en" style="display:none;">TRUST</span><span class="es" style="display:none;">CONFIANZA</span>
+</a>
+  </div>
+  <script>
+/* BENCH 25 v115.14 THE TONGUE MIRROR: the creeds live outside #pwsRoot;
+   this watcher mirrors the root's data-lang onto body.lang-es so the
+   one-tongue CSS above can reach them. Initial read from localStorage;
+   MutationObserver tracks the toggle; ES5, shell-only, guarded. */
+(function() {
+  function mirror() {
+    var es = false;
+    var root = document.getElementById('pwsRoot');
+    if (root && root.getAttribute('data-lang')) {
+      es = (root.getAttribute('data-lang') === 'es');
+    } else {
+      try { es = (window.localStorage.getItem('4laws-lang') === 'es'); } catch (eM) {}
+    }
+    if (es) { document.body.className += (document.body.className.indexOf('lang-es') === -1 ? ' lang-es' : ''); }
+    else { document.body.className = document.body.className.replace(/\s*lang-es/g, ''); }
+  }
+  try { mirror(); } catch (e0) {}
+  try {
+    var start = function() {
+      var root = document.getElementById('pwsRoot');
+      if (!root) { setTimeout(start, 500); return; }
+      mirror();
+      if (window.MutationObserver) {
+        new MutationObserver(mirror).observe(root, { attributes: true, attributeFilter: ['data-lang'] });
+      } else {
+        setInterval(mirror, 1200);
+      }
+    };
+    start();
+  } catch (e1) {}
+})();
+
+/* BENCH 25 v115.14 THE GUARDED CHOOSER (fleet organ, from todos v51.13):
+   tap the TODOS pill = the message AND the choice, stacked (creed above
+   chips above pill); hover = message alone. On THIS shell the chips
+   TRAVEL — Bruno's workshop lives on /todos (#quick and #forge roads,
+   both live in todos v51.13). Armored: guarded attach + re-attach. */
+(function() {
+  function wireTodoPill_() {
+  var fab = document.getElementById('pwsTodoFab');
+  if (!fab || fab.getAttribute('data-td-wired') === '1') return;
+  fab.setAttribute('data-td-wired', '1');
+  var menu = null, timer = null;
+  function fold() {
+    if (menu && menu.parentNode) menu.parentNode.removeChild(menu);
+    menu = null;
+    if (timer) { clearTimeout(timer); timer = null; }
+    document.removeEventListener('click', onDoc, true);
+    var cF = document.getElementById('pwsTodosCreed');
+    if (cF) { cF.style.display = 'none'; cF.style.bottom = ''; }
+  }
+  function onDoc(ev) {
+    if (menu && !menu.contains(ev.target) && !fab.contains(ev.target)) fold();
+  }
+  fab.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (menu) { fold(); return; }
+    var esP = false;
+    try { esP = (document.body.className.indexOf('lang-es') !== -1) || (window.localStorage.getItem('4laws-lang') === 'es'); } catch (eL) {}
+    menu = document.createElement('div');
+    menu.style.cssText = 'position:fixed;bottom:76px;left:50%;transform:translateX(-50%);z-index:901;display:flex;gap:10px;';
+    function chip(label, iconHtml, fn) {
+      var c = document.createElement('button');
+      c.type = 'button';
+      c.style.cssText = 'display:flex;align-items:center;gap:8px;background:#040608;border:2px solid #c8a84b;border-radius:999px;color:#f0e6cc;font-family:Cinzel,serif;font-size:13px;letter-spacing:0.12em;padding:8px 14px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.6);';
+      c.innerHTML = iconHtml + '<span>' + label + '</span>';
+      c.addEventListener('click', function(ev) { ev.stopPropagation(); fold(); fn(); });
+      return c;
+    }
+    menu.appendChild(chip(esP ? '+ TAREA' : '+ TODO', '<span style="font-size:16px;">\uD83E\uDEAA</span>', function() {
+      window.location.href = '/todos#quick';
+    }));
+    menu.appendChild(chip(esP ? 'S\u00daPER HERRAMIENTA' : 'SUPER TOOL', '<img src="https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/1787345420041-NMAW13V0ZGG5L56ECQWN/unsplash-image-Jy4ELSGPHTc.jpg?format=500w" alt="Bruno" style="width:26px;height:26px;border-radius:50%;object-fit:cover;object-position:center 38%;border:1px solid #c8a84b;display:block;">', function() {
+      window.location.href = '/todos#forge';
+    }));
+    document.body.appendChild(menu);
+    /* the founder's design: the message rises ABOVE the choice —
+       creed repositioned to clear the chip row, both alive on one tap. */
+    var cUp = document.getElementById('pwsTodosCreed');
+    if (cUp) {
+      var chipH = 0;
+      try { chipH = menu.offsetHeight || 44; } catch (eCh) { chipH = 44; }
+      cUp.style.bottom = (76 + chipH + 12) + 'px';
+      cUp.style.display = 'block';
+    }
+    setTimeout(function() { document.addEventListener('click', onDoc, true); }, 0);
+    timer = setTimeout(fold, 8000);
+  });
+  }
+  try { wireTodoPill_(); } catch (eW1) {}
+  try {
+    document.addEventListener('DOMContentLoaded', function() {
+      try { wireTodoPill_(); } catch (eW2) {}
+    });
+  } catch (eW3) {}
+})();
+
+  /* BENCH 20 v115.6 THE REVEAL TAP (founder's design): the first tap on
+     TRUST teaches — the pill blooms into its full name, glows gold for a
+     breath, THEN travels. Every tap after: instant, forever. v115.14:
+     armored in its own try/catch isolation (v51.13 precedent). */
+  (function() {
+    try {
+    var f = document.getElementById('pwsTrustFab');
+    var wnSeenMem = false;
+    if (f) {
+    f.addEventListener('click', function(e) {
+      var seen = null;
+      try { seen = window.localStorage.getItem('pws_trust_pill_seen'); } catch (e1) {}
+      if (seen || wnSeenMem) return; // informed thumb: straight through, one tap, forever
+      // FIRST TAP: reveal and ASK — never kidnap the curious (founder's law).
+      e.preventDefault();
+      wnSeenMem = true; try { window.localStorage.setItem('pws_trust_pill_seen', '1'); } catch (e2) {}
+      f.classList.add('trust-bloom');
+      // The bloomed pill IS the question: tap again to go. Ignored? It
+      // folds back to TRUST after 5s — no trip taken, name learned.
+      setTimeout(function() {
+        f.classList.remove('trust-bloom');
+      }, 5000);
+    });
+    }
+    } catch (eAF) {}
+  })();
+
+/* BENCH 21 THE CREEDS: approach a pill and the golden whisper tells you
+   WHY this button is the button. Hover/focus on desktop; TRUST rides the
+   first-tap bloom; TODOS rides the chooser (see the organ above). */
+(function() {
+  try {
+  var fT = document.getElementById('pwsTodoFab');
+  var cT = document.getElementById('pwsTodosCreed');
+  if (fT && cT) {
+    var ctShow = function() { cT.style.display = 'block'; };
+    var ctHide = function() { cT.style.display = 'none'; };
+    fT.addEventListener('mouseenter', ctShow);
+    fT.addEventListener('mouseleave', ctHide);
+    fT.addEventListener('focus', ctShow);
+    fT.addEventListener('blur', ctHide);
+  }
+  } catch (eCT) {}
+  try {
+  var f2 = document.getElementById('pwsTrustFab');
+  var cr = document.getElementById('pwsTrustCreed');
+  if (f2 && cr) {
+  var crShow = function() { cr.style.display = 'block'; };
+  var crHide = function() { cr.style.display = 'none'; };
+  f2.addEventListener('mouseenter', crShow);
+  f2.addEventListener('mouseleave', crHide);
+  f2.addEventListener('focus', crShow);
+  f2.addEventListener('blur', crHide);
+  f2.addEventListener('click', function() { crShow(); setTimeout(crHide, 5000); });
+  }
+  } catch (eTR) {}
+})();
+  </script>
+  <script>
+  /* BENCH 25 v115.24 THE TRUE CENTER */
+  (function () {
+    function pwsCenterWall() {
+      var r = document.getElementById('pwsRoot');
+      if (!r) return;
+      var vw = document.documentElement.clientWidth || window.innerWidth;
+      var W = Math.min(1400, vw); /* the Trust frame: contained, never an ocean */
+      r.style.width = W + 'px';
+      r.style.marginLeft = '0px';
+      var L = r.getBoundingClientRect().left;
+      var target = Math.round((vw - W) / 2);
+      r.style.marginLeft = (target - L) + 'px';
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', pwsCenterWall);
+    } else { pwsCenterWall(); }
+    setTimeout(pwsCenterWall, 400);
+    setTimeout(pwsCenterWall, 1500);
+    window.addEventListener('resize', pwsCenterWall);
+  })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/pws-talent-v91_15.js"></script>
+</div>
+<script src="https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/winston-badge.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/find-me.js"></script>
+<script>
+/* BENCH 21 THE HEADER SEATS: adopt the companions up into the crown row
+   (v40 pilot pattern, field-crowned). Polled; guarded; pages without the
+   modules are untouched. */
+(function() {
+  var seats = document.getElementById('pwSeats');
+  if (!seats) return;
+  var tries = 0;
+  var t = setInterval(function() {
+    tries++;
+    var w = document.getElementById('wnBadge');
+    if (w && w.parentNode !== seats) { seats.appendChild(w); }
+    var fm = document.querySelector('.fm-emblem');
+    if (fm && fm.parentNode !== seats) { seats.appendChild(fm); }
+    if ((w && fm) || tries > 40) { clearInterval(t); }
+  }, 250);
+})();
+</script>
+<style>
+/* BENCH 23 v115.13 — COMPANIONS YIELD TO OVERLAYS (Field List #4): while any
+   overlay room is open (body carries pw-overlay-open), the companion pair and
+   the creed whisper vanish; they return on close. !important beats inline. */
+body.pw-overlay-open #pwsCompanions,
+body.pw-overlay-open #pwsTodosCreed,
+body.pw-overlay-open #pwsTrustCreed { display: none !important; }
+/* BENCH 25 v115.14 ONE TONGUE — the creeds live outside #pwsRoot, so the
+   data-lang toggle never reached them (both languages stacked). The shell
+   watcher below mirrors the root's tongue onto body.lang-es; these rules
+   finish the cure. EN default; ES on body.lang-es. */
+#pwsTrustCreed .en, #pwsTodosCreed .en { display: inline; }
+#pwsTrustCreed .es, #pwsTodosCreed .es { display: none; }
+body.lang-es #pwsTrustCreed .en, body.lang-es #pwsTodosCreed .en { display: none; }
+body.lang-es #pwsTrustCreed .es, body.lang-es #pwsTodosCreed .es { display: inline; }
+</style>
+<script>
+/* BENCH 23 v115.13 — THE WATCHER (Field List #4, founder's 8/19 phone catch:
+   the TODOS/TRUST pair sat on the open Doc B room). This block owns the
+   eleven overlay rooms' markup but their brain lives on the CDN
+   (pws-talent-v85.js), so the open/close roads cannot be wired directly
+   from this paste. Instead: judge by ground truth. If any room is visibly
+   open (computed display), the companions yield; when all close, they
+   return. Instant via MutationObserver on the rooms' class/style; a gentle
+   sweep backstops any exotic mechanism. Pages missing a room skip it. */
+(function() {
+  var IDS = ['pwsDocBOverlay','pwsUseOverlay','pwsUnlockOverlay','pwsModifyOverlay','pwsInviteOverlay','pwsTWSOverlay','pwsTWSNotesOverlay','pwsTalentOverlay','pwsFundingOverlay','pwsMasteryOverlay','pwsHandoffOverlay'];
+  function anyOpen() {
+    var i, el, disp;
+    for (i = 0; i < IDS.length; i++) {
+      el = document.getElementById(IDS[i]);
+      if (!el) continue;
+      try { disp = window.getComputedStyle(el).display; } catch (e) { disp = el.style.display; }
+      if (disp && disp !== 'none') return true;
+    }
+    return false;
+  }
+  function judge() {
+    try {
+      if (anyOpen()) document.body.classList.add('pw-overlay-open');
+      else document.body.classList.remove('pw-overlay-open');
+    } catch (e) {}
+  }
+  if (window.MutationObserver) {
+    var mo = new MutationObserver(judge);
+    var j, room;
+    for (j = 0; j < IDS.length; j++) {
+      room = document.getElementById(IDS[j]);
+      if (room) mo.observe(room, { attributes: true, attributeFilter: ['class', 'style'] });
+    }
+  }
+  setInterval(judge, 900);
+  judge();
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/pulse.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/recognition.js"></script>
