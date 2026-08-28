@@ -1,3 +1,16 @@
+/* BENCH 30 super-bucket.js v1.2 — THE OPEN SHELF (founder's ruling, 8/28:
+ * "why wouldn't I want to upload .docx, .doc or .txt files?"). v1.1 refused
+ * anything but images/PDF/HEIC at the door — right for a READING mouth
+ * (Doc B's road takes only images and PDFs), wrong for a SHELF mouth that
+ * just racks a file in Drive for later; the legacy shelf inputs took Word
+ * and text and the organ silently took that away when it was mounted on
+ * them. v1.2 adds one option, 'allow': omit it and the reading wall stands
+ * exactly as v1.1 (no page changes behavior by accident); pass
+ * allow:'any' and the mouth takes every file the host page's road can
+ * rack (shelf mounts). Nothing else moved. Pages that want the open shelf
+ * pass it explicitly: /todos v55_20 (Smart Day shelf), pws-talent v91_18
+ * (Favorite Day drawer wall). version:'1.2'. Lineage: v1.1 below.
+ */
 /* BENCH 29 super-bucket.js v1.1 — THE ONE MOUTH (v1.1: BD gate nits — dead _seq removed; crown now names the real isolation mechanism, closure-locality, which BD verified is stronger than the id scheme v1.0's comment wrongly described) (founder's ruling, 8/28:
  * "the bucket is the game's mouth" — one fleet organ, mounted anywhere,
  * so every page's bucket is the SAME real bucket and can never drift the
@@ -18,6 +31,7 @@
  *     promiseEn: 'Drop it here — Doc B reads it',   // the honest promise
  *     promiseEs: 'Suéltalo aquí — Doc B lo lee',
  *     accept: 'image/*,application/pdf',             // optional, default shown
+ *     allow:  'any',                                 // v1.2, optional: open shelf — take every file type
  *     askTitle: true,                                // name-in-a-breath row
  *     onFile: function(file, title) { ... },         // REQUIRED — page decides
  *     onUrl:  function(url) { ... }                  // optional — pasted https
@@ -40,6 +54,7 @@
     var lang = (typeof opts.lang === 'function') ? opts.lang : function() { return 'en'; };
     var accept = opts.accept || 'image/*,application/pdf';
     var askTitle = (opts.askTitle !== false);
+    var allowAny = (opts.allow === 'any'); /* v1.2 THE OPEN SHELF */
     var pending = null;
 
     var zone = document.createElement('div');
@@ -86,7 +101,7 @@
       if (!file) return;
       var t = file.type || '';
       var nm = String(file.name || '').toLowerCase();
-      var ok = /^image\//.test(t) || t === 'application/pdf' || /\.(pdf|png|jpe?g|gif|webp|heic)$/.test(nm);
+      var ok = allowAny || /^image\//.test(t) || t === 'application/pdf' || /\.(pdf|png|jpe?g|gif|webp|heic)$/.test(nm);
       if (!ok) { flashBorder('#b05050'); return; }
       if (!askTitle) { opts.onFile(file, ''); reset(); return; }
       pending = file;
@@ -153,5 +168,5 @@
     return { reset: reset, host: zone };
   }
 
-  window.SuperBucket = { mount: mount, version: '1.1' };
+  window.SuperBucket = { mount: mount, version: '1.2' };
 })();
