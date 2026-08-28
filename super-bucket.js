@@ -1,4 +1,4 @@
-/* BENCH 29 super-bucket.js v1.0 — THE ONE MOUTH (founder's ruling, 8/28:
+/* BENCH 29 super-bucket.js v1.1 — THE ONE MOUTH (v1.1: BD gate nits — dead _seq removed; crown now names the real isolation mechanism, closure-locality, which BD verified is stronger than the id scheme v1.0's comment wrongly described) (founder's ruling, 8/28:
  * "the bucket is the game's mouth" — one fleet organ, mounted anywhere,
  * so every page's bucket is the SAME real bucket and can never drift the
  * way hand-clones do; the sendFileToDockB typo of 8/27 is the standing
@@ -22,8 +22,10 @@
  *     onFile: function(file, title) { ... },         // REQUIRED — page decides
  *     onUrl:  function(url) { ... }                  // optional — pasted https
  *   });
- * Returns { reset: fn, host: el }. Mount multiple independently — ids are
- * generated, never colliding. All styling inline (no CSS file needed);
+ * Returns { reset: fn, host: el }. Mount multiple independently — every
+ * piece of state is closure-local to its own mount() call, so two mounts
+ * share nothing and can never collide (BD-verified: stronger than any id
+ * scheme). All styling inline (no CSS file needed);
  * gold-on-felt house dress, 44px+ touch targets, bilingual via spans the
  * host page's own .en/.es CSS governs where present, else lang() picks.
  */
@@ -33,11 +35,8 @@
     chainsaw: 'https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/chainsaw-bucket-icon.jpg',
     batea:    'https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/la-batea.jpg'
   };
-  var _seq = 0;
-
   function mount(host, opts) {
     if (!host || !opts || typeof opts.onFile !== 'function') return null;
-    _seq++;
     var lang = (typeof opts.lang === 'function') ? opts.lang : function() { return 'en'; };
     var accept = opts.accept || 'image/*,application/pdf';
     var askTitle = (opts.askTitle !== false);
@@ -154,5 +153,5 @@
     return { reset: reset, host: zone };
   }
 
-  window.SuperBucket = { mount: mount, version: '1.0' };
+  window.SuperBucket = { mount: mount, version: '1.1' };
 })();
