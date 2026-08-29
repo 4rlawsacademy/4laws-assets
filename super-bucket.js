@@ -1,4 +1,13 @@
-/* BENCH 31 super-bucket.js v1.4 — THE LINK MOUTH (founder, 8/29 night, inside
+/* BENCH 31 super-bucket.js v1.5 — THE SHOWN LINK (founder, minutes after v1.4:
+ * "It lit gold and didn't show the link... SUPER counter intuitive. It feels
+ * like a failure.") v1.4 saved the instant a link was pasted, so the field
+ * emptied before the member could see what arrived; the only proof was a
+ * flash and a toast off-screen. v1.5: a paste STAYS in the field, visible;
+ * SAVE (or Enter) saves; then a line under the mouth says "✓ Saved: <link>"
+ * (✓ Guardado) and stays until the next save. Nothing else moved.
+ * v1.4 -> v1.5. ES5. Lineage:
+ *
+ * BENCH 31 super-bucket.js v1.4 — THE LINK MOUTH (founder, 8/29 night, inside
  * a todo: "Tell me, where do I paste a link?" — there was nowhere. A pasted
  * link only landed while the zone itself had keyboard focus, which meant
  * click-the-picker-then-Esc-then-Cmd+V on a desktop and nothing at all on a
@@ -124,7 +133,7 @@
     zone.appendChild(row);
 
     /* v1.4 THE LINK MOUTH: a visible place for a link, only when the page takes links */
-    var linkRow = null, linkInp = null, linkBtn = null;
+    var linkRow = null, linkInp = null, linkBtn = null, linkDone = null;
     if (typeof opts.onUrl === 'function') {
       linkRow = document.createElement('div');
       linkRow.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:10px;';
@@ -141,6 +150,9 @@
       linkBtn.innerHTML = '<span class="en">SAVE</span><span class="es">GUARDAR</span>';
       linkRow.appendChild(linkInp); linkRow.appendChild(linkBtn);
       zone.appendChild(linkRow);
+      linkDone = document.createElement('div');   /* v1.5: the receipt */
+      linkDone.style.cssText = 'display:none;margin-top:8px;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:15px;color:#c8a84b;text-align:left;word-break:break-all;';
+      zone.appendChild(linkDone);
     }
     host.appendChild(zone);
 
@@ -151,6 +163,7 @@
       if (!/^https?:\/\//i.test(u)) { linkInp.style.borderColor = 'rgba(220,80,80,0.9)'; setTimeout(function() { linkInp.style.borderColor = 'rgba(200,168,75,0.35)'; }, 900); return; }
       opts.onUrl(u);
       linkInp.value = '';
+      if (linkDone) { linkDone.textContent = (lang() === 'es' ? '\u2713 Guardado: ' : '\u2713 Saved: ') + u; linkDone.style.display = 'block'; }   /* v1.5: say it, and show it */
       linkInp.style.borderColor = '#c8a84b'; setTimeout(function() { linkInp.style.borderColor = 'rgba(200,168,75,0.35)'; }, 700);
     }
 
@@ -253,7 +266,7 @@
     titleInp.addEventListener('click', function(e) { e.stopPropagation(); });
     if (linkInp) {
       linkInp.addEventListener('click', function(e) { e.stopPropagation(); });
-      linkInp.addEventListener('paste', function(e) { e.stopPropagation(); setTimeout(takeLink, 0); });   /* v1.4: paste into the mouth saves at once; never reaches the zone's paste road (no double-fire) */
+      linkInp.addEventListener('paste', function(e) { e.stopPropagation(); });   /* v1.5: a paste STAYS visible in the field; SAVE or Enter saves. Never reaches the zone's paste road. */
       linkInp.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); e.stopPropagation(); takeLink(); } });
       linkBtn.addEventListener('click', function(e) { e.stopPropagation(); takeLink(); });
       /* keep the placeholder in the member's tongue if the page swaps language after mount */
@@ -263,5 +276,5 @@
     return { reset: reset, host: zone };
   }
 
-  window.SuperBucket = { mount: mount, version: '1.4' };
+  window.SuperBucket = { mount: mount, version: '1.5' };
 })();
