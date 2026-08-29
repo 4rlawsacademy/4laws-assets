@@ -1,3 +1,16 @@
+/* BENCH 30 super-bucket.js v1.3 — THE WHOLE HANDFUL (founder's field loss,
+ * 8/28: he dropped three files into a bucket that says BRING IT ON, and the
+ * organ kept the first and silently dropped the other two — every drop and
+ * every pick handed the page files[0] only). v1.3: the picker allows many,
+ * and every file in a drop or a pick reaches the page — one onFile call per
+ * file in order, or, when the page supplies opts.onFiles(files), the whole
+ * handful in one call so the page can send them as one breath. askTitle
+ * mounts keep their one-at-a-time title row (the first file asks, the rest
+ * wait in line). BD GATE CATCH (credited): a second drop or paste while a
+ * title row was open overwrote the file being named — it now joins the
+ * back of the line instead. Nothing else moved. version:'1.3'. Lineage:
+ * v1.2 below.
+ */
 /* BENCH 30 super-bucket.js v1.2 — THE OPEN SHELF (founder's ruling, 8/28:
  * "why wouldn't I want to upload .docx, .doc or .txt files?"). v1.1 refused
  * anything but images/PDF/HEIC at the door — right for a READING mouth
@@ -32,6 +45,7 @@
  *     promiseEs: 'Suéltalo aquí — Doc B lo lee',
  *     accept: 'image/*,application/pdf',             // optional, default shown
  *     allow:  'any',                                 // v1.2, optional: open shelf — take every file type
+ *     onFiles: function(files) { ... },              // v1.3, optional: receive a whole multi-file drop at once
  *     askTitle: true,                                // name-in-a-breath row
  *     onFile: function(file, title) { ... },         // REQUIRED — page decides
  *     onUrl:  function(url) { ... }                  // optional — pasted https
@@ -97,6 +111,33 @@
     host.appendChild(zone);
 
     function reset() { pending = null; input.value = ''; row.style.display = 'none'; }
+    /* v1.3 THE WHOLE HANDFUL: every file in a drop or pick reaches the page */
+    var queue = [];
+    function offerAll(list) {
+      var arr = [], i;
+      for (i = 0; i < (list ? list.length : 0); i++) { if (list[i]) arr.push(list[i]); }
+      if (!arr.length) return;
+      if (typeof opts.onFiles === 'function' && !askTitle) {
+        var okArr = [];
+        for (i = 0; i < arr.length; i++) { if (accepts(arr[i])) okArr.push(arr[i]); else flashNo(arr[i]); }
+        if (okArr.length) opts.onFiles(okArr);
+        return;
+      }
+      if (!askTitle) { for (i = 0; i < arr.length; i++) offer(arr[i]); return; }
+      /* BD's gate catch (credited): a drop or paste while a title row is
+         already open used to overwrite the file being named — lost, never
+         queued. Now the newcomers join the back of the line and the open
+         row keeps its file. */
+      if (pending) { queue = queue.concat(arr); return; }
+      queue = queue.concat(arr.slice(1));
+      offer(arr[0]);
+    }
+    function nextInLine() { if (queue.length) { var f = queue.shift(); offer(f); } }
+    function accepts(file) {
+      var t = String(file.type || '').toLowerCase(), nm = String(file.name || '').toLowerCase();
+      return allowAny || /^image\//.test(t) || t === 'application/pdf' || /\.(pdf|png|jpe?g|gif|webp|heic)$/.test(nm);
+    }
+    function flashNo(file) { host.style.borderColor = 'rgba(220,80,80,0.8)'; setTimeout(function() { host.style.borderColor = ''; }, 900); }
     function offer(file) {
       if (!file) return;
       var t = file.type || '';
@@ -118,6 +159,7 @@
       var f = pending;
       reset();
       opts.onFile(f, t.substring(0, 60));
+      nextInLine(); /* v1.3: the next file in the handful asks its title */
     }
     function flashBorder(color) {
       zone.style.borderColor = color;
@@ -130,12 +172,13 @@
       while (tg && tg !== zone) { if (tg === row) return; tg = tg.parentNode; }
       input.click();
     });
-    input.addEventListener('change', function() { if (input.files && input.files[0]) offer(input.files[0]); });
+    input.multiple = true; /* v1.3 */
+    input.addEventListener('change', function() { if (input.files && input.files.length) offerAll(input.files); });
     zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.style.borderColor = '#c8a84b'; });
     zone.addEventListener('dragleave', function() { zone.style.borderColor = 'rgba(200,168,75,0.45)'; });
     zone.addEventListener('drop', function(e) {
       e.preventDefault(); zone.style.borderColor = 'rgba(200,168,75,0.45)';
-      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) { offer(e.dataTransfer.files[0]); return; }
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { offerAll(e.dataTransfer.files); return; }
       /* a dragged LINK (from another tab's address bar) arrives as text */
       if (opts.onUrl && e.dataTransfer) {
         var u0 = '';
@@ -149,7 +192,7 @@
       for (var i = 0; i < items.length; i++) {
         if (items[i].kind === 'file') {
           var pf = items[i].getAsFile();
-          if (pf) { e.preventDefault(); e.stopPropagation(); offer(pf); return; }
+          if (pf) { e.preventDefault(); e.stopPropagation(); offerAll([pf]); return; } /* v1.3: paste rides the same line */
         }
       }
       /* ONE MOUTH: a pasted https link racks as a link (subsumes + Add Link) */
@@ -161,12 +204,12 @@
       }
     });
     saveBtn.addEventListener('click', function(e) { e.stopPropagation(); commit(); });
-    cancelBtn.addEventListener('click', function(e) { e.stopPropagation(); reset(); });
+    cancelBtn.addEventListener('click', function(e) { e.stopPropagation(); reset(); nextInLine(); });
     titleInp.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); commit(); } });
     titleInp.addEventListener('click', function(e) { e.stopPropagation(); });
 
     return { reset: reset, host: zone };
   }
 
-  window.SuperBucket = { mount: mount, version: '1.2' };
+  window.SuperBucket = { mount: mount, version: '1.3' };
 })();
