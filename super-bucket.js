@@ -1,4 +1,18 @@
-/* BENCH 30 super-bucket.js v1.3 — THE WHOLE HANDFUL (founder's field loss,
+/* BENCH 31 super-bucket.js v1.4 — THE LINK MOUTH (founder, 8/29 night, inside
+ * a todo: "Tell me, where do I paste a link?" — there was nowhere. A pasted
+ * link only landed while the zone itself had keyboard focus, which meant
+ * click-the-picker-then-Esc-then-Cmd+V on a desktop and nothing at all on a
+ * phone. "I don't want tricks. I want a working bucket.") v1.4: when the page
+ * supplies opts.onUrl, every bucket grows a visible mouth for links — a slim
+ * gold line under the promise, "🔗 Paste a link here / Pega un enlace aquí".
+ * Tap it, paste, press Enter (or tap SAVE); an https link goes to opts.onUrl
+ * exactly as the old paste road did, the field clears and flashes gold; a
+ * non-link flashes red and stays so it can be fixed. Clicking the mouth never
+ * opens the file picker. The old focus-paste road survives unchanged. Pages
+ * need no change: one organ overwrite + purge and every bucket has a mouth.
+ * v1.3 -> v1.4. ES5. Lineage:
+ *
+ * BENCH 30 super-bucket.js v1.3 — THE WHOLE HANDFUL (founder's field loss,
  * 8/28: he dropped three files into a bucket that says BRING IT ON, and the
  * organ kept the first and silently dropped the other two — every drop and
  * every pick handed the page files[0] only). v1.3: the picker allows many,
@@ -108,7 +122,37 @@
     cancelBtn.innerHTML = '<span class="en">Cancel</span><span class="es">Cancelar</span>';
     row.appendChild(titleInp); row.appendChild(saveBtn); row.appendChild(cancelBtn);
     zone.appendChild(row);
+
+    /* v1.4 THE LINK MOUTH: a visible place for a link, only when the page takes links */
+    var linkRow = null, linkInp = null, linkBtn = null;
+    if (typeof opts.onUrl === 'function') {
+      linkRow = document.createElement('div');
+      linkRow.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:10px;';
+      linkInp = document.createElement('input');
+      linkInp.type = 'url';
+      linkInp.setAttribute('inputmode', 'url');
+      linkInp.setAttribute('autocomplete', 'off');
+      linkInp.setAttribute('autocapitalize', 'off');
+      linkInp.placeholder = lang() === 'es' ? '\uD83D\uDD17 Pega un enlace aqu\u00ed' : '\uD83D\uDD17 Paste a link here';
+      linkInp.style.cssText = 'flex:1;min-width:0;min-height:44px;padding:6px 12px;background:rgba(240,230,204,0.05);border:1px solid rgba(200,168,75,0.35);border-radius:4px;color:#f0e6cc;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:16px;outline:none;';
+      linkBtn = document.createElement('button');
+      linkBtn.type = 'button';
+      linkBtn.style.cssText = 'min-height:44px;padding:8px 14px;font-family:Cinzel,serif;font-size:13px;letter-spacing:0.1em;color:#040608;background:#c8a84b;border:none;border-radius:4px;cursor:pointer;';
+      linkBtn.innerHTML = '<span class="en">SAVE</span><span class="es">GUARDAR</span>';
+      linkRow.appendChild(linkInp); linkRow.appendChild(linkBtn);
+      zone.appendChild(linkRow);
+    }
     host.appendChild(zone);
+
+    function takeLink() {
+      if (!linkInp) return;
+      var u = String(linkInp.value || '').replace(/^\s+|\s+$/g, '').split(/[\r\n]/)[0];
+      if (!u) return;
+      if (!/^https?:\/\//i.test(u)) { linkInp.style.borderColor = 'rgba(220,80,80,0.9)'; setTimeout(function() { linkInp.style.borderColor = 'rgba(200,168,75,0.35)'; }, 900); return; }
+      opts.onUrl(u);
+      linkInp.value = '';
+      linkInp.style.borderColor = '#c8a84b'; setTimeout(function() { linkInp.style.borderColor = 'rgba(200,168,75,0.35)'; }, 700);
+    }
 
     function reset() { pending = null; input.value = ''; row.style.display = 'none'; }
     /* v1.3 THE WHOLE HANDFUL: every file in a drop or pick reaches the page */
@@ -169,7 +213,7 @@
     zone.addEventListener('click', function(e) {
       if (row.style.display !== 'none') return;
       var tg = e.target;
-      while (tg && tg !== zone) { if (tg === row) return; tg = tg.parentNode; }
+      while (tg && tg !== zone) { if (tg === row || tg === linkRow) return; tg = tg.parentNode; }   /* v1.4: the link mouth never opens the picker */
       input.click();
     });
     input.multiple = true; /* v1.3 */
@@ -207,9 +251,17 @@
     cancelBtn.addEventListener('click', function(e) { e.stopPropagation(); reset(); nextInLine(); });
     titleInp.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); commit(); } });
     titleInp.addEventListener('click', function(e) { e.stopPropagation(); });
+    if (linkInp) {
+      linkInp.addEventListener('click', function(e) { e.stopPropagation(); });
+      linkInp.addEventListener('paste', function(e) { e.stopPropagation(); setTimeout(takeLink, 0); });   /* v1.4: paste into the mouth saves at once; never reaches the zone's paste road (no double-fire) */
+      linkInp.addEventListener('keydown', function(e) { if (e.key === 'Enter' || e.keyCode === 13) { e.preventDefault(); e.stopPropagation(); takeLink(); } });
+      linkBtn.addEventListener('click', function(e) { e.stopPropagation(); takeLink(); });
+      /* keep the placeholder in the member's tongue if the page swaps language after mount */
+      zone.addEventListener('mouseenter', function() { linkInp.placeholder = lang() === 'es' ? '\uD83D\uDD17 Pega un enlace aqu\u00ed' : '\uD83D\uDD17 Paste a link here'; });
+    }
 
     return { reset: reset, host: zone };
   }
 
-  window.SuperBucket = { mount: mount, version: '1.3' };
+  window.SuperBucket = { mount: mount, version: '1.4' };
 })();
