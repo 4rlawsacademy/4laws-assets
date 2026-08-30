@@ -1,4 +1,9 @@
-/* BENCH 31 super-bucket.js v1.5 — THE SHOWN LINK (founder, minutes after v1.4:
+/* BENCH 31 super-bucket.js v1.6 — THE SILENT HOVER (founder, 8/30: the grey
+ * "Click to choose a file…" tooltip still floated over every bucket, an old
+ * promise contradicting the new signs). v1.6 removes the zone's title; the
+ * promise line under the face is the only instruction. v1.5 -> v1.6. ES5.
+ *
+ * BENCH 31 super-bucket.js v1.5 — THE SHOWN LINK (founder, minutes after v1.4:
  * "It lit gold and didn't show the link... SUPER counter intuitive. It feels
  * like a failure.") v1.4 saved the instant a link was pasted, so the field
  * emptied before the member could see what arrived; the only proof was a
@@ -96,7 +101,7 @@
 
     var zone = document.createElement('div');
     zone.setAttribute('tabindex', '0');
-    zone.title = 'Click to choose a file - or drag one in, or copy a screenshot and press Cmd/Ctrl+V';
+    /* v1.6: no hover tooltip -- the promise line and the signs say it better */
     zone.style.cssText = 'margin:12px 0 6px;border:2px dashed rgba(200,168,75,0.45);border-radius:8px;padding:14px 12px;text-align:center;cursor:pointer;outline:none;';
 
     var faceUrl = opts.face ? (FACES[opts.face] || String(opts.face)) : '';
@@ -276,5 +281,5 @@
     return { reset: reset, host: zone };
   }
 
-  window.SuperBucket = { mount: mount, version: '1.5' };
+  window.SuperBucket = { mount: mount, version: '1.6' };
 })();
