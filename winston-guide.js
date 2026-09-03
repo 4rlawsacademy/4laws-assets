@@ -1,4 +1,13 @@
-/* BENCH 33 winston-guide.js v1.0 — THE WINSTON WHISPERS (crowned by the
+/* BENCH 33 winston-guide.js v1.1 — THE SIXTH WHISPER & THE OPEN LIBRARY
+ * (9/3/26, paired with /todos v61.1 THE CLEAR HEADER): the founder ruled
+ * the overlay's view-toggle square — "makes an amazing difference in
+ * functionality" with no hint it exists — "definitely needs a Winston
+ * whisper." Key 'view-toggle' joins the library. And for Bench 28's
+ * LESSON: WinstonGuide.register(key, {en:{line,more}, es:{line,more}})
+ * lets any page add page-local whispers without forking the organ —
+ * registered keys rescan immediately. v1.0 -> v1.1. ES5. Lineage:
+ *
+ * BENCH 33 winston-guide.js v1.0 — THE WINSTON WHISPERS (crowned by the
  * founder 9/2/26 night, "THE DRAFT" game: five buttons, five whispers,
  * the liturgy read -> design -> create). Winston is the kingdom's living
  * manual: a coin-sized medallion beside a marked button; TAP it (phones
@@ -35,6 +44,11 @@
             more: 'Not every problem is a document. Some need a calculator, a tracker, a sorter \u2014 a working tool. Bruno asks to see the trap, then forges the tool right here, and it stays pinned in this room.' },
       es: { line: 'Tras esta puerta est\u00e1 Bruno, el herrero de la casa. Descr\u00edbele tu problema \u2014 te dise\u00f1a y forja una herramienta.',
             more: 'No todo problema es un documento. Algunos piden una calculadora, un contador, un clasificador \u2014 una herramienta que funcione. Bruno pide ver la trampa, la forja aqu\u00ed mismo, y queda fijada en esta sala.' } },
+    'view-toggle': {
+      en: { line: 'This little square changes the whole room — full chat, or the workbench. Tap it and see.',
+            more: 'Two views live here: the full conversation for reading and talking, and the workbench view with the tools rail — the shelf, the accessories, the document doors. Most people never find this switch. Now you have.' },
+      es: { line: 'Este cuadrito cambia toda la sala — chat completo o banco de trabajo. Tócalo y verás.',
+            more: 'Aquí viven dos vistas: la conversación completa para leer y hablar, y el banco de trabajo con las herramientas — el estante, los accesorios, las puertas de documentos. Casi nadie encuentra este botón. Tú ya sí.' } },
     'build-document': {
       en: { line: 'When our talk is ready, I press it into a real document \u2014 it waits on this room\u2019s shelf.',
             more: 'Letters, form answers, lists, spreadsheets, even slides \u2014 built from what was actually read and said in this room, nothing invented. Word and PDF land on the shelf, ready when you are.' },
@@ -135,5 +149,14 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan);
   else scan();
   setInterval(scan, 2500); /* posts rendered later still get their Winston */
-  window.WinstonGuide = { scan: scan, version: '1.0' };
+  function register(key, entry) {
+    /* v1.1 THE OPEN LIBRARY: pages (e.g. the LESSON) add local whispers without forking the organ */
+    if (!key || !entry || !entry.en || !entry.en.line) return false;
+    if (LIB[key]) return false; /* the organ's own canon is never overwritten */
+    LIB[key] = { en: { line: String(entry.en.line), more: String(entry.en.more || entry.en.line) },
+                 es: entry.es && entry.es.line ? { line: String(entry.es.line), more: String(entry.es.more || entry.es.line) } : { line: String(entry.en.line), more: String(entry.en.more || entry.en.line) } };
+    scan();
+    return true;
+  }
+  window.WinstonGuide = { scan: scan, register: register, version: '1.1' };
 })();
