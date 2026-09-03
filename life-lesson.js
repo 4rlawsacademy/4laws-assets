@@ -1,7 +1,19 @@
 /* ============================================================
-   LIFE-LESSON.JS v1.0 — THE LESSON (Bench 28, the Gaming Bench)
+   LIFE-LESSON.JS v1.1 — THE HOME TOUR (Bench 28, the Gaming Bench)
    Winston's one-time guided tour: show -> TRY IT -> celebrate -> next.
-   Cut 9/3/26 on true timber: todos-v61_2_THE_GUARDED_NAME.html
+   v1.1 (9/3/26, cut on PWS_Talent_shell_v125_29 + todos v62.1 timber):
+   1. FLEET SELECTORS - the view-toggle is found by its documented
+      data-winston="view-toggle" stamp (brain-injected on /pws) with
+      #pwsViewToggle as first try; the ACCESSORIES door is found by
+      #tdUseAccDoor (future id), then the #tdUseAccWrap sibling walk,
+      then an honest text scan of footer buttons (ACCESSORIES/
+      ACCESORIOS) - one lesson now true on /todos AND /pws.
+   2. THE COURTEOUS BUBBLE (founder's field catch): the bubble steps
+      aside horizontally - target on the right half of the screen,
+      bubble leans left; target left, bubble leans right - so it
+      covers less of what sits under the spotlit button.
+   3. BD counsel honored: id-first targeting wherever an id exists.
+   v1.0 cut 9/3/26 on todos-v61_2_THE_GUARDED_NAME.html
    (header ids verified: pwsViewToggle / pwsVoiceBtn / pwsUseMoreBtn /
    pwsUseCloseBtn2; ACCESSORIES door = previousElementSibling of
    #tdUseAccWrap in the workbench footer).
@@ -137,7 +149,14 @@
       + '<button class="llSkip" id="llSkipBtn">' + (lang() === 'es' ? 'SALTAR EL TOUR' : 'SKIP THE TOUR') + '</button></div>';
     var bw = Math.min(340, vw * 0.88);
     bubble.style.top = (below ? (t + h + 44) : Math.max(8, t - 40 - 250)) + 'px';
-    bubble.style.left = Math.max(8, Math.min(vw - 8 - bw, l + w / 2 - bw / 2)) + 'px';
+    /* v1.1 THE COURTEOUS BUBBLE: lean away from the target's half so less is covered */
+    var cx = l + w / 2, bLeft;
+    if (vw - bw > 40) {
+      bLeft = (cx > vw / 2) ? 12 : (vw - bw - 12);
+    } else {
+      bLeft = Math.max(8, Math.min(vw - 8 - bw, cx - bw / 2));
+    }
+    bubble.style.left = bLeft + 'px';
     document.body.appendChild(bubble);
     document.getElementById('llSkipBtn').onclick = finish;
     if (st.noTry) {
@@ -220,7 +239,7 @@
     offerTitle: { en: 'FIRST TIME IN A DOC B ROOM?', es: '\u00bfPRIMERA VEZ EN UNA SALA DE DOC B?' },
     offerLine: { en: 'Take the 60-second tour of this cockpit \u2014 five doors, and the room is yours.', es: 'Toma el tour de 60 segundos de esta cabina \u2014 cinco puertas, y la sala es tuya.' },
     steps: [
-      { sel: '#pwsViewToggle',
+      { find: function(){ return document.getElementById('pwsViewToggle') || document.querySelector('[data-winston="view-toggle"]'); },
         say: { en: 'This little square changes your ENTIRE view \u2014 the full conversation, or the workbench with your tools.', es: 'Este cuadrito cambia TODA tu vista \u2014 la conversaci\u00f3n completa, o el banco de trabajo con tus herramientas.' },
         tryTxt: { en: 'Try it. Tap it now \u2014 watch the room change.', es: 'Pru\u00e9balo. T\u00f3calo ahora \u2014 mira c\u00f3mo cambia la sala.' },
         cheer: { en: 'That\u2019s it! Tap it anytime to switch views.', es: '\u00a1Eso es! T\u00f3calo cuando quieras para cambiar de vista.' } },
@@ -232,7 +251,19 @@
         say: { en: 'The \u22ef drawer \u2014 rare tools tucked in here (like Reframe), so the room stays clean.', es: 'El caj\u00f3n \u22ef \u2014 herramientas raras guardadas aqu\u00ed (como Reencuadre), para que la sala quede limpia.' },
         tryTxt: { en: 'Try it. Open the drawer.', es: 'Pru\u00e9balo. Abre el caj\u00f3n.' },
         cheer: { en: 'That\u2019s where the rare tools sleep.', es: 'Ah\u00ed duermen las herramientas raras.' } },
-      { find: function(){ var w = document.getElementById('tdUseAccWrap'); return w ? w.previousElementSibling : null; },
+      { find: function(){
+          var d = document.getElementById('tdUseAccDoor'); if (d) { return d; }
+          var w = document.getElementById('tdUseAccWrap'); if (w && w.previousElementSibling) { return w.previousElementSibling; }
+          var foot = document.getElementById('pwsUseFooter');
+          if (foot) {
+            var bs = foot.getElementsByTagName('button');
+            for (var bi = 0; bi < bs.length; bi++) {
+              var tx = (bs[bi].textContent || '').replace(/^\s+/, '');
+              if (tx.indexOf('ACCESSORIES') === 0 || tx.indexOf('ACCESORIOS') === 0) { return bs[bi]; }
+            }
+          }
+          return null;
+        },
         say: { en: 'ACCESSORIES \u2014 a folded shelf on the workbench: the timer with a real alarm, music, games, links, contacts, cash request.', es: 'ACCESORIOS \u2014 una repisa plegada en el banco: el temporizador con alarma real, m\u00fasica, juegos, enlaces, contactos, solicitud de dinero.' },
         tryTxt: { en: 'Try it. Unfold the shelf \u2014 then fold it back if you like.', es: 'Pru\u00e9balo. Despliega la repisa \u2014 y pli\u00e9gala de nuevo si quieres.' },
         cheer: { en: 'Everything small lives there, out of your way.', es: 'Todo lo peque\u00f1o vive ah\u00ed, sin estorbarte.' } },
