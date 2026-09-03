@@ -1,6 +1,11 @@
 /* ============================================================
-   LIFE-LESSON.JS v1.3 — THE MEASURED HAND (Bench 28, the Gaming Bench)
+   LIFE-LESSON.JS v1.4 — THE LIT ROOM (Bench 28, the Gaming Bench)
    Winston's one-time guided tour: show -> TRY IT -> celebrate -> next.
+   v1.4 (9/3/26, founder's field ruling: "the background remains
+   dark" - on the house's dark-felt pages even a .55 veil lands
+   near-black): THE LIT ROOM - the shade drops to a whisper (.18);
+   the room stays essentially at full light and the gold ring +
+   arrow + bubble carry the focus alone. One number tunes it.
    v1.3 (9/3/26, the gate's simulation catch - the near bubble
    overlapped the spotlit button on common phones and ALWAYS on the
    full-width ACCESSORIES target, intercepting the very tap the tour
@@ -95,7 +100,7 @@
     if (document.getElementById('llCss')) { return; }
     var s = document.createElement('style'); s.id = 'llCss';
     s.textContent = ''
-      + '.llShade{position:fixed;background:rgba(2,3,5,.55);z-index:2500000;}'
+      + '.llShade{position:fixed;background:rgba(2,3,5,.18);z-index:2500000;}'
       + '.llRing{position:fixed;border:2.5px solid #ffd75e;border-radius:12px;box-shadow:0 0 18px rgba(255,215,94,.55);z-index:2500001;pointer-events:none;}'
       + '.llRing.pulse{box-shadow:0 0 34px rgba(255,215,94,.95);}'
       + '.llArrow{position:fixed;z-index:2500002;font-size:30px;color:#ffd75e;text-shadow:0 2px 8px rgba(0,0,0,.9);pointer-events:none;-webkit-animation:llBob 1.1s ease-in-out infinite;animation:llBob 1.1s ease-in-out infinite;}'
