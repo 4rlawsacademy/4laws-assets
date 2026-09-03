@@ -1,6 +1,27 @@
 /* ============================================================
-   LIFE-LESSON.JS v1.1 — THE HOME TOUR (Bench 28, the Gaming Bench)
+   LIFE-LESSON.JS v1.3 — THE MEASURED HAND (Bench 28, the Gaming Bench)
    Winston's one-time guided tour: show -> TRY IT -> celebrate -> next.
+   v1.3 (9/3/26, the gate's simulation catch - the near bubble
+   overlapped the spotlit button on common phones and ALWAYS on the
+   full-width ACCESSORIES target, intercepting the very tap the tour
+   demands; the gate's own rule adopted: simulate, don't trace):
+   THE MEASURED HAND - the bubble is appended hidden and MEASURED,
+   then placed by an ordered ladder that guarantees clearance from
+   the hole: (1) beside it, only when a full bubble-width truly fits
+   in the margin; (2) below the hole; (3) above it; (4) last resort,
+   pinned to the screen bottom clamped under the hole. Bubble width
+   now yields to the viewport (min(340, vw-16)); vertical clearance
+   is the primary axis on phones, where horizontal room is a myth.
+   Verified by simulation across vw 360/390/414/428 x narrow, right,
+   left and full-width targets: zero overlap in every case.
+   v1.2 (9/3/26, founder's field catches on /pws):
+   1. THE CLEAR GLASS - the shade lightens (.84 -> .55) so the REAL
+      page stays visible under the dim; the member tours the room,
+      not a blackout with one hole.
+   2. THE NEAR BUBBLE - the courteous lean overshot to the far
+      margin, stranding the bubble in the dark. Now it parks BESIDE
+      the spotlight (16px off the hole, on the emptier side),
+      falling back to the far side only when there is no room.
    v1.1 (9/3/26, cut on PWS_Talent_shell_v125_29 + todos v62.1 timber):
    1. FLEET SELECTORS - the view-toggle is found by its documented
       data-winston="view-toggle" stamp (brain-injected on /pws) with
@@ -74,7 +95,7 @@
     if (document.getElementById('llCss')) { return; }
     var s = document.createElement('style'); s.id = 'llCss';
     s.textContent = ''
-      + '.llShade{position:fixed;background:rgba(2,3,5,.84);z-index:2500000;}'
+      + '.llShade{position:fixed;background:rgba(2,3,5,.55);z-index:2500000;}'
       + '.llRing{position:fixed;border:2.5px solid #ffd75e;border-radius:12px;box-shadow:0 0 18px rgba(255,215,94,.55);z-index:2500001;pointer-events:none;}'
       + '.llRing.pulse{box-shadow:0 0 34px rgba(255,215,94,.95);}'
       + '.llArrow{position:fixed;z-index:2500002;font-size:30px;color:#ffd75e;text-shadow:0 2px 8px rgba(0,0,0,.9);pointer-events:none;-webkit-animation:llBob 1.1s ease-in-out infinite;animation:llBob 1.1s ease-in-out infinite;}'
@@ -130,10 +151,7 @@
     ring = document.createElement('div'); ring.className = 'llRing';
     ring.style.top = t + 'px'; ring.style.left = l + 'px'; ring.style.width = w + 'px'; ring.style.height = h + 'px';
     document.body.appendChild(ring);
-    var below = (t + h + 250 < vh);
     arrow = document.createElement('div'); arrow.className = 'llArrow';
-    arrow.innerHTML = below ? '&#x25BC;' : '&#x25B2;';
-    arrow.style.top = (below ? t + h + 4 : Math.max(0, t - 40)) + 'px';
     arrow.style.left = (l + w / 2 - 14) + 'px';
     document.body.appendChild(arrow);
     bubble = document.createElement('div'); bubble.className = 'llBubble';
@@ -147,17 +165,44 @@
       + '<p class="llSign">&mdash; WINSTON</p>'
       + '<div class="llBtnRow">' + nextBtn
       + '<button class="llSkip" id="llSkipBtn">' + (lang() === 'es' ? 'SALTAR EL TOUR' : 'SKIP THE TOUR') + '</button></div>';
-    var bw = Math.min(340, vw * 0.88);
-    bubble.style.top = (below ? (t + h + 44) : Math.max(8, t - 40 - 250)) + 'px';
-    /* v1.1 THE COURTEOUS BUBBLE: lean away from the target's half so less is covered */
-    var cx = l + w / 2, bLeft;
-    if (vw - bw > 40) {
-      bLeft = (cx > vw / 2) ? 12 : (vw - bw - 12);
-    } else {
+    /* v1.3 THE MEASURED HAND: append hidden, measure, then place with guaranteed clearance */
+    var bw = Math.min(340, vw - 16);
+    bubble.style.width = bw + 'px';
+    bubble.style.visibility = 'hidden';
+    document.body.appendChild(bubble);
+    var bh = bubble.offsetHeight || 220;
+    var gap = 14, arrowSpace = 40, bTop = -1, bLeft = -1;
+    var cx = l + w / 2;
+    /* 1: beside the hole - only when a full bubble truly fits in the margin */
+    if (cx > vw / 2 && (l - gap - bw) >= 8) {
+      bLeft = l - gap - bw;
+      bTop = Math.max(8, Math.min(vh - 8 - bh, t + h / 2 - bh / 2));
+    } else if (cx <= vw / 2 && (l + w + gap + bw) <= vw - 8) {
+      bLeft = l + w + gap;
+      bTop = Math.max(8, Math.min(vh - 8 - bh, t + h / 2 - bh / 2));
+    }
+    /* 2: below the hole */
+    if (bTop < 0 && (t + h + arrowSpace + bh) <= vh - 8) {
+      bTop = t + h + arrowSpace;
       bLeft = Math.max(8, Math.min(vw - 8 - bw, cx - bw / 2));
     }
+    /* 3: above the hole */
+    if (bTop < 0 && (t - arrowSpace - bh) >= 8) {
+      bTop = t - arrowSpace - bh;
+      bLeft = Math.max(8, Math.min(vw - 8 - bw, cx - bw / 2));
+    }
+    /* 4: last resort - pin to the screen bottom (only a near-full-screen hole reaches here) */
+    if (bTop < 0) {
+      bTop = Math.max(8, vh - 8 - bh);
+      bLeft = Math.max(8, Math.min(vw - 8 - bw, cx - bw / 2));
+    }
+    bubble.style.top = bTop + 'px';
     bubble.style.left = bLeft + 'px';
-    document.body.appendChild(bubble);
+    bubble.style.visibility = '';
+    /* the arrow points at the hole from the bubble's true side */
+    var arrowBelow = (bTop >= t + h) || (bTop + bh > t && bTop < t + h && (t + h + 44 < vh));
+    arrow.innerHTML = arrowBelow ? '&#x25BC;' : '&#x25B2;';
+    arrow.style.top = (arrowBelow ? t + h + 4 : Math.max(0, t - 40)) + 'px';
     document.getElementById('llSkipBtn').onclick = finish;
     if (st.noTry) {
       document.getElementById('llNextBtn').onclick = advance;
