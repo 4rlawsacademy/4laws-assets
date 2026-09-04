@@ -1,3 +1,22 @@
+/* v1.5 THE VANISHING WORD (Bench 33, founder's field ruling minutes after
+ * v1.4: "this thing is landing on the buttons... Can the box appear and
+ * disappear?" Yes: the bubble now carries a small \u2013 button - tap it and
+ * the words vanish, leaving only the gold ring and the bobbing arrow
+ * (which cover nothing) so the member can see and work the room freely;
+ * tap the ARROW and the words return. Member-controlled, never timed -
+ * elders read at their own pace. Each new step arrives with its words
+ * showing again. Rides on v1.4 THE FOUNDER'S SEAT (below-first law).
+ * Overwrite in the repo + purge. */
+/* v1.4 THE FOUNDER'S SEAT (Bench 33 cutting at the founder's field ruling,
+ * 9/3 night shift, first live tour minutes old: "bubble below it, arrow up.
+ * Buttons where they are, chat box down." The old hand tried BESIDE the
+ * target first, which seated the bubble over the chat. New law: BELOW
+ * FIRST, always - the bubble sits under the spotlighted button with the
+ * arrow pointing UP at it, chat and buttons unblocked; above only when
+ * the screen truly has no room below; pin-bottom last resort. The beside
+ * roads are retired. Arrow glyphs now point AT the target from the
+ * bubble's side (below -> \u25B2 up at the button; above -> \u25BC down).
+ * Nothing else moved. Overwrite in the repo + purge. */
 /* ============================================================
    LIFE-LESSON.JS v1.4 — THE LIT ROOM (Bench 28, the Gaming Bench)
    Winston's one-time guided tour: show -> TRY IT -> celebrate -> next.
@@ -119,6 +138,8 @@
       + '.llSkip{background:none;border:none;color:#8a7b52;font-family:Cinzel,serif;font-size:12px;letter-spacing:.15em;cursor:pointer;padding:10px 4px;min-height:44px;}'
       + '.llDots{margin-left:auto;font-size:13px;color:#8a7b52;letter-spacing:.3em;}'
       + '.llDots b{color:#ffd75e;}'
+      + '.llHide{margin-left:8px;background:transparent;border:1px solid rgba(200,168,75,.5);border-radius:50%;width:24px;height:24px;color:#c8a84b;font-size:15px;line-height:1;cursor:pointer;flex-shrink:0;}'
+      + '.llArrowLive{pointer-events:auto !important;cursor:pointer;}'
       + '.llOffer{position:fixed;left:50%;bottom:22px;-webkit-transform:translateX(-50%);transform:translateX(-50%);z-index:2400000;background:rgba(6,8,12,.97);border:2px solid #c8a84b;border-radius:14px;padding:12px 16px;max-width:360px;width:92vw;box-shadow:0 8px 30px rgba(0,0,0,.8);font-family:\'Cormorant Garamond\',Georgia,serif;}';
     document.head.appendChild(s);
   }
@@ -165,7 +186,8 @@
     var nextBtn = st.noTry ? '<button class="llNext" id="llNextBtn">' + (lang() === 'es' ? 'SIGUIENTE' : 'NEXT') + '</button>' : '';
     bubble.innerHTML = '<div class="llTop">' + coinHtml()
       + '<span class="llStep">' + (lang() === 'es' ? 'PASO ' : 'STEP ') + (step + 1) + ' / ' + total + '</span>'
-      + '<span class="llDots"><b>' + dots() + '</b></span></div>'
+      + '<span class="llDots"><b>' + dots() + '</b></span>'
+      + '<button class="llHide" id="llHideBtn" title="Hide">&#8211;</button></div>'
       + '<p class="llSay">' + T(st.say) + '</p>' + tryLine
       + '<p class="llSign">&mdash; WINSTON</p>'
       + '<div class="llBtnRow">' + nextBtn
@@ -176,22 +198,14 @@
     bubble.style.visibility = 'hidden';
     document.body.appendChild(bubble);
     var bh = bubble.offsetHeight || 220;
-    var gap = 14, arrowSpace = 40, bTop = -1, bLeft = -1;
+    var arrowSpace = 40, bTop = -1, bLeft = -1;
     var cx = l + w / 2;
-    /* 1: beside the hole - only when a full bubble truly fits in the margin */
-    if (cx > vw / 2 && (l - gap - bw) >= 8) {
-      bLeft = l - gap - bw;
-      bTop = Math.max(8, Math.min(vh - 8 - bh, t + h / 2 - bh / 2));
-    } else if (cx <= vw / 2 && (l + w + gap + bw) <= vw - 8) {
-      bLeft = l + w + gap;
-      bTop = Math.max(8, Math.min(vh - 8 - bh, t + h / 2 - bh / 2));
-    }
-    /* 2: below the hole */
-    if (bTop < 0 && (t + h + arrowSpace + bh) <= vh - 8) {
+    /* v1.4 THE FOUNDER'S SEAT: BELOW FIRST, always - chat and buttons stay unblocked */
+    if ((t + h + arrowSpace + bh) <= vh - 8) {
       bTop = t + h + arrowSpace;
       bLeft = Math.max(8, Math.min(vw - 8 - bw, cx - bw / 2));
     }
-    /* 3: above the hole */
+    /* above only when the screen truly has no room below */
     if (bTop < 0 && (t - arrowSpace - bh) >= 8) {
       bTop = t - arrowSpace - bh;
       bLeft = Math.max(8, Math.min(vw - 8 - bw, cx - bw / 2));
@@ -204,11 +218,21 @@
     bubble.style.top = bTop + 'px';
     bubble.style.left = bLeft + 'px';
     bubble.style.visibility = '';
-    /* the arrow points at the hole from the bubble's true side */
-    var arrowBelow = (bTop >= t + h) || (bTop + bh > t && bTop < t + h && (t + h + 44 < vh));
-    arrow.innerHTML = arrowBelow ? '&#x25BC;' : '&#x25B2;';
-    arrow.style.top = (arrowBelow ? t + h + 4 : Math.max(0, t - 40)) + 'px';
+    /* v1.4: the arrow stands between button and bubble, pointing AT the button */
+    var bubbleBelow = bTop >= t + h;
+    arrow.innerHTML = bubbleBelow ? '&#x25B2;' : '&#x25BC;';
+    arrow.style.top = (bubbleBelow ? t + h + 6 : Math.max(0, t - 38)) + 'px';
     document.getElementById('llSkipBtn').onclick = finish;
+    /* v1.5 THE VANISHING WORD: tap \u2013 and the words step aside; tap the arrow and they return */
+    (function() {
+      var hb = document.getElementById('llHideBtn');
+      if (!hb) return;
+      hb.onclick = function(ev) {
+        ev.stopPropagation();
+        if (bubble) bubble.style.display = 'none';
+        if (arrow) { arrow.className = 'llArrow llArrowLive'; arrow.onclick = function(e2) { e2.stopPropagation(); if (bubble) bubble.style.display = ''; arrow.className = 'llArrow'; arrow.onclick = null; }; }
+      };
+    }());
     if (st.noTry) {
       document.getElementById('llNextBtn').onclick = advance;
     } else {
