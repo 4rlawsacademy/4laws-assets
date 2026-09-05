@@ -1,4 +1,24 @@
 /* ============================================================
+   DOCB-REMINDERS.JS v2.3 — THE MID-RIGHT TAB & THE SERIES (9/5/26, the
+   founder's first live field test of v2.2). Three cures:
+   1. THE MID-RIGHT TAB -- the LIFE companion chip (life-companion.js,
+      left:12px bottom:88px) and this organ's drawer (bottom:72px left:16px)
+      both claimed the same corner; the founder's screenshot showed the
+      LVL chip sitting on top of his reminder list. Every corner on this
+      fleet is already spoken for -- LIFE bottom-left, the TODOS/TRUST
+      pills bottom-center, Winston's badge and Find-ME on the right -- so
+      the badge is now a tab on the mid-right EDGE, and the drawer opens
+      as a centered panel under the Veil, where nothing else lives.
+      The drawer gained its own × close.
+   2. THE SERIES -- reminders born as a chain (every 5 minutes until the
+      call is made) carry a shared seriesId. The drawer folds a chain
+      into ONE line with a ×N tag; the badge counts a chain once; Done on
+      any sibling flips the whole chain locally and pulls its queued
+      siblings out of the Veil -- the server (PWS.gs Build 31.2) cascades
+      the same way. Founder's ruling: "calls should stop once I click done."
+   3. add() carries seriesId through to the backend.
+   v2.2's crown stands below, unchanged in substance.
+   ============================================================
    DOCB-REMINDERS.JS v2.2 — THE CLOSED DOOR (external gate catch, 9/4/26):
    the four backend handlers this organ talks to had no authentication at
    all -- v2.0/v2.1 never sent a sessionId because nothing asked for one.
@@ -88,7 +108,7 @@
   function add(o) {
     var mid = memberId();
     if (!mid || !o || !o.msg || !o.remindAt) { return Promise.resolve(null); }
-    return post_({ action: 'pwsReminderAdd', requestingMemberId: mid, message: String(o.msg).substring(0, 400), remindAt: o.remindAt, room: o.room || '' })
+    return post_({ action: 'pwsReminderAdd', requestingMemberId: mid, message: String(o.msg).substring(0, 400), remindAt: o.remindAt, room: o.room || '', seriesId: o.seriesId || '' })
       .then(function (d) {
         if (!d || !d.success) { return null; }
         refresh(); /* the new one should appear in the scroll right away, not wait for the next poll */
@@ -102,8 +122,16 @@
   }
   function markDone_(id) {
     var mid = memberId(); if (!mid) { return; }
-    /* optimistic local flip so the UI feels instant; refresh() true-ups against the server right after */
-    for (var i = 0; i < cache.length; i++) { if (cache[i].id === id) { cache[i].done = true; cache[i].seen = true; } }
+    /* optimistic local flip so the UI feels instant; refresh() true-ups against the server right after.
+       v2.3 THE SERIES: done takes its still-pending siblings with it (founder's ruling) -- server cascades too. */
+    var sid = '';
+    for (var i = 0; i < cache.length; i++) { if (cache[i].id === id) { cache[i].done = true; cache[i].seen = true; sid = cache[i].seriesId || ''; } }
+    if (sid) {
+      for (var j = 0; j < cache.length; j++) {
+        if (cache[j].seriesId === sid && !cache[j].done) { cache[j].done = true; cache[j].seen = true; }
+      }
+      for (var k = veilQ.length - 1; k >= 0; k--) { if (veilQ[k].seriesId === sid) { veilQ.splice(k, 1); } } /* a queued sibling never speaks */
+    }
     post_({ action: 'pwsReminderMarkDone', requestingMemberId: mid, id: id })
       .then(function () { refresh(); })
       ['catch'](function () {});
@@ -114,7 +142,7 @@
     if (document.getElementById('drCss')) { return; }
     var s = document.createElement('style'); s.id = 'drCss';
     s.textContent = ''
-      + '#drFab{position:fixed;bottom:16px;left:16px;z-index:2200000;background:#0a0d12;border:2px solid #c8a84b;color:#ffd75e;border-radius:999px;min-height:48px;padding:0 16px;font-size:14px;font-family:Cinzel,serif;letter-spacing:.08em;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.6);}'
+      + '#drFab{position:fixed;right:0;top:50%;-webkit-transform:translateY(-50%);transform:translateY(-50%);z-index:2200000;background:#0a0d12;border:2px solid #c8a84b;border-right:none;color:#ffd75e;border-radius:999px 0 0 999px;min-height:48px;padding:0 14px 0 16px;font-size:14px;font-family:Cinzel,serif;letter-spacing:.08em;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.6);}' /* v2.3: mid-right tab -- every corner on this fleet is already spoken for (LIFE chip bottom-left, the pills bottom-center, Winston/Find-ME on the right) */
       + '#drFab.drQuiet{opacity:.55;}'
       + '#drVeil{position:fixed;left:50%;top:18px;-webkit-transform:translateX(-50%);transform:translateX(-50%);z-index:2400000;width:340px;max-width:92vw;background:rgba(6,8,12,.97);border:2px solid #c8a84b;border-radius:14px;padding:16px 18px;box-shadow:0 10px 34px rgba(0,0,0,.75);font-family:\'Cormorant Garamond\',Georgia,serif;display:none;}'
       + '#drVeil.on{display:block;}'
@@ -124,7 +152,9 @@
       + '.drRow{display:-webkit-flex;display:flex;gap:10px;}'
       + '.drBtn{background:#c8a84b;color:#040608;border:none;border-radius:999px;font-family:Cinzel,serif;font-size:13px;letter-spacing:.08em;padding:10px 16px;min-height:44px;cursor:pointer;}'
       + '.drGhost{background:none;border:1px solid rgba(200,168,75,.4);color:#c8a84b;border-radius:999px;font-family:Cinzel,serif;font-size:12px;letter-spacing:.08em;padding:10px 14px;min-height:44px;cursor:pointer;}'
-      + '#drDrawer{position:fixed;bottom:72px;left:16px;z-index:2200001;width:320px;max-width:90vw;max-height:60vh;overflow:auto;background:rgba(6,8,12,.97);border:2px solid #c8a84b;border-radius:14px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.8);font-family:\'Cormorant Garamond\',Georgia,serif;display:none;}'
+      + '#drDrawer{position:fixed;left:50%;top:70px;-webkit-transform:translateX(-50%);transform:translateX(-50%);z-index:2200001;width:360px;max-width:92vw;max-height:70vh;overflow:auto;background:rgba(6,8,12,.97);border:2px solid #c8a84b;border-radius:14px;padding:14px 16px;box-shadow:0 8px 30px rgba(0,0,0,.8);font-family:\'Cormorant Garamond\',Georgia,serif;display:none;}' /* v2.3: centered panel, nothing else on the fleet lives top-center */
+      + '#drDrawer .drClose{position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(200,168,75,.6);font-size:20px;line-height:1;cursor:pointer;padding:4px;}'
+      + '.drSeries{display:inline-block;margin-left:6px;font-family:Cinzel,serif;font-size:10px;letter-spacing:.1em;color:#c8a84b;border:1px solid rgba(200,168,75,.4);border-radius:6px;padding:1px 6px;vertical-align:middle;}'
       + '#drDrawer.on{display:block;}'
       + '.drTitle{font-family:Cinzel,serif;font-size:12px;letter-spacing:.16em;color:#c8a84b;margin:0 0 10px;}'
       + '.drItem{border-top:1px solid rgba(200,168,75,.2);padding:10px 0;}'
@@ -174,14 +204,28 @@
     var d = document.getElementById('drDrawer');
     if (!d) { return; } /* v2.1: open() can now be called by a room's own tile before this organ has anything to show -- never throw */
     if (!drawerOpen) { d.className = ''; return; }
-    var list = cache.slice().sort(function (a, b) { return (new Date(b.remindAt)).getTime() - (new Date(a.remindAt)).getTime(); });
-    var h = '<p class="drTitle">' + T({ en: 'YOUR REMINDERS \u2014 nothing here is ever lost, on any device', es: 'TUS RECORDATORIOS \u2014 nada aqu\u00ed se pierde, en ning\u00fan dispositivo' }) + '</p>';
+    /* v2.3 THE SERIES: a chain of every-5-minute nudges is ONE thing to the member, not seven rows --
+       show the earliest still-pending sibling as the face of the series (or the first, once all are done). */
+    var seen = {}, folded = [];
+    var sorted = cache.slice().sort(function (a, b) { return (new Date(a.remindAt)).getTime() - (new Date(b.remindAt)).getTime(); });
+    for (var f = 0; f < sorted.length; f++) {
+      var it0 = sorted[f], key = it0.seriesId || ('solo_' + it0.id);
+      if (!seen[key]) { seen[key] = { item: it0, count: 0, pending: 0 }; folded.push(seen[key]); }
+      seen[key].count++;
+      if (!it0.done) { seen[key].pending++; if (seen[key].item.done) { seen[key].item = it0; } }
+    }
+    var list = [];
+    for (var g = 0; g < folded.length; g++) { var e = folded[g].item; e._count = folded[g].count; e._pending = folded[g].pending; list.push(e); }
+    list.sort(function (a, b) { return (new Date(b.remindAt)).getTime() - (new Date(a.remindAt)).getTime(); });
+    var h = '<button class="drClose" aria-label="Close" onclick="window.DocBReminders._close()">\u00d7</button>'
+      + '<p class="drTitle">' + T({ en: 'YOUR REMINDERS \u2014 nothing here is ever lost, on any device', es: 'TUS RECORDATORIOS \u2014 nada aqu\u00ed se pierde, en ning\u00fan dispositivo' }) + '</p>';
     if (!list.length) { h += '<p class="drIMsg" style="opacity:.6;">' + T({ en: 'Nothing waiting yet.', es: 'A\u00fan no hay nada esperando.' }) + '</p>'; }
     for (var i = 0; i < list.length; i++) {
       var it = list[i];
       var when = new Date(it.remindAt).toLocaleString();
+      var seriesTag = (it._count > 1) ? '<span class="drSeries">\u00d7' + it._count + (it._pending ? ' \u00b7 ' + it._pending + ' ' + T({ en: 'left', es: 'faltan' }) : '') + '</span>' : '';
       h += '<div class="drItem' + (it.done ? ' drDone' : '') + '" id="drIt_' + it.id + '">'
-        + '<p class="drIMsg">' + esc(it.message) + '</p>'
+        + '<p class="drIMsg">' + esc(it.message) + seriesTag + '</p>'
         + '<p class="drIWhen">' + when + (it.room ? ' \u00b7 ' + esc(it.room) : '') + '</p>'
         + (it.done ? '' : '<button class="drIBtn" onclick="window.DocBReminders._done(\'' + it.id + '\')">' + T({ en: '\u2713 Mark done', es: '\u2713 Marcar hecho' }) + '</button>')
         + '</div>';
@@ -191,8 +235,13 @@
   }
   function renderFab() {
     var fab = document.getElementById('drFab');
-    var due = 0;
-    for (var i = 0; i < cache.length; i++) { if (!cache[i].done && (new Date(cache[i].remindAt)).getTime() <= nowMs()) { due++; } }
+    var due = 0, dueSeries = {};
+    for (var i = 0; i < cache.length; i++) {
+      var c = cache[i];
+      if (c.done || (new Date(c.remindAt)).getTime() > nowMs()) { continue; }
+      var k = c.seriesId || ('solo_' + c.id);
+      if (!dueSeries[k]) { dueSeries[k] = true; due++; } /* v2.3: a series is one thing waiting, not seven */
+    }
     if (!fab) {
       fab = document.createElement('button'); fab.id = 'drFab';
       fab.setAttribute('aria-label', 'Reminders');
@@ -255,7 +304,8 @@
   window.DocBReminders = {
     add: add,
     refresh: refresh,
-    open: function () { drawerOpen = true; renderDrawer(); }, /* v2.1: lets a room's own Accessories tile open the same drawer the corner badge does */
+    open: function () { drawerOpen = true; renderDrawer(); },
+    _close: function () { drawerOpen = false; renderDrawer(); }, /* v2.1: lets a room's own Accessories tile open the same drawer the corner badge does */
     _done: function (id) { markDone_(id); advanceVeil(id); glow(id); renderDrawer(); },
     _later: function (id) { advanceVeil(id); }
   };
