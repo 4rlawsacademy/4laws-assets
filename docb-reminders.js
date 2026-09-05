@@ -1,4 +1,31 @@
 /* ============================================================
+   DOCB-REMINDERS.JS v2.4.1 — THE HONEST FORM (external gate catch, 9/5/26):
+   the new "+ NEW REMINDER" form confirmed success even when every save
+   failed -- it counted successes and never failures, the exact bug the
+   AI road already had cured in /todos v64.11. Cured, not argued: the
+   form now mirrors harvest()'s own branching -- success only when
+   something truly saved, an honest failure line otherwise, and on total
+   failure the form stays open with the member's words still in it.
+   The rest of v2.4 stands below.
+   ============================================================
+   DOCB-REMINDERS.JS v2.4 — FROM ANYWHERE (9/5/26, the founder: "I want to
+   set reminders from anywhere the idea comes to mind, not just when
+   working todos" -- and until now only /todos's own room knew the trick).
+   Two roads, both in this one file so every page inherits them on purge:
+   1. "+ NEW REMINDER" inside the panel -- message, a time picker, and an
+      optional chain (every N minutes × count). Deterministic, no Doc B
+      needed, so it works even on pages with no chat at all (/studio,
+      /atelier, /doc-b-ai). Room label = the page title.
+   2. THE VOICE ROAD, portable: promptClause() (THE KEPT WORD with the
+      member's live clock -- the exact words /todos field-proved) and
+      harvest(reply, room) (every REMINDER_SET line parsed, series-aware,
+      seated, honestly toasted, stripped from the reply). Any Doc B room
+      adds one guarded line to its prompt and one to its landing. Wired
+      this cut into /pws-trust's coaches, /talent-1's coaches, /studio-
+      create's Doc B, /ai-companion's session, and /pws's tool-room
+      overlay + header co-pilot. The organ carries its own small toast
+      so no room has to lend one. v2.3's crown stands below.
+   ============================================================
    DOCB-REMINDERS.JS v2.3 — THE MID-RIGHT TAB & THE SERIES (9/5/26, the
    founder's first live field test of v2.2). Three cures:
    1. THE MID-RIGHT TAB -- the LIFE companion chip (life-companion.js,
@@ -137,6 +164,111 @@
       ['catch'](function () {});
   }
 
+  /* ---------------- v2.4: the organ carries the voice road for every room ---------------- */
+  function toast_(msg) {
+    try {
+      var t = document.getElementById('drToast');
+      if (!t) { t = document.createElement('div'); t.id = 'drToast'; document.body.appendChild(t); }
+      t.textContent = msg; t.className = 'on';
+      clearTimeout(t._tm); t._tm = setTimeout(function () { t.className = ''; }, 3600);
+    } catch (e) {}
+  }
+  function promptClause() {
+    /* THE KEPT WORD, portable: any room appends this to its systemPrompt. Carries the
+       member's real clock so Doc B computes true timestamps. Same words /todos proved. */
+    return ' THE KEPT WORD: RIGHT NOW, the member\u2019s exact clock time is ' + (new Date()).toString() + '. '
+      + 'When the member asks to be reminded, prompted, or nudged about something at a real future moment \u2014 later today, tomorrow, or any time you must compute from what they said (\u2018in 20 minutes\u2019, \u2018at 2:15\u2019, \u2018tomorrow morning\u2019) \u2014 '
+      + 'compute the true timestamp from the clock time just given, then END your reply with one REMINDER_SET line PER MOMENT, each on its own line, nothing after them: REMINDER_SET {"remindAt":"<ISO 8601 with their own timezone offset>","message":"<the plain thing to tell them>","series":<number>}. '
+      + 'THE SERIES: when the member wants the same nudge repeated (\u2018every 5 minutes from 12:00 to 12:30\u2019, \u2018every day at 9\u2019), emit one line per moment and give all of them the SAME "series" number (1 for the first chain, 2 for a second unrelated chain); a single stand-alone reminder omits "series". Marking any one of a series done silences the rest \u2014 the house handles that. Cap a series at 12 lines; for \u2018every day\u2019 set the next 7 days. '
+      + 'ONLY PROMISE WHAT YOU EMIT: never say you will remind them at times you did not write a line for. Confirm warmly in your own words BEFORE the lines, never as a list of steps, never telling the member to set anything themselves. If no real time can be worked out from what they said, ask ONE clarifying question instead of guessing. '
+      + 'NEVER emit these lines for a same-session countdown (checking something in a few minutes while still here) \u2014 that is a Timer, not a reminder. ';
+  }
+  function harvest(reply, room) {
+    /* Parses every REMINDER_SET line out of a Doc B reply, seats them (series-aware),
+       toasts the honest count, and returns the reply with the lines stripped. Safe on
+       any string; returns it untouched when there is nothing to harvest. */
+    reply = (reply == null) ? '' : String(reply);
+    var lines = [], re = /REMINDER_SET\s*(\{[\s\S]*?\})/g, m;
+    while ((m = re.exec(reply)) !== null) { lines.push(m[1]); }
+    if (!lines.length) { return reply; }
+    var clean = reply.replace(/REMINDER_SET\s*\{[\s\S]*?\}/g, '').replace(/\s+$/, '');
+    var seriesMap = {}, ok = 0, bad = 0, first = null, pending = lines.length;
+    function finish() {
+      if (--pending > 0) { return; }
+      var es = (lang() === 'es');
+      if (ok && !bad) { toast_('\u23F0 ' + (ok > 1 ? (es ? ok + ' recordatorios puestos, el primero ' : ok + ' reminders set, first at ') : (es ? 'Recordatorio puesto para ' : 'Reminder set for ')) + (first ? (new Date(first)).toLocaleString() : '')); }
+      else if (ok && bad) { toast_('\u23F0 ' + ok + (es ? ' puestos; ' : ' set; ') + bad + (es ? ' no se pudieron fijar.' : ' couldn\u2019t be pinned down.')); }
+      else { toast_(es ? 'No pude fijar la hora del recordatorio. Intenta de nuevo con una hora clara.' : 'Couldn\u2019t pin down that time for the reminder. Try again with a clearer time.'); }
+    }
+    for (var i = 0; i < lines.length; i++) {
+      try {
+        var o = JSON.parse(lines[i]);
+        if (!o || !o.remindAt || !o.message) { bad++; finish(); continue; }
+        var sid = '';
+        if (o.series !== undefined && o.series !== null && o.series !== '') {
+          var sk = String(o.series);
+          if (!seriesMap[sk]) { seriesMap[sk] = 'ser_' + nowMs().toString(36) + '_' + sk.replace(/[^a-z0-9]/gi, '').substring(0, 8); }
+          sid = seriesMap[sk];
+        }
+        if (!first || (new Date(o.remindAt)).getTime() < (new Date(first)).getTime()) { first = o.remindAt; }
+        add({ msg: String(o.message).substring(0, 400), remindAt: o.remindAt, room: room || '', seriesId: sid })
+          .then(function (id) { if (id) { ok++; } else { bad++; } finish(); });
+      } catch (e) { bad++; finish(); }
+    }
+    return clean;
+  }
+
+  /* ---------------- v2.4: "+ New reminder" -- from anywhere, no Doc B needed ---------------- */
+  function pad2_(n) { return (n < 10 ? '0' : '') + n; }
+  function localInputValue_(d) {
+    return d.getFullYear() + '-' + pad2_(d.getMonth() + 1) + '-' + pad2_(d.getDate()) + 'T' + pad2_(d.getHours()) + ':' + pad2_(d.getMinutes());
+  }
+  function formHtml_() {
+    var es = (lang() === 'es');
+    var def = new Date(nowMs() + 60 * 60 * 1000); def.setSeconds(0, 0);
+    return '<div class="drForm" id="drForm">'
+      + '<input id="drFMsg" class="drIn" maxlength="400" placeholder="' + (es ? 'Recu\u00e9rdame\u2026' : 'Remind me to\u2026') + '">'
+      + '<div class="drFRow"><input id="drFAt" class="drIn" type="datetime-local" value="' + localInputValue_(def) + '">'
+      + '<select id="drFRep" class="drIn drSel"><option value="0">' + (es ? 'Una vez' : 'Once') + '</option><option value="5">' + (es ? 'Cada 5 min' : 'Every 5 min') + '</option><option value="10">' + (es ? 'Cada 10 min' : 'Every 10 min') + '</option><option value="15">' + (es ? 'Cada 15 min' : 'Every 15 min') + '</option><option value="60">' + (es ? 'Cada hora' : 'Every hour') + '</option><option value="1440">' + (es ? 'Cada d\u00eda' : 'Every day') + '</option></select>'
+      + '<select id="drFCnt" class="drIn drSel"><option value="3">\u00d73</option><option value="5">\u00d75</option><option value="7" selected>\u00d77</option><option value="12">\u00d712</option></select></div>'
+      + '<div class="drFRow"><button class="drBtn" onclick="window.DocBReminders._submitForm()">' + (es ? '\u23F0 Guardar' : '\u23F0 Save') + '</button>'
+      + '<button class="drGhost" onclick="window.DocBReminders._toggleForm()">' + (es ? 'Cancelar' : 'Cancel') + '</button></div>'
+      + '</div>';
+  }
+  var formOpen = false;
+  function submitForm_() {
+    var msgEl = document.getElementById('drFMsg'), atEl = document.getElementById('drFAt'), repEl = document.getElementById('drFRep'), cntEl = document.getElementById('drFCnt');
+    if (!msgEl || !atEl) { return; }
+    var msg = String(msgEl.value || '').replace(/^\s+|\s+$/g, '');
+    var at = new Date(atEl.value);
+    var es = (lang() === 'es');
+    if (!msg) { toast_(es ? 'Escribe qu\u00e9 recordarte.' : 'Write what to remind you of.'); return; }
+    if (isNaN(at.getTime())) { toast_(es ? 'Elige una hora v\u00e1lida.' : 'Pick a valid time.'); return; }
+    var every = parseInt(repEl ? repEl.value : '0', 10) || 0;
+    var count = every ? (parseInt(cntEl ? cntEl.value : '1', 10) || 1) : 1;
+    var sid = every ? ('ser_' + nowMs().toString(36) + '_form') : '';
+    var okN = 0, badN = 0, pending = count;
+    function fin() {
+      /* v2.4.1: external gate catch -- the form's toast confirmed success even when every add()
+         failed. Same branching harvest() already uses: success only when something truly saved. */
+      if (--pending > 0) { return; }
+      if (okN && !badN) {
+        toast_('\u23F0 ' + (okN > 1 ? okN + (es ? ' recordatorios puestos, el primero ' : ' reminders set, first at ') : (es ? 'Recordatorio puesto para ' : 'Reminder set for ')) + at.toLocaleString());
+        formOpen = false; renderDrawer();
+      } else if (okN && badN) {
+        toast_('\u23F0 ' + okN + (es ? ' puestos; ' : ' set; ') + badN + (es ? ' no se pudieron guardar.' : ' couldn\u2019t be saved.'));
+        formOpen = false; renderDrawer();
+      } else {
+        toast_(es ? 'No se pudo guardar el recordatorio \u2014 revisa la conexi\u00f3n e intenta de nuevo.' : 'Couldn\u2019t save the reminder \u2014 check your connection and try again.');
+        /* the form stays open with the words still in it; nothing typed is lost */
+      }
+    }
+    for (var i = 0; i < count; i++) {
+      add({ msg: msg, remindAt: at.getTime() + i * every * 60000, room: (document.title || '').substring(0, 80), seriesId: sid })
+        .then(function (id) { if (id) { okN++; } else { badN++; } fin(); });
+    }
+  }
+
   /* ---------------- styles (unchanged from v1.1) ---------------- */
   function css() {
     if (document.getElementById('drCss')) { return; }
@@ -163,6 +295,13 @@
       + '.drIMsg{font-size:16px;color:#f0e6cc;margin:0 0 3px;}'
       + '.drIWhen{font-size:12px;color:rgba(200,168,75,.7);}'
       + '.drIBtn{margin-top:6px;background:none;border:1px solid rgba(200,168,75,.45);color:#c8a84b;border-radius:8px;font-family:Cinzel,serif;font-size:11px;letter-spacing:.08em;padding:6px 10px;cursor:pointer;}'
+      + '.drForm{margin:8px 0 12px;padding:10px;border:1px dashed rgba(200,168,75,.45);border-radius:10px;}'
+      + '.drIn{width:100%;box-sizing:border-box;background:#0a0d12;border:1px solid rgba(200,168,75,.45);border-radius:8px;color:#f0e6cc;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:16px;padding:8px 10px;margin-bottom:8px;}'
+      + '.drSel{width:auto;}'
+      + '.drFRow{display:-webkit-flex;display:flex;gap:8px;-webkit-flex-wrap:wrap;flex-wrap:wrap;-webkit-align-items:center;align-items:center;}'
+      + '.drNew{display:inline-block;margin:0 0 10px;background:none;border:1px solid rgba(200,168,75,.5);color:#c8a84b;border-radius:999px;font-family:Cinzel,serif;font-size:12px;letter-spacing:.1em;padding:8px 14px;cursor:pointer;}'
+      + '#drToast{position:fixed;left:50%;bottom:24px;-webkit-transform:translateX(-50%);transform:translateX(-50%);z-index:2500000;background:#14100a;border:1px solid #c8a84b;color:#f0e6cc;border-radius:10px;padding:10px 16px;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:16px;max-width:92vw;box-shadow:0 6px 24px rgba(0,0,0,.7);opacity:0;pointer-events:none;-webkit-transition:opacity .25s;transition:opacity .25s;}'
+      + '#drToast.on{opacity:1;}'
       + '.drGlow{-webkit-animation:drPulse 900ms ease-out;animation:drPulse 900ms ease-out;}'
       + '@-webkit-keyframes drPulse{0%{box-shadow:0 0 0 0 rgba(200,168,75,.55);}100%{box-shadow:0 0 0 14px rgba(200,168,75,0);}}'
       + '@keyframes drPulse{0%{box-shadow:0 0 0 0 rgba(200,168,75,.55);}100%{box-shadow:0 0 0 14px rgba(200,168,75,0);}}';
@@ -219,6 +358,7 @@
     list.sort(function (a, b) { return (new Date(b.remindAt)).getTime() - (new Date(a.remindAt)).getTime(); });
     var h = '<button class="drClose" aria-label="Close" onclick="window.DocBReminders._close()">\u00d7</button>'
       + '<p class="drTitle">' + T({ en: 'YOUR REMINDERS \u2014 nothing here is ever lost, on any device', es: 'TUS RECORDATORIOS \u2014 nada aqu\u00ed se pierde, en ning\u00fan dispositivo' }) + '</p>';
+    h += formOpen ? formHtml_() : '<button class="drNew" onclick="window.DocBReminders._toggleForm()">\uff0b ' + T({ en: 'NEW REMINDER', es: 'NUEVO RECORDATORIO' }) + '</button>'; /* v2.4: from anywhere, no Doc B needed */
     if (!list.length) { h += '<p class="drIMsg" style="opacity:.6;">' + T({ en: 'Nothing waiting yet.', es: 'A\u00fan no hay nada esperando.' }) + '</p>'; }
     for (var i = 0; i < list.length; i++) {
       var it = list[i];
@@ -305,7 +445,11 @@
     add: add,
     refresh: refresh,
     open: function () { drawerOpen = true; renderDrawer(); },
-    _close: function () { drawerOpen = false; renderDrawer(); }, /* v2.1: lets a room's own Accessories tile open the same drawer the corner badge does */
+    promptClause: promptClause, /* v2.4: rooms append this to their systemPrompt */
+    harvest: harvest,           /* v2.4: rooms pass Doc B's reply through this */
+    _close: function () { drawerOpen = false; formOpen = false; renderDrawer(); },
+    _toggleForm: function () { formOpen = !formOpen; renderDrawer(); },
+    _submitForm: submitForm_, /* v2.1: lets a room's own Accessories tile open the same drawer the corner badge does */
     _done: function (id) { markDone_(id); advanceVeil(id); glow(id); renderDrawer(); },
     _later: function (id) { advanceVeil(id); }
   };
