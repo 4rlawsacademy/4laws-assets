@@ -1,4 +1,13 @@
 /* ============================================================
+   LIFE-COMPANION.JS v1.5 — BACK TO THE GAME (Bench 36, 9/6/26 — Bench 28
+   released this file to the Hall's bench: the Hall and the chip are one
+   road now, one hand). One change, cumulative on v1.4 below: when the
+   Hall's 'life-return' flag is fresh (the member came through SEE THE
+   REAL ROOM, the Level 1 door or GO DO IT within 45 minutes), the card's
+   road reads BACK TO THE GAME instead of OPEN THE HALL. Same href (/life);
+   the Hall does the landing. No fetch, no new state, nothing else moves.
+   Pairs with LIFE Hall v3.22 THE ROOM BEFORE THE SHADOW. Same filename on
+   the CDN; upload over v1.4 + purge.
    LIFE-COMPANION.JS v1.4 — THE MATCHED ORDER (Bench 28, 9/5/26)
    v1.4: the gate's cross-check catch — Level 1's three orders still
    carried the pre-v3.6 sequence (station-first), while the Hall
@@ -104,6 +113,13 @@
     } catch (e) { return 'en'; }
   }
   function T(o) { return o[lang()] || o.en; }
+  /* v1.5 THE ROAD BACK: the Hall writes 'life-return' (key + time, 45 min) when its SEE THE REAL ROOM, Level 1 door or GO DO IT sends
+     the member to a real page; while that flag is fresh this chip says BACK TO THE GAME instead of OPEN THE HALL. Same road (/life);
+     the Hall reads the flag on load, skips its cover once, opens the row the member left, and clears it. localStorage, not sessionStorage,
+     because the real page opens in its own tab and a session flag never crosses tabs. */
+  function returnWaiting() {
+    try { var r = JSON.parse(localStorage.getItem('life-return') || 'null'); return !!(r && r.t && (Date.now() - r.t) < 45 * 60 * 1000); } catch (e) { return false; }
+  }
   function state() {
     try { var r = localStorage.getItem(KEY); if (!r) { return null; }
       var p = JSON.parse(r); return (p && p.hero) ? p : null;
@@ -220,7 +236,7 @@
         : T({ en: '\uD83D\uDCD6 A chapter is waiting', es: '\uD83D\uDCD6 Un cap\u00edtulo te espera' });
       h += '<p class="lcStakes" style="color:#ffd75e;">' + wLine + '</p>';
     }
-    h += '<a class="lcBtn" href="/life">' + T({ en: 'OPEN THE HALL \u2192', es: 'ABRE EL SAL\u00d3N \u2192' }) + '</a> '
+    h += '<a class="lcBtn" href="/life">' + (returnWaiting() ? T({ en: 'BACK TO THE GAME \u2192', es: 'VOLVER AL JUEGO \u2192' }) : T({ en: 'OPEN THE HALL \u2192', es: 'ABRE EL SAL\u00d3N \u2192' })) + '</a> '
       + '<button class="lcGhost" onclick="LifeCompanion.close()">' + T({ en: 'CLOSE', es: 'CERRAR' }) + '</button>';
     card.innerHTML = h;
     card.className = open ? 'on' : '';
