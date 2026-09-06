@@ -1,4 +1,29 @@
 /* ============================================================
+   DOCB-REMINDERS.JS v2.5 — A MESSAGE YOU LEFT FOR SOMEONE (9/5/26, the
+   founder: "we're one step away... cut"). Meetings: a reminder with a
+   guest list, a door, and an owner -- carved with his rulings:
+   - a guest bows out alone, no reason asked ("it's their group, not ours");
+   - the owner (whoever made it, on whatever page) alone holds Cancel
+     and Reschedule;
+   - the choices unfold, they do not crowd (tap a meeting, its options
+     open; nothing stacked on its face).
+   In the panel: "+ NEW MEETING" (title, time, once/daily/weekly, a Zoom
+   or other link, guests one per line as "Name, phone"), a MEETINGS
+   section above the personal reminders. In the Veil: a meeting rises on
+   every guest's device at once with Join -> (the door), Later, and
+   Can't make it for guests. Guest identity is PHONE -- the one identity
+   the house already trusts; a phone that belongs to a member puts the
+   meeting in their own Veil, an outsider's phone goes to the Twilio
+   queue (PWS.gs Build 32). Recurrence: the client computes the next
+   occurrence; a happening-now meeting counts on the badge for an hour.
+   Honest limits, named: meeting "seen" is per page-load only (a live
+   meeting re-rises on reload within its hour); resolving "everyone
+   present here" into guests is the next cut (needs the room's member
+   roster); the Companion's mediation hook and the Armory key call
+   DocBReminders.createMeeting() when they are built. Two independent
+   fetches -- a meetings failure never blanks the reminders.
+   v2.4.1's crown stands below.
+   ============================================================
    DOCB-REMINDERS.JS v2.4.1 — THE HONEST FORM (external gate catch, 9/5/26):
    the new "+ NEW REMINDER" form confirmed success even when every save
    failed -- it counted successes and never failures, the exact bug the
@@ -218,6 +243,105 @@
     return clean;
   }
 
+  /* ---------------- v2.5 A MESSAGE YOU LEFT FOR SOMEONE: meetings ---------------- */
+  var meetings = [];          /* last list from the server */
+  var openMtg = '';           /* which meeting's choices are unfolded in the panel */
+  var reschedMtg = '';        /* which meeting has its reschedule picker open */
+  var mtgFormOpen = false;
+  function mtgNext_(m) {
+    /* next occurrence: the start itself, or -- for daily/weekly -- the first occurrence no older than an hour */
+    var t = (new Date(m.startAt)).getTime();
+    if (isNaN(t)) { return NaN; }
+    var period = (m.recurrence === 'daily') ? 86400000 : (m.recurrence === 'weekly') ? 604800000 : 0;
+    if (!period) { return t; }
+    var floor = nowMs() - 3600000;
+    while (t < floor) { t += period; }
+    return t;
+  }
+  function mtgLive_(m) { return m && m.status !== 'cancelled' && m.myStatus !== 'out'; }
+  function mtgGuestLine_(m) {
+    var names = [], outs = 0;
+    for (var i = 0; i < (m.guests || []).length; i++) { var g = m.guests[i]; if (g.status === 'out') { outs++; } else { names.push(g.name || g.phone || '?'); } }
+    var line = names.join(', ');
+    if (outs) { line += (line ? ' \u00b7 ' : '') + outs + ' ' + T({ en: 'out', es: 'fuera' }); }
+    return line;
+  }
+  function mtgCreate_(o) {
+    var mid = memberId(); if (!mid) { return Promise.resolve(null); }
+    return post_({ action: 'pwsMeetingCreate', requestingMemberId: mid, title: o.title, startAt: o.startAt, recurrence: o.recurrence || '', link: o.link || '', room: o.room || '', guests: o.guests || [] })
+      .then(function (d) { if (d && d.success) { refresh(); return d.id; } return null; })['catch'](function () { return null; });
+  }
+  function mtgAct_(action, extra) {
+    var mid = memberId(); if (!mid) { return Promise.resolve(false); }
+    var body = { action: action, requestingMemberId: mid };
+    for (var k in extra) { if (extra.hasOwnProperty(k)) { body[k] = extra[k]; } }
+    return post_(body).then(function (d) { refresh(); return !!(d && d.success); })['catch'](function () { return false; });
+  }
+  function mtgFormHtml_() {
+    var es = (lang() === 'es');
+    var def = new Date(nowMs() + 24 * 3600000); def.setMinutes(0, 0, 0);
+    return '<div class="drForm" id="drMForm">'
+      + '<input id="drMTitle" class="drIn" maxlength="200" placeholder="' + (es ? 'Reuni\u00f3n\u2026' : 'Meeting\u2026') + '">'
+      + '<div class="drFRow"><input id="drMAt" class="drIn" type="datetime-local" value="' + localInputValue_(def) + '">'
+      + '<select id="drMRep" class="drIn drSel"><option value="">' + (es ? 'Una vez' : 'Once') + '</option><option value="daily">' + (es ? 'Cada d\u00eda' : 'Every day') + '</option><option value="weekly">' + (es ? 'Cada semana' : 'Every week') + '</option></select></div>'
+      + '<input id="drMLink" class="drIn" maxlength="400" placeholder="' + (es ? 'Enlace de Zoom u otro (opcional)' : 'Zoom or other link (optional)') + '">'
+      + '<textarea id="drMGuests" class="drIn" rows="3" placeholder="' + (es ? 'Invitados \u2014 uno por l\u00ednea: Nombre, tel\u00e9fono' : 'Guests \u2014 one per line: Name, phone') + '"></textarea>'
+      + '<div class="drFRow"><button class="drBtn" onclick="window.DocBReminders._submitMeeting()">' + (es ? '\ud83d\udcc5 Crear' : '\ud83d\udcc5 Create') + '</button>'
+      + '<button class="drGhost" onclick="window.DocBReminders._toggleMeetingForm()">' + (es ? 'Cancelar' : 'Cancel') + '</button></div>'
+      + '</div>';
+  }
+  function submitMeeting_() {
+    var es = (lang() === 'es');
+    var tEl = document.getElementById('drMTitle'), aEl = document.getElementById('drMAt'), rEl = document.getElementById('drMRep'), lEl = document.getElementById('drMLink'), gEl = document.getElementById('drMGuests');
+    if (!tEl || !aEl) { return; }
+    var title = String(tEl.value || '').replace(/^\s+|\s+$/g, '');
+    var at = new Date(aEl.value);
+    if (!title) { toast_(es ? 'Ponle nombre a la reuni\u00f3n.' : 'Give the meeting a name.'); return; }
+    if (isNaN(at.getTime())) { toast_(es ? 'Elige una hora v\u00e1lida.' : 'Pick a valid time.'); return; }
+    var guests = [], lines = String(gEl ? gEl.value : '').split(/\n+/);
+    for (var i = 0; i < lines.length; i++) {
+      var ln = lines[i].replace(/^\s+|\s+$/g, ''); if (!ln) { continue; }
+      var parts = ln.split(/\s*,\s*/);
+      var name = parts[0] || '', phone = '';
+      for (var j = 1; j < parts.length; j++) { if (/\d{7,}/.test(parts[j].replace(/\D/g, ''))) { phone = parts[j]; } }
+      if (!phone && /\d{7,}/.test(name.replace(/\D/g, ''))) { phone = name; name = ''; }
+      guests.push({ name: name, phone: phone });
+    }
+    mtgCreate_({ title: title, startAt: at.getTime(), recurrence: rEl ? rEl.value : '', link: lEl ? String(lEl.value || '').replace(/^\s+|\s+$/g, '') : '', room: (document.title || '').substring(0, 80), guests: guests })
+      .then(function (id) {
+        if (id) { toast_('\ud83d\udcc5 ' + (es ? 'Reuni\u00f3n creada: ' : 'Meeting set: ') + at.toLocaleString()); mtgFormOpen = false; renderDrawer(); }
+        else { toast_(es ? 'No se pudo crear la reuni\u00f3n \u2014 revisa la conexi\u00f3n e intenta de nuevo.' : 'Couldn\u2019t create the meeting \u2014 check your connection and try again.'); }
+      });
+  }
+  function mtgItemHtml_(m) {
+    var es = (lang() === 'es');
+    var next = mtgNext_(m), when = isNaN(next) ? '' : new Date(next).toLocaleString();
+    var open = (openMtg === m.id);
+    var who = m.isOwner ? T({ en: 'You host', es: 'T\u00fa convocas' }) : ((es ? 'Convoca ' : 'Hosted by ') + esc(m.ownerName || '?'));
+    var h = '<div class="drItem' + (m.status === 'cancelled' || m.myStatus === 'out' ? ' drDone' : '') + '" id="drMt_' + m.id + '">'
+      + '<p class="drIMsg" style="cursor:pointer;" onclick="window.DocBReminders._unfold(\'' + m.id + '\')">\ud83d\udcc5 ' + esc(m.title) + (m.recurrence ? '<span class="drSeries">' + (m.recurrence === 'daily' ? T({ en: 'DAILY', es: 'DIARIO' }) : T({ en: 'WEEKLY', es: 'SEMANAL' })) + '</span>' : '') + '</p>'
+      + '<p class="drIWhen">' + when + ' \u00b7 ' + who + (m.status === 'cancelled' ? ' \u00b7 ' + T({ en: 'cancelled', es: 'cancelada' }) : '') + (m.myStatus === 'out' ? ' \u00b7 ' + T({ en: 'you bowed out', es: 'te retiraste' }) : '') + '</p>';
+    if (open) { /* the choices unfold; they do not crowd */
+      var gl = mtgGuestLine_(m);
+      if (gl) { h += '<p class="drIWhen">' + esc(gl) + '</p>'; }
+      h += '<div class="drFRow" style="margin-top:6px;">';
+      if (m.link && m.status !== 'cancelled') { h += '<a class="drIBtn" href="' + esc(m.link) + '" target="_blank" rel="noopener">' + T({ en: 'Join \u2192', es: 'Entrar \u2192' }) + '</a>'; }
+      if (m.isOwner && m.status !== 'cancelled') {
+        h += '<button class="drIBtn" onclick="window.DocBReminders._resched(\'' + m.id + '\')">' + T({ en: 'Reschedule', es: 'Reprogramar' }) + '</button>'
+          + '<button class="drIBtn" onclick="window.DocBReminders._cancelMtg(\'' + m.id + '\')">' + T({ en: 'Cancel meeting', es: 'Cancelar reuni\u00f3n' }) + '</button>';
+      } else if (!m.isOwner && m.myStatus === 'invited' && m.status !== 'cancelled') {
+        h += '<button class="drIBtn" onclick="window.DocBReminders._bowOut(\'' + m.id + '\')">' + T({ en: 'Can\u2019t make it', es: 'No podr\u00e9 ir' }) + '</button>';
+      }
+      h += '</div>';
+      if (reschedMtg === m.id) {
+        var cur = isNaN(next) ? new Date() : new Date(next);
+        h += '<div class="drFRow" style="margin-top:8px;"><input id="drRs_' + m.id + '" class="drIn" type="datetime-local" value="' + localInputValue_(cur) + '">'
+          + '<button class="drBtn" onclick="window.DocBReminders._reschedSave(\'' + m.id + '\')">' + T({ en: 'Save', es: 'Guardar' }) + '</button></div>';
+      }
+    }
+    return h + '</div>';
+  }
+
   /* ---------------- v2.4: "+ New reminder" -- from anywhere, no Doc B needed ---------------- */
   function pad2_(n) { return (n < 10 ? '0' : '') + n; }
   function localInputValue_(d) {
@@ -317,6 +441,22 @@
     if (!veilQ.length) { v.className = ''; return; }
     if (v.className === 'on') { return; }
     var item = veilQ[0];
+    if (item._meeting) { /* v2.5: a meeting rising on everyone's device at once */
+      var mm = item._meeting;
+      v.innerHTML = '<button aria-label="Close" onclick="window.DocBReminders._later(\'' + item.id + '\')" style="position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(200,168,75,.6);font-size:20px;line-height:1;cursor:pointer;padding:4px;">\u00d7</button>'
+        + '<p class="drKick">' + (mm.isOwner ? T({ en: 'YOUR MEETING', es: 'TU REUNI\u00d3N' }) : (esc(mm.ownerName || '') + ' \u00b7 ' + T({ en: 'A MEETING', es: 'UNA REUNI\u00d3N' }))) + '</p>'
+        + '<p class="drMsg">\ud83d\udcc5 ' + esc(mm.title) + '</p>'
+        + '<p class="drRoom">' + new Date(mtgNext_(mm)).toLocaleString() + (mtgGuestLine_(mm) ? ' \u00b7 ' + esc(mtgGuestLine_(mm)) : '') + '</p>'
+        + '<div class="drRow">'
+        + (mm.link ? '<a class="drBtn" href="' + esc(mm.link) + '" target="_blank" rel="noopener" onclick="window.DocBReminders._later(\'' + item.id + '\')">' + T({ en: 'Join \u2192', es: 'Entrar \u2192' }) + '</a>' : '')
+        + '<button class="drGhost" onclick="window.DocBReminders._later(\'' + item.id + '\')">' + T({ en: 'Later', es: 'Despu\u00e9s' }) + '</button>'
+        + ((!mm.isOwner && mm.myStatus === 'invited') ? '<button class="drGhost" onclick="window.DocBReminders._bowOut(\'' + mm.id + '\');window.DocBReminders._later(\'' + item.id + '\')">' + T({ en: 'Can\u2019t make it', es: 'No podr\u00e9 ir' }) + '</button>' : '')
+        + '</div>';
+      v.className = 'on';
+      if (veilTimer) { clearTimeout(veilTimer); }
+      veilTimer = setTimeout(function () { advanceVeil(item.id); }, 20000); /* a meeting lingers a little longer than a note */
+      return;
+    }
     v.innerHTML = '<button aria-label="Close" onclick="window.DocBReminders._later(\'' + item.id + '\')" style="position:absolute;top:8px;right:10px;background:none;border:none;color:rgba(200,168,75,.6);font-size:20px;line-height:1;cursor:pointer;padding:4px;">\u00d7</button>'
       + '<p class="drKick">' + T({ en: 'A MESSAGE YOU LEFT YOURSELF', es: 'UN MENSAJE QUE TE DEJASTE' }) + '</p>'
       + '<p class="drMsg">' + esc(item.message) + '</p>'
@@ -358,6 +498,17 @@
     list.sort(function (a, b) { return (new Date(b.remindAt)).getTime() - (new Date(a.remindAt)).getTime(); });
     var h = '<button class="drClose" aria-label="Close" onclick="window.DocBReminders._close()">\u00d7</button>'
       + '<p class="drTitle">' + T({ en: 'YOUR REMINDERS \u2014 nothing here is ever lost, on any device', es: 'TUS RECORDATORIOS \u2014 nada aqu\u00ed se pierde, en ning\u00fan dispositivo' }) + '</p>';
+    /* v2.5: meetings first -- the family's table sits above the personal list */
+    var live = [], past = [];
+    for (var mi = 0; mi < meetings.length; mi++) { (mtgLive_(meetings[mi]) ? live : past).push(meetings[mi]); }
+    live.sort(function (a, b) { return mtgNext_(a) - mtgNext_(b); });
+    h += mtgFormOpen ? mtgFormHtml_() : '<button class="drNew" onclick="window.DocBReminders._toggleMeetingForm()">\uff0b ' + T({ en: 'NEW MEETING', es: 'NUEVA REUNI\u00d3N' }) + '</button> ';
+    if (live.length || past.length) {
+      h += '<p class="drTitle" style="margin-top:8px;">' + T({ en: 'MEETINGS', es: 'REUNIONES' }) + '</p>';
+      for (var li = 0; li < live.length; li++) { h += mtgItemHtml_(live[li]); }
+      for (var pi = 0; pi < past.length && pi < 5; pi++) { h += mtgItemHtml_(past[pi]); }
+      h += '<p class="drTitle" style="margin-top:12px;">' + T({ en: 'REMINDERS', es: 'RECORDATORIOS' }) + '</p>';
+    }
     h += formOpen ? formHtml_() : '<button class="drNew" onclick="window.DocBReminders._toggleForm()">\uff0b ' + T({ en: 'NEW REMINDER', es: 'NUEVO RECORDATORIO' }) + '</button>'; /* v2.4: from anywhere, no Doc B needed */
     if (!list.length) { h += '<p class="drIMsg" style="opacity:.6;">' + T({ en: 'Nothing waiting yet.', es: 'A\u00fan no hay nada esperando.' }) + '</p>'; }
     for (var i = 0; i < list.length; i++) {
@@ -382,6 +533,7 @@
       var k = c.seriesId || ('solo_' + c.id);
       if (!dueSeries[k]) { dueSeries[k] = true; due++; } /* v2.3: a series is one thing waiting, not seven */
     }
+    for (var mi = 0; mi < meetings.length; mi++) { var mx = meetings[mi]; var nx = mtgNext_(mx); if (mtgLive_(mx) && !isNaN(nx) && nx <= nowMs() && nx > nowMs() - 3600000) { due++; } } /* v2.5: a meeting that is happening now counts */
     if (!fab) {
       fab = document.createElement('button'); fab.id = 'drFab';
       fab.setAttribute('aria-label', 'Reminders');
@@ -416,6 +568,24 @@
         if (drawerOpen) { renderDrawer(); }
       })
       ['catch'](function () { listInFlight = false; });
+    /* v2.5: the meetings ride a second, independent fetch -- a failure here never blanks the reminders */
+    post_({ action: 'pwsMeetingList', requestingMemberId: mid })
+      .then(function (d) {
+        if (!d || !d.success || !d.meetings) { return; }
+        meetings = d.meetings;
+        var t = nowMs();
+        for (var i = 0; i < meetings.length; i++) {
+          var m = meetings[i]; if (!mtgLive_(m)) { continue; }
+          var nx = mtgNext_(m); if (isNaN(nx) || nx > t) { continue; }
+          var occ = m.id + '@' + nx;
+          if (SEEN_THIS_LOAD[occ]) { continue; }
+          SEEN_THIS_LOAD[occ] = true;
+          queueVeil({ id: occ, _meeting: m });
+        }
+        renderFab();
+        if (drawerOpen) { renderDrawer(); }
+      })
+      ['catch'](function () {});
   }
   function buildShell() {
     if (document.getElementById('drVeil')) { return; }
@@ -449,7 +619,19 @@
     harvest: harvest,           /* v2.4: rooms pass Doc B's reply through this */
     _close: function () { drawerOpen = false; formOpen = false; renderDrawer(); },
     _toggleForm: function () { formOpen = !formOpen; renderDrawer(); },
-    _submitForm: submitForm_, /* v2.1: lets a room's own Accessories tile open the same drawer the corner badge does */
+    _submitForm: submitForm_,
+    createMeeting: mtgCreate_, /* v2.5: rooms (mediation, an activity with the Armory key) may call this directly */
+    _toggleMeetingForm: function () { mtgFormOpen = !mtgFormOpen; renderDrawer(); },
+    _submitMeeting: submitMeeting_,
+    _unfold: function (id) { openMtg = (openMtg === id) ? '' : id; reschedMtg = ''; renderDrawer(); },
+    _resched: function (id) { reschedMtg = (reschedMtg === id) ? '' : id; renderDrawer(); },
+    _reschedSave: function (id) {
+      var el = document.getElementById('drRs_' + id); var at = el ? new Date(el.value) : null;
+      if (!at || isNaN(at.getTime())) { toast_(T({ en: 'Pick a valid time.', es: 'Elige una hora v\u00e1lida.' })); return; }
+      mtgAct_('pwsMeetingReschedule', { id: id, startAt: at.getTime() }).then(function (ok) { toast_(ok ? T({ en: '\ud83d\udcc5 Rescheduled.', es: '\ud83d\udcc5 Reprogramada.' }) : T({ en: 'Couldn\u2019t reschedule.', es: 'No se pudo reprogramar.' })); reschedMtg = ''; });
+    },
+    _cancelMtg: function (id) { mtgAct_('pwsMeetingCancel', { id: id }).then(function (ok) { toast_(ok ? T({ en: 'Meeting cancelled.', es: 'Reuni\u00f3n cancelada.' }) : T({ en: 'Couldn\u2019t cancel.', es: 'No se pudo cancelar.' })); }); },
+    _bowOut: function (id) { mtgAct_('pwsMeetingBowOut', { id: id }).then(function (ok) { toast_(ok ? T({ en: 'You\u2019re out \u2014 no reason needed.', es: 'Te retiraste \u2014 sin explicaciones.' }) : T({ en: 'Couldn\u2019t bow out.', es: 'No se pudo retirar.' })); }); }, /* v2.1: lets a room's own Accessories tile open the same drawer the corner badge does */
     _done: function (id) { markDone_(id); advanceVeil(id); glow(id); renderDrawer(); },
     _later: function (id) { advanceVeil(id); }
   };
