@@ -1,4 +1,9 @@
 /* ============================================================
+   LIFE-COMPANION.JS v1.7 — THE GLYPH (Bench 37, 9/8/26). One change,
+   cumulative on v1.6: the portal has one mark on both sides -- a gold
+   ring -- and here it stands on every road to /life (BACK TO THE GAME,
+   OPEN THE HALL, BEGIN AT THE HALL), the same ring the Hall wears on
+   BACK TO YOUR PAGE. Pairs with Hall v4.4 THE PORTAL. Nothing else moves.
    LIFE-COMPANION.JS v1.6 — THE WAY BACK (Bench 37, 9/7/26). Three
    changes, cumulative on v1.5 below; pairs with LIFE Hall v4.3.1.
    ONE — THE WAY BACK (Bench 35's courier, founder's ruling "if you
@@ -125,6 +130,7 @@
 
   var open = false, lastJson = '', pushBusy = false;
   /* v1.6 THE WAY BACK: remember where the member came from before any road to /life */
+  function glyph() { return '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px;vertical-align:-3px;margin-right:6px;"><circle cx="12" cy="12" r="8" fill="none" stroke="#ffd75e" stroke-width="2.4"/><circle cx="12" cy="12" r="3" fill="#ffd75e"/></svg>'; } /* v1.7 THE GLYPH */
   function goHall() {
     try { localStorage.setItem('4laws-origin', location.pathname + (location.search || '') + (location.hash || '')); } catch (e) {}
     location.href = '/life';
@@ -302,7 +308,7 @@
         : T({ en: '\uD83D\uDCD6 A chapter is waiting', es: '\uD83D\uDCD6 Un cap\u00edtulo te espera' });
       h += '<p class="lcStakes" style="color:#ffd75e;">' + wLine + '</p>';
     }
-    h += '<a class="lcBtn" href="/life" onclick="LifeCompanion.go(); return false;">' + (returnWaiting() ? T({ en: 'BACK TO THE GAME \u2192', es: 'VOLVER AL JUEGO \u2192' }) : T({ en: 'OPEN THE HALL \u2192', es: 'ABRE EL SAL\u00d3N \u2192' })) + '</a> '
+    h += '<a class="lcBtn" href="/life" onclick="LifeCompanion.go(); return false;">' + glyph() + (returnWaiting() ? T({ en: 'BACK TO THE GAME \u2192', es: 'VOLVER AL JUEGO \u2192' }) : T({ en: 'OPEN THE HALL \u2192', es: 'ABRE EL SAL\u00d3N \u2192' })) + '</a> '
       + '<button class="lcGhost" onclick="LifeCompanion.close()">' + T({ en: 'CLOSE', es: 'CERRAR' }) + '</button>';
     card.innerHTML = h;
     card.className = open ? 'on' : '';
@@ -329,7 +335,7 @@
     card.innerHTML = '<p class="lcKick">LIFE \u00b7 ' + T({ en: 'THE TRAINING GAME', es: 'EL JUEGO DE ENTRENAMIENTO' }) + '</p>'
       + '<p class="lcTitle">' + T({ en: 'Your training awaits', es: 'Tu entrenamiento te espera' }) + '</p>'
       + '<p class="lcTxt" style="display:block;padding:0;margin:0 0 10px;">' + T({ en: 'Doc B will read your file and name the enemy in your life \u2014 then the law names your hero.', es: 'Doc B leer\u00e1 tu expediente y nombrar\u00e1 al enemigo de tu vida \u2014 luego la ley nombra a tu h\u00e9roe.' }) + '</p>'
-      + '<a class="lcBtn" href="/life" onclick="LifeCompanion.go(); return false;">' + T({ en: 'BEGIN AT THE HALL \u2192', es: 'COMIENZA EN EL SAL\u00d3N \u2192' }) + '</a> '
+      + '<a class="lcBtn" href="/life" onclick="LifeCompanion.go(); return false;">' + glyph() + T({ en: 'BEGIN AT THE HALL \u2192', es: 'COMIENZA EN EL SAL\u00d3N \u2192' }) + '</a> '
       + '<button class="lcGhost" onclick="LifeCompanion.decline()">' + T({ en: 'NOT NOW', es: 'AHORA NO' }) + '</button>';
     card.className = open ? 'on' : '';
   }
