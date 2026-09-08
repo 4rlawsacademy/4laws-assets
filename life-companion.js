@@ -1,4 +1,23 @@
 /* ============================================================
+   LIFE-COMPANION.JS v1.6 — THE WAY BACK (Bench 37, 9/7/26). Three
+   changes, cumulative on v1.5 below; pairs with LIFE Hall v4.3.1.
+   ONE — THE WAY BACK (Bench 35's courier, founder's ruling "if you
+   want members to visit, they have to have a way back"): every road
+   this chip offers to /life first writes localStorage['4laws-origin']
+   = this page's path (+search+hash). The Hall reads it and shows
+   BACK TO YOUR PAGE; the portal goes both ways.
+   TWO — THE SEEN STONE: the Hall's v4.2 seeing ladder keeps
+   S.seen[level][i] on the shared save -- true/false means the file
+   answers for that stone, null means no file can. A seen stone takes
+   no tap here (the checkbox becomes an eye: the game is watching);
+   only a stone no file can see keeps "check only what is TRUE".
+   THREE — WINSTON TRAVELS (first step): the standing invite on the
+   save (S.invite, unless answered 'later') rides on the card under
+   LIFE COACH, and when this page IS the room the invite points to,
+   Winston's pre-written line for that door stands under it -- plain,
+   short, the IT man. Lines use only names the ladder already uses;
+   the founder corrects any that miss a page's real label.
+   Same filename on the CDN; upload over v1.5 + purge.
    LIFE-COMPANION.JS v1.5 — BACK TO THE GAME (Bench 36, 9/6/26 — Bench 28
    released this file to the Hall's bench: the Hall and the chip are one
    road now, one hand). One change, cumulative on v1.4 below: when the
@@ -105,6 +124,38 @@
   ];
 
   var open = false, lastJson = '', pushBusy = false;
+  /* v1.6 THE WAY BACK: remember where the member came from before any road to /life */
+  function goHall() {
+    try { localStorage.setItem('4laws-origin', location.pathname + (location.search || '') + (location.hash || '')); } catch (e) {}
+    location.href = '/life';
+  }
+  /* v1.6 WINSTON TRAVELS: the door each invite points to, and Winston's line when this page is that room */
+  var DOOR_PAGE = { station: '/pws', tools: '/pws', activity: '/pws', limits: '/pws', favorite: '/pws', accessory: '/pws', reminder: '/pws',
+    capture: '/todos', judge: '/todos', breakers: '/pws-trust', repair: '/pws-trust', checkin: '/pws-trust', coach: '/pws-trust',
+    batea: '/studio-create', window: '/studio-create', gallery: '/studio', witness: '/studio' };
+  var WINSTON = {
+    station:  { en: 'This is your Station. Build the pill here, then come back \u2014 the game sees it.', es: 'Esta es tu Estaci\u00f3n. Construye la p\u00edldora aqu\u00ed y vuelve \u2014 el juego lo ve.' },
+    tools:    { en: 'This is the room. Activate the tool, then come back \u2014 the game sees it.', es: 'Este es el cuarto. Activa la herramienta y vuelve \u2014 el juego lo ve.' },
+    activity: { en: 'This is the room. Set the tool as an activity on Smart Day, then come back.', es: 'Este es el cuarto. Pon la herramienta como actividad en D\u00eda Inteligente y vuelve.' },
+    limits:   { en: 'This is the room. The Limits card is on this page \u2014 open it, then come back.', es: 'Este es el cuarto. La tarjeta de L\u00edmites est\u00e1 en esta p\u00e1gina \u2014 \u00e1brela y vuelve.' },
+    favorite: { en: 'This is the room. Check off the day as you live it \u2014 a Favorite Day is seen by the file, not by me.', es: 'Este es el cuarto. Marca el d\u00eda mientras lo vives \u2014 el D\u00eda Favorito lo ve el archivo, no yo.' },
+    accessory:{ en: 'This is the room. Add the accessory to today, then come back.', es: 'Este es el cuarto. Agrega el accesorio a hoy y vuelve.' },
+    reminder: { en: 'This is the room. Leave yourself the reminder, then come back.', es: 'Este es el cuarto. D\u00e9jate el recordatorio y vuelve.' },
+    capture:  { en: 'This is the room. Drop something real in the bucket, then come back \u2014 the game sees it.', es: 'Este es el cuarto. Deja algo real en el balde y vuelve \u2014 el juego lo ve.' },
+    judge:    { en: 'This is the room. Judge one case to the end, then come back \u2014 the game sees it.', es: 'Este es el cuarto. Juzga un caso hasta el final y vuelve \u2014 el juego lo ve.' },
+    breakers: { en: 'This is the room. Meet the trust breakers on this page, then come back.', es: 'Este es el cuarto. Conoce a los rompe-confianza en esta p\u00e1gina y vuelve.' },
+    repair:   { en: 'This is the room. Repair one trust with Doc B AI, then come back \u2014 the game sees it.', es: 'Este es el cuarto. Repara una confianza con Doc B AI y vuelve \u2014 el juego lo ve.' },
+    checkin:  { en: 'This is the room. Answer the Clear Fences check-in on this page, then come back \u2014 the game sees it.', es: 'Este es el cuarto. Responde el chequeo de Cercas Claras en esta p\u00e1gina y vuelve \u2014 el juego lo ve.' },
+    coach:    { en: 'This is the room. Open one coach and finish the conversation, then come back.', es: 'Este es el cuarto. Abre un coach y termina la conversaci\u00f3n, luego vuelve.' },
+    batea:    { en: 'This is the room. Drop your idea in La Batea, then come back.', es: 'Este es el cuarto. Deja tu idea en La Batea y vuelve.' },
+    window:   { en: 'This is the room. Publish the Window, then come back \u2014 the game sees it.', es: 'Este es el cuarto. Publica la Ventana y vuelve \u2014 el juego lo ve.' },
+    gallery:  { en: 'This is the room. Set a Window to public so it shows in the Gallery, then come back \u2014 the game sees it.', es: 'Este es el cuarto. Pon una Ventana en p\u00fablico para que salga en la Galer\u00eda y vuelve \u2014 el juego lo ve.' },
+    witness:  { en: 'This is the room. Open another creator\u2019s Window and witness it, then come back.', es: 'Este es el cuarto. Abre la Ventana de otro creador y atest\u00edguala, luego vuelve.' }
+  };
+  function seenAt(st, lvl, i) {
+    try { var s = st.seen && st.seen[String(lvl)]; if (!s || s[i] === undefined || s[i] === null) { return null; } return !!s[i]; } catch (e) { return null; }
+  }
+  function esc(x) { return String(x == null ? '' : x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
   function lang() {
     try {
@@ -173,6 +224,7 @@
     var lvl = Math.max(1, Math.min(7, Number(p.level) || 1));
     if (!p.missions) { p.missions = {}; }
     if (!p.missions[lvl]) { p.missions[lvl] = [false, false, false]; }
+    if (seenAt(p, lvl, i) !== null) { return; } /* v1.6: a seen stone fills by sight, never by tap */
     p.missions[lvl][i] = !p.missions[lvl][i];
     saveState(p); push(p); lastJson = ''; render();
   }
@@ -201,7 +253,7 @@
     if (!st) { herald(chip, card); return; }
     var lvl = Math.max(1, Math.min(7, Number(st.level) || 1));
     var m = (st.missions && st.missions[lvl]) || [false, false, false];
-    var j = JSON.stringify([st.hero, lvl, m, lang(), open]);
+    var j = JSON.stringify([st.hero, lvl, m, lang(), open, st.seen || null, st.invite || null, waitingKind]);
     if (j === lastJson && chip) { return; }
     lastJson = j;
     css();
@@ -223,12 +275,26 @@
     } else {
       var L = LV[lvl - 1];
       h += '<p class="lcTitle">' + T({ en: 'Level ', es: 'Nivel ' }) + lvl + ' \u00b7 ' + T(L.t) + '</p>';
+      var anyTap = false;
       for (var k = 0; k < 3; k++) {
-        h += '<div class="lcRow" onclick="LifeCompanion.toggle(' + k + ')">'
-          + '<button class="lcChk' + (m[k] ? ' on' : '') + '">' + (m[k] ? '\u2713' : '') + '</button>'
+        var sv = seenAt(st, lvl, k); /* v1.6: true/false = the file answers (no tap); null = the member's honest check */
+        if (sv === null && !m[k]) { anyTap = true; }
+        h += '<div class="lcRow"' + (sv === null ? ' onclick="LifeCompanion.toggle(' + k + ')"' : '') + '>'
+          + '<button class="lcChk' + (m[k] ? ' on' : '') + '">' + (m[k] ? '\u2713' : (sv === null ? '' : '\uD83D\uDC41')) + '</button>'
           + '<span class="lcTxt">' + T(L.m[k]) + '</span></div>';
       }
-      h += '<p class="lcStakes">' + T(L.s) + ' \u00b7 ' + T({ en: 'check only what is TRUE', es: 'marca solo lo VERDADERO' }) + '</p>';
+      h += '<p class="lcStakes">' + T(L.s) + (anyTap ? ' \u00b7 ' + T({ en: 'check only what is TRUE', es: 'marca solo lo VERDADERO' }) : ' \u00b7 ' + T({ en: 'the game is watching', es: 'el juego est\u00e1 mirando' })) + '</p>';
+    }
+    /* v1.6 WINSTON TRAVELS: the standing invite rides along; Winston speaks when this is the room */
+    var inv = st.invite;
+    if (inv && inv.id && inv.answer !== 'later') {
+      var words = lang() === 'es' ? (inv.textES || inv.textEN || '') : (inv.textEN || '');
+      if (words.length > 180) { words = words.slice(0, 177).replace(/\s+\S*$/, '') + '\u2026'; }
+      h += '<p class="lcKick" style="margin-top:8px;">LIFE COACH</p><p class="lcTxt" style="display:block;margin:0 0 6px;">' + esc(words) + '</p>';
+      var pg = DOOR_PAGE[inv.door] || '';
+      if (pg && location.pathname.indexOf(pg) === 0 && WINSTON[inv.door]) {
+        h += '<p class="lcStakes" style="color:#f0e6cc;">WINSTON \u00b7 ' + esc(T(WINSTON[inv.door])) + '</p>';
+      }
     }
     if (waitingKind) {
       var wLine = (waitingKind === 'letter')
@@ -236,7 +302,7 @@
         : T({ en: '\uD83D\uDCD6 A chapter is waiting', es: '\uD83D\uDCD6 Un cap\u00edtulo te espera' });
       h += '<p class="lcStakes" style="color:#ffd75e;">' + wLine + '</p>';
     }
-    h += '<a class="lcBtn" href="/life">' + (returnWaiting() ? T({ en: 'BACK TO THE GAME \u2192', es: 'VOLVER AL JUEGO \u2192' }) : T({ en: 'OPEN THE HALL \u2192', es: 'ABRE EL SAL\u00d3N \u2192' })) + '</a> '
+    h += '<a class="lcBtn" href="/life" onclick="LifeCompanion.go(); return false;">' + (returnWaiting() ? T({ en: 'BACK TO THE GAME \u2192', es: 'VOLVER AL JUEGO \u2192' }) : T({ en: 'OPEN THE HALL \u2192', es: 'ABRE EL SAL\u00d3N \u2192' })) + '</a> '
       + '<button class="lcGhost" onclick="LifeCompanion.close()">' + T({ en: 'CLOSE', es: 'CERRAR' }) + '</button>';
     card.innerHTML = h;
     card.className = open ? 'on' : '';
@@ -263,7 +329,7 @@
     card.innerHTML = '<p class="lcKick">LIFE \u00b7 ' + T({ en: 'THE TRAINING GAME', es: 'EL JUEGO DE ENTRENAMIENTO' }) + '</p>'
       + '<p class="lcTitle">' + T({ en: 'Your training awaits', es: 'Tu entrenamiento te espera' }) + '</p>'
       + '<p class="lcTxt" style="display:block;padding:0;margin:0 0 10px;">' + T({ en: 'Doc B will read your file and name the enemy in your life \u2014 then the law names your hero.', es: 'Doc B leer\u00e1 tu expediente y nombrar\u00e1 al enemigo de tu vida \u2014 luego la ley nombra a tu h\u00e9roe.' }) + '</p>'
-      + '<a class="lcBtn" href="/life">' + T({ en: 'BEGIN AT THE HALL \u2192', es: 'COMIENZA EN EL SAL\u00d3N \u2192' }) + '</a> '
+      + '<a class="lcBtn" href="/life" onclick="LifeCompanion.go(); return false;">' + T({ en: 'BEGIN AT THE HALL \u2192', es: 'COMIENZA EN EL SAL\u00d3N \u2192' }) + '</a> '
       + '<button class="lcGhost" onclick="LifeCompanion.decline()">' + T({ en: 'NOT NOW', es: 'AHORA NO' }) + '</button>';
     card.className = open ? 'on' : '';
   }
@@ -289,6 +355,7 @@
   window.LifeCompanion = {
     refresh: function () { lastJson = ''; render(); },
     toggle: toggleOrder,
+    go: goHall, /* v1.6 */
     close: function () { open = false; lastJson = ''; render(); },
     decline: function () { try { localStorage.setItem('lc-herald-declined', '1'); } catch (e) {} open = false; lastJson = ''; render(); }
   };
