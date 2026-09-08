@@ -1,4 +1,18 @@
-/* BENCH 31 super-bucket.js v1.6 — THE SILENT HOVER (founder, 8/30: the grey
+/* BENCH 33 super-bucket.js v1.7 — THE NAMED MOUTH (founder's field catch,
+ * 9/2 night: he dragged a true screenshot onto the overlay's bucket and the
+ * house said NOTHING — no todo, no bubble, no refusal. Verified in this
+ * file: the drop handler ate real files (road 1) and dragged links (road 2),
+ * but a drop carrying NEITHER — common when dragging from photo previews,
+ * some iPad drags, or file "promises" the browser never fills — fell off
+ * the end in silence. A silent bucket breaks the house law: every failure
+ * the member can see carries its name.) v1.7: the fall-through now SPEAKS,
+ * inline under the mouth in the member's tongue — "[empty-drop] That drag
+ * carried no file — tap the bucket to choose it, or copy the image and
+ * paste it here." — shown 8 seconds, then gone. Nothing else moved.
+ * One organ overwrite + CDN purge and every bucket in the kingdom is
+ * honest. v1.6 -> v1.7. ES5. Lineage:
+ *
+ * BENCH 31 super-bucket.js v1.6 — THE SILENT HOVER (founder, 8/30: the grey
  * "Click to choose a file…" tooltip still floated over every bucket, an old
  * promise contradicting the new signs). v1.6 removes the zone's title; the
  * promise line under the face is the only instruction. v1.5 -> v1.6. ES5.
@@ -238,6 +252,21 @@
     input.addEventListener('change', function() { if (input.files && input.files.length) offerAll(input.files); });
     zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.style.borderColor = '#c8a84b'; });
     zone.addEventListener('dragleave', function() { zone.style.borderColor = 'rgba(200,168,75,0.45)'; });
+    /* v1.7 THE NAMED MOUTH: a bucket never swallows in silence */
+    var namedLine = null, namedTimer = null;
+    function speakFailure_(en, es) {
+      try {
+        if (!namedLine) {
+          namedLine = document.createElement('div');
+          namedLine.style.cssText = 'margin-top:8px;font-size:13px;line-height:1.5;color:#e0b3b3;font-style:italic;text-align:center;';
+          zone.appendChild(namedLine);
+        }
+        namedLine.textContent = (lang() === 'es') ? es : en;
+        namedLine.style.display = 'block';
+        if (namedTimer) clearTimeout(namedTimer);
+        namedTimer = setTimeout(function() { if (namedLine) namedLine.style.display = 'none'; }, 8000);
+      } catch (eS) {}
+    }
     zone.addEventListener('drop', function(e) {
       e.preventDefault(); zone.style.borderColor = 'rgba(200,168,75,0.45)';
       if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) { offerAll(e.dataTransfer.files); return; }
@@ -246,8 +275,13 @@
         var u0 = '';
         try { u0 = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain') || ''; } catch (eU) {}
         u0 = String(u0).replace(/^\s+|\s+$/g, '').split(/[\r\n]/)[0];
-        if (/^https?:\/\//i.test(u0)) opts.onUrl(u0);
+        if (/^https?:\/\//i.test(u0)) { opts.onUrl(u0); return; }
       }
+      /* v1.7: the drop carried no file and no link — name it, never silence */
+      speakFailure_(
+        '[empty-drop] That drag carried no file — tap the bucket to choose it, or copy the image and paste it here.',
+        '[empty-drop] Ese arrastre no traía archivo — toca el balde para elegirlo, o copia la imagen y pégala aquí.'
+      );
     });
     zone.addEventListener('paste', function(e) {
       var items = (e.clipboardData && e.clipboardData.items) || [];
@@ -281,5 +315,5 @@
     return { reset: reset, host: zone };
   }
 
-  window.SuperBucket = { mount: mount, version: '1.6' };
+  window.SuperBucket = { mount: mount, version: '1.7' };
 })();
