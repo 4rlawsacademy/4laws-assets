@@ -1,4 +1,10 @@
 /* ============================================================
+   DOCB-SIGN.JS v1.2 — THE PEN'S OWN SIZE (9/10/26, founder: "signed by a
+   giant"): the signature landed at 170pt wide on every letter and made
+   the member shrink it each time. Now it opens at a pen-sized 120pt, the
+   slider reaches down to 60, and the size you last used is remembered
+   ('4laws-sign-size') so it lands right forever after. v1.1 below.
+   ============================================================
    DOCB-SIGN.JS v1.1 — THE TRUE PNG (9/10/26, the pen's first field walk
    on Yoniel's letter): preview drew, the tap landed, and the stamp
    refused -- "locked or damaged" -- because the file named signature.png
@@ -199,11 +205,12 @@
     if (!o || !o.pdfB64 || !o.sigB64) { return; }
     css();
     close_();
-    st = { name: o.name || 'document.pdf', pdfU8: b64ToU8_(o.pdfB64), sigU8: b64ToU8_(o.sigB64), sigMime: o.sigMime || 'image/png', onSigned: o.onSigned, page: 1, at: null, sigWpt: 170, sigAspect: 2.4, scale: 1 };
+    var remembered = 120; try { remembered = parseInt(localStorage.getItem('4laws-sign-size') || '120', 10) || 120; } catch (eLs) {}
+    st = { name: o.name || 'document.pdf', pdfU8: b64ToU8_(o.pdfB64), sigU8: b64ToU8_(o.sigB64), sigMime: o.sigMime || 'image/png', onSigned: o.onSigned, page: 1, at: null, sigWpt: remembered, sigAspect: 2.4, scale: 1 }; /* v1.2: a pen-sized default, and the size you last used */
     var v = document.createElement('div'); v.id = 'dsVeil';
     v.innerHTML = '<div class="dsBar"><span class="dsKick">\u270D ' + T({ en: 'SIGN THIS FILE', es: 'FIRMA ESTE ARCHIVO' }) + ' \u00b7 ' + esc(st.name) + '</span>'
       + '<button class="dsGhostBtn" id="dsPrev">\u25c0</button><span class="dsPg" id="dsPg"></span><button class="dsGhostBtn" id="dsNext">\u25b6</button>'
-      + '<span class="dsPg">' + T({ en: 'SIZE', es: 'TAMA\u00d1O' }) + '</span><input class="dsRange" id="dsSize" type="range" min="90" max="320" value="170">'
+      + '<span class="dsPg">' + T({ en: 'SIZE', es: 'TAMA\u00d1O' }) + '</span><input class="dsRange" id="dsSize" type="range" min="60" max="320" value="' + remembered + '">'
       + '<button class="dsBtn" id="dsStamp" disabled>\u270D ' + T({ en: 'Stamp it', es: 'F\u00edrmalo' }) + '</button>'
       + '<button class="dsGhostBtn" id="dsClose">\u00d7</button></div>'
       + '<p class="dsHint" id="dsHint">' + T({ en: 'Loading the page\u2026', es: 'Cargando la p\u00e1gina\u2026' }) + '</p>'
@@ -214,7 +221,7 @@
     ghost.onload = function () { if (ghost.naturalWidth && ghost.naturalHeight) { st.sigAspect = ghost.naturalWidth / ghost.naturalHeight; placeGhost_(); } };
     document.getElementById('dsClose').onclick = close_;
     document.getElementById('dsStamp').onclick = stamp_;
-    document.getElementById('dsSize').oninput = function () { st.sigWpt = parseInt(this.value, 10) || 170; placeGhost_(); };
+    document.getElementById('dsSize').oninput = function () { st.sigWpt = parseInt(this.value, 10) || 120; try { localStorage.setItem('4laws-sign-size', String(st.sigWpt)); } catch (eS) {} placeGhost_(); };
     document.getElementById('dsPrev').onclick = function () { if (st.page > 1) { st.page--; renderPage_(); } };
     document.getElementById('dsNext').onclick = function () { if (st.doc && st.page < st.doc.numPages) { st.page++; renderPage_(); } };
     var stage = document.getElementById('dsStage');
