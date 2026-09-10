@@ -1,4 +1,15 @@
 /* ============================================================
+   DOCB-SIGN.JS v1.1 — THE TRUE PNG (9/10/26, the pen's first field walk
+   on Yoniel's letter): preview drew, the tap landed, and the stamp
+   refused -- "locked or damaged" -- because the file named signature.png
+   was not a PNG (the founder saved it from a CDN link that re-encodes on
+   the way down; the ghost showed a white box, not transparency). Two
+   cures: the signature is now normalized through a canvas into true PNG
+   bytes before embedding, so the stamper never trusts a file name; and a
+   failure names its step (the PDF, the signature, or the placement) with
+   the library's own reason in brackets -- named, never vague. v1.0's
+   crown stands below.
+   ============================================================
    DOCB-SIGN.JS v1.0 — THE PEN (Bench 34, 9/9/26)
    Founder's field wound, verbatim: "I gave the system a completely
    written letter with stationery header and all, just needed a
@@ -130,13 +141,32 @@
     if (ev.cancelable) { ev.preventDefault(); }
   }
 
+  function sigAsPng_() {
+    /* v1.1: the file named signature.png may not BE a PNG (a CDN can re-encode
+       on the way down; a browser saves whatever it got under the name you
+       typed). The preview <img> already decoded it -- draw that onto a canvas
+       and export true PNG bytes, so the stamper never has to trust a name. */
+    return new Promise(function (res, rej) {
+      var ghost = document.getElementById('dsGhost');
+      if (!ghost || !ghost.naturalWidth) { rej(new Error('signature image did not decode')); return; }
+      try {
+        var c = document.createElement('canvas'); c.width = ghost.naturalWidth; c.height = ghost.naturalHeight;
+        c.getContext('2d').drawImage(ghost, 0, 0);
+        var dataUrl = c.toDataURL('image/png');
+        res(b64ToU8_(dataUrl.split(',')[1] || ''));
+      } catch (e) { rej(e); }
+    });
+  }
   function stamp_() {
     if (!st || !st.at) { return; }
     var btn = document.getElementById('dsStamp'); if (btn) { btn.disabled = true; btn.textContent = T({ en: 'Stamping\u2026', es: 'Firmando\u2026' }); }
+    var hint = document.getElementById('dsHint');
     var PDFLib = window.PDFLib;
+    var step = 'pdf';
     PDFLib.PDFDocument.load(st.pdfU8, { ignoreEncryption: true }).then(function (pdfDoc) {
-      var embedP = (/png/i.test(st.sigMime)) ? pdfDoc.embedPng(st.sigU8) : pdfDoc.embedJpg(st.sigU8);
-      return embedP.then(function (img) {
+      step = 'signature';
+      return sigAsPng_().then(function (pngU8) { return pdfDoc.embedPng(pngU8); }).then(function (img) {
+        step = 'stamp';
         var page = pdfDoc.getPage(st.at.page - 1);
         var pw = page.getWidth(), ph = page.getHeight();
         var w = st.sigWpt, h = w / st.sigAspect;
@@ -155,8 +185,13 @@
       if (typeof cb === 'function') { cb(bytes, suggested); }
     })['catch'](function (e) {
       if (btn) { btn.disabled = false; btn.textContent = T({ en: '\u270D Stamp it', es: '\u270D F\u00edrmalo' }); }
-      var hint = document.getElementById('dsHint');
-      if (hint) { hint.textContent = T({ en: 'Couldn\u2019t stamp that file \u2014 it may be locked or damaged.', es: 'No se pudo firmar ese archivo \u2014 puede estar bloqueado o da\u00f1ado.' }); }
+      var why = (e && e.message) ? String(e.message).substring(0, 120) : '';
+      var msg = (step === 'pdf')
+        ? T({ en: 'Couldn\u2019t open this PDF for stamping \u2014 it may be locked or damaged.', es: 'No se pudo abrir este PDF para firmar \u2014 puede estar bloqueado o da\u00f1ado.' })
+        : (step === 'signature')
+          ? T({ en: 'Couldn\u2019t read your signature image.', es: 'No se pudo leer la imagen de tu firma.' })
+          : T({ en: 'Couldn\u2019t place the signature on the page.', es: 'No se pudo colocar la firma en la p\u00e1gina.' });
+      if (hint) { hint.textContent = msg + (why ? ' [' + why + ']' : ''); }
     });
   }
 
