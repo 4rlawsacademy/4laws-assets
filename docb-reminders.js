@@ -1,4 +1,16 @@
 /* ============================================================
+   DOCB-REMINDERS.JS v2.6 — THE KEYED DRAWER (Bench 41, Sat 9/12/26; the
+   founder, testing the Arsenal's doors from the LIFE Hall: Meetings
+   "took me to PWS talent, in other words to my working page, which is
+   nothing"). The wall's doors carry keys now; this organ rides ten pages,
+   so the reader lives HERE once and every page learns it at once:
+     <page>#weapon=reminders  -> the drawer opens with + NEW REMINDER open
+     <page>#weapon=meetings   -> the drawer opens with + NEW MEETING open
+   The key is stripped from the address after landing (a reload does not
+   re-open). Other keys (timer, sign, form...) belong to the page's own
+   brain and are left untouched. Nothing else moved; v2.5 stands below.
+   Fleet law: pages that seat this organ bump ?v= on its line to fetch it.
+   ============================================================
    DOCB-REMINDERS.JS v2.5 — A MESSAGE YOU LEFT FOR SOMEONE (9/5/26, the
    founder: "we're one step away... cut"). Meetings: a reminder with a
    guest list, a door, and an owner -- carved with his rulings:
@@ -604,6 +616,17 @@
     if (!memberId()) { return; } /* no member key on this page yet -- render nothing, break nothing, matches every organ before it */
     css(); buildShell(); renderFab();
     refresh();
+    /* v2.6 THE KEYED DRAWER: a weapon key on the address opens the right form */
+    try {
+      var kh = String(window.location.hash || ''), km = kh.match(/weapon=(reminders|meetings)/i);
+      if (km) {
+        var key = km[1].toLowerCase();
+        formOpen = (key === 'reminders'); mtgFormOpen = (key === 'meetings'); drawerOpen = true;
+        renderDrawer();
+        try { window.history.replaceState({}, '', window.location.pathname + window.location.search); } catch (eH) {}
+        setTimeout(function () { try { var d = document.getElementById('drDrawer'); if (d && d.scrollIntoView) { d.scrollIntoView({ block: 'start' }); } } catch (eS) {} }, 200);
+      }
+    } catch (eK) {}
     setInterval(refresh, 45000); /* a touch gentler than v1.x's 30s, now that each tick is a real network call */
     try {
       document.addEventListener('visibilitychange', function () { if (!document.hidden) { refresh(); } });
@@ -615,6 +638,8 @@
     add: add,
     refresh: refresh,
     open: function () { drawerOpen = true; renderDrawer(); },
+    openReminder: function () { drawerOpen = true; formOpen = true; mtgFormOpen = false; renderDrawer(); },   /* v2.6: a page may land the member on the form */
+    openMeeting: function () { drawerOpen = true; mtgFormOpen = true; formOpen = false; renderDrawer(); },
     promptClause: promptClause, /* v2.4: rooms append this to their systemPrompt */
     harvest: harvest,           /* v2.4: rooms pass Doc B's reply through this */
     _close: function () { drawerOpen = false; formOpen = false; renderDrawer(); },
