@@ -1,4 +1,32 @@
 /* ============================================================
+   DOCB-REMINDERS.JS v2.7 — THE HOUSE BOOK (Bench 41, Sat 9/12/26; the
+   founder: "instead of entering contacts manually, why can't they have
+   access to my contacts on my device?... I want this badly... the
+   difference between a Ford and a Cadillac for the butler work").
+   ONE BOOK FOR THE WHOLE HOUSE: every contact the Butler ever seated in
+   any room (read from every window's config through pwsGetEquipAll,
+   read-only) plus everyone picked from the phone, merged by name into one
+   library. The book's own additions and enrichments live on ONE reserved
+   equip row, '__house_book__' (the same trick /todos uses for its
+   checklist: a key no real activity can ever be named), saved through
+   pwsSaveEquip -- so a pick on the phone is on the Mac at the next load.
+   No backend change.
+   FROM MY PHONE (in the Meetings form): the browser's Contact Picker
+   (Safari on iPhone, Chrome on Android) opens the phone's own contacts;
+   the member taps people; name, phone and email land in the guests AND in
+   the book. Where no picker exists (the Mac) the button says so honestly
+   and points to the .vcf road. Never the whole address book -- only who
+   was chosen, each time.
+   FROM THIS HOUSE (every device): the book as a picker -- a search box,
+   one tap per person into the guests; a person missing a number or an
+   email shows the gap, and ✎ opens a small card (phone, email, link) --
+   fill it, save, and the book is richer from then on.
+   HONEST LINE (gate's catch, 9/12): the picker is Android's alone -- every
+   iPhone browser is WebKit -- so the fallback names the iPhone road exactly.
+   Public hands for the pages: DocBReminders.pickFromPhone(cb),
+   DocBReminders.houseBook(cb), DocBReminders.addToHouse(contact).
+   v2.6 stands below.
+   ============================================================
    DOCB-REMINDERS.JS v2.6 — THE KEYED DRAWER (Bench 41, Sat 9/12/26; the
    founder, testing the Arsenal's doors from the LIFE Hall: Meetings
    "took me to PWS talent, in other words to my working page, which is
@@ -289,6 +317,129 @@
     for (var k in extra) { if (extra.hasOwnProperty(k)) { body[k] = extra[k]; } }
     return post_(body).then(function (d) { refresh(); return !!(d && d.success); })['catch'](function () { return false; });
   }
+  /* ---------------- v2.7 THE HOUSE BOOK ---------------- */
+  var HOUSE_KEY = '__house_book__';
+  var bookAll = [], bookOwn = [], bookLoaded = false, bookBusy = false, bookOpen = false, bookEdit = '', bookQ = '';
+  function bookKey_(n) { return String(n || '').toLowerCase().replace(/[^a-z0-9\u00e0-\u00ff ]+/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''); }
+  function bookFill_(list, c) {
+    /* merge by name: fill gaps, never wipe */
+    if (!c || !c.name) { return list; }
+    var k = bookKey_(c.name);
+    for (var i = 0; i < list.length; i++) {
+      var e = list[i]; if (!e || bookKey_(e.name) !== k) { continue; }
+      if (c.phone && !e.phone) { e.phone = c.phone; }
+      if (c.email && !e.email) { e.email = c.email; }
+      if (c.extraLink && !e.extraLink) { e.extraLink = c.extraLink; }
+      if (c.note && !e.note) { e.note = c.note; }
+      return list;
+    }
+    list.push({ name: String(c.name).substring(0, 80), phone: c.phone || '', email: c.email || '', extraLink: c.extraLink || '', note: c.note || '' });
+    return list;
+  }
+  function bookLoad_(cb) {
+    var mid = memberId(); if (!mid) { if (cb) { cb([]); } return; }
+    if (bookLoaded) { if (cb) { cb(bookAll); } return; }
+    if (bookBusy) { setTimeout(function () { bookLoad_(cb); }, 300); return; }
+    bookBusy = true;
+    post_({ action: 'pwsGetEquipAll', requestingMemberId: mid })
+      .then(function (d) {
+        bookBusy = false;
+        var maps = [], k;
+        if (d && d.legacy) { maps.push(d.legacy); }
+        if (d && d.data) { maps.push(d.data); }
+        var all = [], own = [];
+        for (var m = 0; m < maps.length; m++) {
+          for (k in maps[m]) {
+            if (!Object.prototype.hasOwnProperty.call(maps[m], k)) { continue; }
+            var cfg = maps[m][k]; if (!cfg || !cfg.contacts || !cfg.contacts.length) { continue; }
+            if (k === HOUSE_KEY) { own = cfg.contacts.slice(); continue; }
+            for (var c = 0; c < cfg.contacts.length; c++) { bookFill_(all, cfg.contacts[c]); }
+          }
+        }
+        /* the book's own row is applied LAST so the member's enrichments win */
+        for (var o = 0; o < own.length; o++) { var oc = own[o]; if (!oc || !oc.name) { continue; } var ok = bookKey_(oc.name), hit = false;
+          for (var a = 0; a < all.length; a++) { if (bookKey_(all[a].name) === ok) { hit = true; if (oc.phone) { all[a].phone = oc.phone; } if (oc.email) { all[a].email = oc.email; } if (oc.extraLink) { all[a].extraLink = oc.extraLink; } if (oc.note) { all[a].note = oc.note; } } }
+          if (!hit) { all.push({ name: oc.name, phone: oc.phone || '', email: oc.email || '', extraLink: oc.extraLink || '', note: oc.note || '' }); } }
+        all.sort(function (x, y) { return bookKey_(x.name) < bookKey_(y.name) ? -1 : 1; });
+        bookAll = all; bookOwn = own; bookLoaded = true;
+        if (cb) { cb(bookAll); }
+      })
+      ['catch'](function () { bookBusy = false; if (cb) { cb(bookAll); } });
+  }
+  function bookSave_() {
+    var mid = memberId(); if (!mid) { return Promise.resolve(false); }
+    return post_({ action: 'pwsSaveEquip', requestingMemberId: mid, activityName: HOUSE_KEY, config: { contacts: bookOwn, houseBook: true, updatedAt: nowMs() } })
+      .then(function (d) { return !!(d && (d.status === 'ok' || d.success)); })['catch'](function () { return false; });
+  }
+  function bookAdd_(c, silent) {
+    if (!c || !c.name) { return; }
+    bookFill_(bookAll, c); bookFill_(bookOwn, c);
+    /* an enrichment overwrites the own row's copy so the newest words stand */
+    for (var i = 0; i < bookOwn.length; i++) { if (bookKey_(bookOwn[i].name) === bookKey_(c.name)) { if (c.phone) { bookOwn[i].phone = c.phone; } if (c.email) { bookOwn[i].email = c.email; } if (c.extraLink) { bookOwn[i].extraLink = c.extraLink; } } }
+    for (var j = 0; j < bookAll.length; j++) { if (bookKey_(bookAll[j].name) === bookKey_(c.name)) { if (c.phone) { bookAll[j].phone = c.phone; } if (c.email) { bookAll[j].email = c.email; } if (c.extraLink) { bookAll[j].extraLink = c.extraLink; } } }
+    bookSave_().then(function (ok) { if (!ok && !silent) { toast_(T({ en: 'Couldn\u2019t reach the house book \u2014 kept on this device for now.', es: 'No alcanc\u00e9 el libro de la casa \u2014 guardado en este dispositivo por ahora.' })); } });
+  }
+  function phonePick_(cb) {
+    var es = (lang() === 'es');
+    var nav = window.navigator;
+    if (!(nav && nav.contacts && nav.contacts.select)) {
+      toast_(es ? 'Este dispositivo no tiene selector de contactos (solo Android). En iPhone: Contactos \u2192 Compartir \u2192 Guardar en Archivos, y suelta la tarjeta en la boca + de /todos.' : 'No contact picker on this device (Android only). On iPhone: Contacts \u2192 Share \u2192 Save to Files, then drop the card into the + mouth on /todos.');
+      if (cb) { cb([]); } return;
+    }
+    nav.contacts.select(['name', 'tel', 'email'], { multiple: true }).then(function (picked) {
+      var out = [];
+      for (var i = 0; i < (picked || []).length; i++) {
+        var p = picked[i] || {};
+        var c = { name: (p.name && p.name[0]) ? String(p.name[0]) : '', phone: (p.tel && p.tel[0]) ? String(p.tel[0]) : '', email: (p.email && p.email[0]) ? String(p.email[0]) : '' };
+        if (!c.name && !c.phone) { continue; }
+        if (!c.name) { c.name = c.phone; }
+        out.push(c); bookAdd_(c, true);
+      }
+      if (out.length) { toast_(es ? out.length + ' en el libro de la casa.' : out.length + ' filed in the house book.'); }
+      if (cb) { cb(out); }
+    })['catch'](function () { if (cb) { cb([]); } });
+  }
+  function guestsAppend_(list) {
+    var g = document.getElementById('drMGuests'); if (!g) { return; }
+    var lines = String(g.value || '').replace(/\s+$/, '');
+    for (var i = 0; i < list.length; i++) {
+      var c = list[i]; if (!c || !c.name) { continue; }
+      var line = c.name + (c.phone ? ', ' + c.phone : '');
+      if (lines.indexOf(line) !== -1) { continue; }
+      lines = lines ? (lines + '\n' + line) : line;
+    }
+    g.value = lines;
+  }
+  function bookHtml_() {
+    var es = (lang() === 'es');
+    var h = '<div class="drBk" id="drBk">'
+      + '<input class="drIn" id="drBkQ" placeholder="' + (es ? 'Buscar\u2026' : 'Search\u2026') + '" value="' + esc(bookQ) + '" oninput="window.DocBReminders._bookQ(this.value)">';
+    if (!bookLoaded) { h += '<div class="drBkEmpty">' + (es ? 'Leyendo el libro de la casa\u2026' : 'Reading the house book\u2026') + '</div>'; return h + '</div>'; }
+    var q = bookKey_(bookQ), n = 0;
+    for (var i = 0; i < bookAll.length; i++) {
+      var c = bookAll[i]; if (!c || !c.name) { continue; }
+      if (q && bookKey_(c.name + ' ' + (c.phone || '') + ' ' + (c.email || '')).indexOf(q) === -1) { continue; }
+      n++; var k = bookKey_(c.name);
+      if (bookEdit === k) {
+        h += '<div class="drBkEdit"><div class="drBkName">' + esc(c.name) + '</div>'
+          + '<input class="drIn" id="drBkP" placeholder="' + (es ? 'Tel\u00e9fono' : 'Phone') + '" value="' + esc(c.phone || '') + '">'
+          + '<input class="drIn" id="drBkE" placeholder="Email" value="' + esc(c.email || '') + '">'
+          + '<input class="drIn" id="drBkL" placeholder="' + (es ? 'Enlace (opcional)' : 'Link (optional)') + '" value="' + esc(c.extraLink || '') + '">'
+          + '<div class="drFRow"><button class="drBtn" onclick="window.DocBReminders._bookSave(\'' + esc(k) + '\')">' + (es ? 'Guardar' : 'Save') + '</button>'
+          + '<button class="drGhost" onclick="window.DocBReminders._bookEdit(\'\')">' + (es ? 'Cancelar' : 'Cancel') + '</button></div></div>';
+        continue;
+      }
+      var gap = (!c.phone && !c.email) ? (es ? 'SIN DATOS' : 'NO NUMBER') : (!c.phone ? (es ? 'SIN TEL\u00c9FONO' : 'NO PHONE') : '');
+      h += '<div class="drBkIt"><div class="drBkName" onclick="window.DocBReminders._bookPick(\'' + esc(k) + '\')">' + esc(c.name) + '<small>' + esc([c.phone, c.email].filter(function (x) { return !!x; }).join(' \u00b7 ')) + '</small></div>'
+        + (gap ? '<span class="drBkGap">' + gap + '</span>' : '')
+        + '<button class="drBkPen" title="' + (es ? 'Completar' : 'Fill in') + '" onclick="window.DocBReminders._bookEdit(\'' + esc(k) + '\')">\u270e</button></div>';
+      if (n >= 60) { break; }
+    }
+    if (!n) { h += '<div class="drBkEmpty">' + (es ? 'El libro est\u00e1 vac\u00edo por ahora \u2014 el Mayordomo lo llena a medida que trabajas.' : 'The book is empty for now \u2014 the Butler fills it as you work.') + '</div>'; }
+    return h + '</div>';
+  }
+  function bookFind_(k) { for (var i = 0; i < bookAll.length; i++) { if (bookKey_(bookAll[i].name) === k) { return bookAll[i]; } } return null; }
+
   function mtgFormHtml_() {
     var es = (lang() === 'es');
     var def = new Date(nowMs() + 24 * 3600000); def.setMinutes(0, 0, 0);
@@ -298,6 +449,9 @@
       + '<select id="drMRep" class="drIn drSel"><option value="">' + (es ? 'Una vez' : 'Once') + '</option><option value="daily">' + (es ? 'Cada d\u00eda' : 'Every day') + '</option><option value="weekly">' + (es ? 'Cada semana' : 'Every week') + '</option></select></div>'
       + '<input id="drMLink" class="drIn" maxlength="400" placeholder="' + (es ? 'Enlace de Zoom u otro (opcional)' : 'Zoom or other link (optional)') + '">'
       + '<textarea id="drMGuests" class="drIn" rows="3" placeholder="' + (es ? 'Invitados \u2014 uno por l\u00ednea: Nombre, tel\u00e9fono' : 'Guests \u2014 one per line: Name, phone') + '"></textarea>'
+      + '<div class="drBkRow"><button class="drGhost" onclick="window.DocBReminders._fromPhone()">\ud83d\udcc7 ' + (es ? 'DE MI TEL\u00c9FONO' : 'FROM MY PHONE') + '</button>'
+      + '<button class="drGhost" onclick="window.DocBReminders._toggleBook()">\ud83c\udfe0 ' + (es ? 'DE ESTA CASA' : 'FROM THIS HOUSE') + '</button></div>'
+      + (bookOpen ? bookHtml_() : '')
       + '<div class="drFRow"><button class="drBtn" onclick="window.DocBReminders._submitMeeting()">' + (es ? '\ud83d\udcc5 Crear' : '\ud83d\udcc5 Create') + '</button>'
       + '<button class="drGhost" onclick="window.DocBReminders._toggleMeetingForm()">' + (es ? 'Cancelar' : 'Cancel') + '</button></div>'
       + '</div>';
@@ -439,6 +593,16 @@
       + '#drToast{position:fixed;left:50%;bottom:24px;-webkit-transform:translateX(-50%);transform:translateX(-50%);z-index:2500000;background:#14100a;border:1px solid #c8a84b;color:#f0e6cc;border-radius:10px;padding:10px 16px;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:16px;max-width:92vw;box-shadow:0 6px 24px rgba(0,0,0,.7);opacity:0;pointer-events:none;-webkit-transition:opacity .25s;transition:opacity .25s;}'
       + '#drToast.on{opacity:1;}'
       + '.drGlow{-webkit-animation:drPulse 900ms ease-out;animation:drPulse 900ms ease-out;}'
+      + '.drBkRow{display:flex;gap:8px;margin:6px 0 8px;flex-wrap:wrap;}'
+      + '.drBk{margin:4px 0 10px;padding:8px;border:1px solid rgba(200,168,75,.35);border-radius:10px;background:rgba(240,230,204,.03);max-height:300px;overflow-y:auto;-webkit-overflow-scrolling:touch;}'
+      + '.drBkIt{display:flex;align-items:center;gap:8px;padding:8px 6px;border-bottom:1px solid rgba(200,168,75,.15);}'
+      + '.drBkName{flex:1;min-width:0;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:20px;color:#f0e6cc;cursor:pointer;line-height:1.2;}'
+      + '.drBkName small{display:block;font-size:14px;color:rgba(240,230,204,.55);}'
+      + '.drBkGap{font-family:Cinzel,serif;font-size:10px;letter-spacing:.1em;color:#e0a86a;border:1px solid rgba(224,168,106,.5);border-radius:999px;padding:2px 7px;white-space:nowrap;}'
+      + '.drBkPen{background:none;border:1px solid rgba(200,168,75,.45);color:#c8a84b;border-radius:8px;font-size:14px;padding:6px 9px;cursor:pointer;min-height:36px;}'
+      + '.drBkEdit{padding:6px 6px 10px;border-bottom:1px solid rgba(200,168,75,.15);}'
+      + '.drBkEdit .drIn{margin:4px 0;font-size:16px;padding:8px 10px;}'
+      + '.drBkEmpty{font-family:\'Cormorant Garamond\',Georgia,serif;font-style:italic;font-size:16px;color:rgba(240,230,204,.55);padding:8px 6px;}'
       + '@-webkit-keyframes drPulse{0%{box-shadow:0 0 0 0 rgba(200,168,75,.55);}100%{box-shadow:0 0 0 14px rgba(200,168,75,0);}}'
       + '@keyframes drPulse{0%{box-shadow:0 0 0 0 rgba(200,168,75,.55);}100%{box-shadow:0 0 0 14px rgba(200,168,75,0);}}';
     document.head.appendChild(s);
@@ -639,6 +803,21 @@
     refresh: refresh,
     open: function () { drawerOpen = true; renderDrawer(); },
     openReminder: function () { drawerOpen = true; formOpen = true; mtgFormOpen = false; renderDrawer(); },   /* v2.6: a page may land the member on the form */
+    /* v2.7 THE HOUSE BOOK */
+    pickFromPhone: phonePick_,
+    houseBook: function (cb) { bookLoad_(cb); },
+    addToHouse: function (c) { bookAdd_(c, true); },
+    _fromPhone: function () { phonePick_(function (list) { if (list.length) { guestsAppend_(list); if (bookOpen) { renderDrawer(); } } }); },
+    _toggleBook: function () { bookOpen = !bookOpen; renderDrawer(); if (bookOpen && !bookLoaded) { bookLoad_(function () { renderDrawer(); }); } },
+    _bookQ: function (v) { bookQ = String(v || ''); var box = document.getElementById('drBk'); if (!box) { return; } var wrap = document.createElement('div'); wrap.innerHTML = bookHtml_(); box.parentNode.replaceChild(wrap.firstChild, box); var q = document.getElementById('drBkQ'); if (q) { q.focus(); try { q.setSelectionRange(q.value.length, q.value.length); } catch (eS) {} } },
+    _bookPick: function (k) { var c = bookFind_(k); if (c) { guestsAppend_([c]); toast_(T({ en: '\u2713 ' + c.name, es: '\u2713 ' + c.name })); } },
+    _bookEdit: function (k) { bookEdit = k || ''; renderDrawer(); },
+    _bookSave: function (k) {
+      var c = bookFind_(k); if (!c) { bookEdit = ''; renderDrawer(); return; }
+      var p = document.getElementById('drBkP'), e = document.getElementById('drBkE'), l = document.getElementById('drBkL');
+      bookAdd_({ name: c.name, phone: p ? String(p.value || '').replace(/^\s+|\s+$/g, '') : '', email: e ? String(e.value || '').replace(/^\s+|\s+$/g, '') : '', extraLink: l ? String(l.value || '').replace(/^\s+|\s+$/g, '') : '' });
+      bookEdit = ''; renderDrawer(); toast_(T({ en: '\u2713 ' + c.name + ' \u2014 filled in.', es: '\u2713 ' + c.name + ' \u2014 completado.' }));
+    },
     openMeeting: function () { drawerOpen = true; mtgFormOpen = true; formOpen = false; renderDrawer(); },
     promptClause: promptClause, /* v2.4: rooms append this to their systemPrompt */
     harvest: harvest,           /* v2.4: rooms pass Doc B's reply through this */
