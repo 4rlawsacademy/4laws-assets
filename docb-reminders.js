@@ -1,4 +1,18 @@
 /* ============================================================
+   DOCB-REMINDERS.JS v2.8 — THE PEOPLE HAND (Bench 41, Sun 9/13/26; the
+   founder: "put the contacts into GitHub... then I can access it from
+   anywhere"). The picker leaves /todos and lives HERE, in the organ every
+   page seats: one hand, DocBReminders.pickPerson(cb), opens a big centered
+   sheet -- WHO? -- that searches the house book AND the member's dropped
+   address book together (the compact book /todos keeps on the device under
+   '4laws-book-drop_<memberId>'; the organ reads it, never writes it);
+   matches stand big with phone and email; ＋ hands the person back to the
+   page that asked (a room's Contacts, a Window, a form) and files them in
+   the house book too. DocBReminders.openBook() opens the same sheet to
+   browse and ＋ into the house with no page waiting. The Meetings form's
+   FROM THIS HOUSE now opens this sheet as well (the in-drawer list stays
+   for the drawer). One picker, every page. v2.7 stands below.
+   ============================================================
    DOCB-REMINDERS.JS v2.7 — THE HOUSE BOOK (Bench 41, Sat 9/12/26; the
    founder: "instead of entering contacts manually, why can't they have
    access to my contacts on my device?... I want this badly... the
@@ -440,6 +454,63 @@
   }
   function bookFind_(k) { for (var i = 0; i < bookAll.length; i++) { if (bookKey_(bookAll[i].name) === k) { return bookAll[i]; } } return null; }
 
+  /* ---------------- v2.8 THE PEOPLE HAND ---------------- */
+  var _pplCb = null, _pplQ = '', _pplPool = null, _pplIn = {};
+  function pplDropped_() {
+    try { var r = localStorage.getItem('4laws-book-drop_' + memberId()); var b = r ? (JSON.parse(r) || []) : []; var out = []; for (var i = 0; i < b.length; i++) { if (b[i] && b[i].n) out.push({ name: b[i].n, phone: b[i].p || '', email: b[i].e || '' }); } return out; } catch (e) { return []; }
+  }
+  function pplPool_(cb) {
+    if (_pplPool) { cb(_pplPool); return; }
+    bookLoad_(function (house) {
+      var pool = [], seen = {};
+      function add(c, inHouse) { if (!c || !c.name) return; var k = bookKey_(c.name); if (!k) return; if (seen[k]) { if (inHouse) _pplIn[k] = 1; return; } seen[k] = 1; if (inHouse) _pplIn[k] = 1; pool.push({ name: c.name, phone: c.phone || '', email: c.email || '' }); }
+      for (var i = 0; i < (house || []).length; i++) add(house[i], true);
+      var d = pplDropped_(); for (var j = 0; j < d.length; j++) add(d[j], false);
+      pool.sort(function (x, y) { return bookKey_(x.name) < bookKey_(y.name) ? -1 : 1; });
+      _pplPool = pool; cb(pool);
+    });
+  }
+  function pplShell_() {
+    var el = document.getElementById('drPeople'); if (el) return el;
+    el = document.createElement('div'); el.id = 'drPeople';
+    el.innerHTML = '<div class="drPPanel"><div class="drPHead"><div class="drPCmd" id="drPCmd"></div><button class="drPClose" data-ppl="close">\u00d7</button></div><div class="drPBody" id="drPBody"></div></div>';
+    document.body.appendChild(el);
+    el.addEventListener('click', function (ev) {
+      if (ev.target === el) { pplClose_(); return; }
+      var t = ev.target; while (t && t !== el && !(t.getAttribute && t.getAttribute('data-ppl'))) t = t.parentNode;
+      if (!t || t === el) return;
+      var a = t.getAttribute('data-ppl');
+      if (a === 'close') { pplClose_(); return; }
+      if (a === 'add') { var i = parseInt(t.getAttribute('data-i'), 10); pplPool_(function (pool) { var c = pool[i]; if (!c) return; bookAdd_(c, true); _pplIn[bookKey_(c.name)] = 1; t.className = 'drPAdd in'; t.textContent = '\u2713'; toast_(T({ en: '\u2713 ' + c.name, es: '\u2713 ' + c.name })); if (_pplCb) { var f = _pplCb; pplClose_(); f(c); } }); return; }
+    });
+    el.addEventListener('input', function (ev) { if (ev.target && ev.target.id === 'drPQ') { _pplQ = ev.target.value; pplRender_(); } });
+    return el;
+  }
+  function pplRender_() {
+    var body = document.getElementById('drPBody'); if (!body) return;
+    var es = (lang() === 'es'), q = bookKey_(_pplQ);
+    pplPool_(function (pool) {
+      var h = '<input class="drPQ" id="drPQ" type="text" autocomplete="off" autocapitalize="off" placeholder="' + (es ? 'Escribe un nombre\u2026' : 'Type a name\u2026') + '" value="' + esc(_pplQ) + '">', n = 0;
+      if (!pool.length) { h += '<div class="drPNote">' + (es ? 'A\u00fan no hay nadie en la casa. Suelta tu libreta (.vcf) en la puerta + de /todos.' : 'No one in the house yet. Drop your address book (.vcf) at the + door on /todos.') + '</div>'; }
+      else if (!q) { h += '<div class="drPNote">' + (es ? pool.length + ' personas \u00b7 escribe para buscar.' : pool.length + ' people \u00b7 type to search.') + '</div>'; }
+      else {
+        for (var i = 0; i < pool.length && n < 40; i++) { var c = pool[i]; if (bookKey_(c.name + ' ' + c.phone + ' ' + c.email).indexOf(q) === -1) continue; n++; var inH = !!_pplIn[bookKey_(c.name)];
+          h += '<div class="drPRow"><div class="drPNm">' + esc(c.name) + (c.phone || c.email ? '<small>' + esc([c.phone, c.email].filter(function (x) { return !!x; }).join(' \u00b7 ')) + '</small>' : '') + '</div><button class="drPAdd' + (inH && !_pplCb ? ' in' : '') + '" data-ppl="add" data-i="' + i + '">' + (inH && !_pplCb ? '\u2713' : '\uFF0B') + '</button></div>'; }
+        if (!n) h += '<div class="drPNote">' + (es ? 'Nadie con ese nombre.' : 'No one by that name.') + '</div>';
+      }
+      var keep = document.activeElement && document.activeElement.id === 'drPQ', pos = keep ? document.activeElement.selectionStart : null;
+      body.innerHTML = h;
+      var qq = document.getElementById('drPQ'); if (qq && (keep || !_pplQ)) { try { qq.focus(); if (pos !== null) qq.setSelectionRange(pos, pos); } catch (e) {} }
+    });
+  }
+  function pplOpen_(cb, cmd) {
+    _pplCb = cb || null; _pplQ = ''; _pplPool = null; _pplIn = {};
+    var el = pplShell_(); var es = (lang() === 'es');
+    document.getElementById('drPCmd').textContent = cmd || (cb ? (es ? '\u00bfQui\u00e9n?' : 'Who?') : (es ? 'Tu gente.' : 'Your people.'));
+    el.className = 'on'; pplRender_();
+  }
+  function pplClose_() { var el = document.getElementById('drPeople'); if (el) el.className = ''; _pplCb = null; }
+
   function mtgFormHtml_() {
     var es = (lang() === 'es');
     var def = new Date(nowMs() + 24 * 3600000); def.setMinutes(0, 0, 0);
@@ -450,7 +521,7 @@
       + '<input id="drMLink" class="drIn" maxlength="400" placeholder="' + (es ? 'Enlace de Zoom u otro (opcional)' : 'Zoom or other link (optional)') + '">'
       + '<textarea id="drMGuests" class="drIn" rows="3" placeholder="' + (es ? 'Invitados \u2014 uno por l\u00ednea: Nombre, tel\u00e9fono' : 'Guests \u2014 one per line: Name, phone') + '"></textarea>'
       + '<div class="drBkRow"><button class="drGhost" onclick="window.DocBReminders._fromPhone()">\ud83d\udcc7 ' + (es ? 'DE MI TEL\u00c9FONO' : 'FROM MY PHONE') + '</button>'
-      + '<button class="drGhost" onclick="window.DocBReminders._toggleBook()">\ud83c\udfe0 ' + (es ? 'DE ESTA CASA' : 'FROM THIS HOUSE') + '</button></div>'
+      + '<button class="drGhost" onclick="window.DocBReminders._pickGuest()">\ud83c\udfe0 ' + (es ? 'DE ESTA CASA' : 'FROM THIS HOUSE') + '</button></div>'
       + (bookOpen ? bookHtml_() : '')
       + '<div class="drFRow"><button class="drBtn" onclick="window.DocBReminders._submitMeeting()">' + (es ? '\ud83d\udcc5 Crear' : '\ud83d\udcc5 Create') + '</button>'
       + '<button class="drGhost" onclick="window.DocBReminders._toggleMeetingForm()">' + (es ? 'Cancelar' : 'Cancel') + '</button></div>'
@@ -602,6 +673,18 @@
       + '.drBkPen{background:none;border:1px solid rgba(200,168,75,.45);color:#c8a84b;border-radius:8px;font-size:14px;padding:6px 9px;cursor:pointer;min-height:36px;}'
       + '.drBkEdit{padding:6px 6px 10px;border-bottom:1px solid rgba(200,168,75,.15);}'
       + '.drBkEdit .drIn{margin:4px 0;font-size:16px;padding:8px 10px;}'
+      + '#drPeople{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9500;background:rgba(4,6,8,.86);display:none;align-items:center;justify-content:center;padding:16px 10px 96px;box-sizing:border-box;}'
+      + '#drPeople.on{display:flex;}'
+      + '.drPPanel{width:100%;max-width:720px;max-height:100%;display:flex;flex-direction:column;background:linear-gradient(180deg,#100c07 0%,#070809 100%);border:1px solid rgba(200,168,75,.55);border-radius:18px;box-shadow:0 18px 60px rgba(0,0,0,.7),0 0 30px rgba(200,168,75,.12);}'
+      + '.drPHead{display:flex;align-items:center;gap:12px;padding:16px 18px 10px;}'
+      + '.drPCmd{flex:1;min-width:0;font-family:Cinzel,serif;font-size:26px;letter-spacing:.08em;color:#ffd75e;text-shadow:0 0 16px rgba(200,168,75,.35);}'
+      + '.drPClose{font-size:26px;line-height:1;color:#c8a84b;background:transparent;border:none;cursor:pointer;padding:4px 8px;}'
+      + '.drPBody{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 18px 22px;}'
+      + '.drPQ{width:100%;box-sizing:border-box;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:26px;padding:12px 14px;background:rgba(240,230,204,.05);border:1.5px solid rgba(200,168,75,.5);border-radius:12px;color:#f0e6cc;margin:0 0 12px;}'
+      + '.drPRow{display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid rgba(200,168,75,.15);}'
+      + '.drPNm{flex:1;min-width:0;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:24px;line-height:1.2;color:#f0e6cc;} .drPNm small{display:block;font-size:16px;color:rgba(240,230,204,.55);}'
+      + '.drPAdd{flex:0 0 auto;min-width:52px;min-height:46px;font-family:Cinzel,serif;font-size:22px;color:#040608;background:#c8a84b;border:none;border-radius:10px;cursor:pointer;} .drPAdd.in{background:transparent;color:#ffd75e;border:1px solid rgba(255,215,94,.6);}'
+      + '.drPNote{font-family:\'Cormorant Garamond\',Georgia,serif;font-style:italic;font-size:17px;color:rgba(240,230,204,.55);margin:4px 0 10px;}'
       + '.drBkEmpty{font-family:\'Cormorant Garamond\',Georgia,serif;font-style:italic;font-size:16px;color:rgba(240,230,204,.55);padding:8px 6px;}'
       + '@-webkit-keyframes drPulse{0%{box-shadow:0 0 0 0 rgba(200,168,75,.55);}100%{box-shadow:0 0 0 14px rgba(200,168,75,0);}}'
       + '@keyframes drPulse{0%{box-shadow:0 0 0 0 rgba(200,168,75,.55);}100%{box-shadow:0 0 0 14px rgba(200,168,75,0);}}';
@@ -805,6 +888,10 @@
     openReminder: function () { drawerOpen = true; formOpen = true; mtgFormOpen = false; renderDrawer(); },   /* v2.6: a page may land the member on the form */
     /* v2.7 THE HOUSE BOOK */
     pickFromPhone: phonePick_,
+    /* v2.8 THE PEOPLE HAND */
+    pickPerson: function (cb, cmd) { pplOpen_(cb, cmd); },
+    openBook: function () { pplOpen_(null); },
+    _pickGuest: function () { pplOpen_(function (c) { guestsAppend_([c]); }, (lang() === 'es') ? '\u00bfA qui\u00e9n invitas?' : 'Who is invited?'); },
     houseBook: function (cb) { bookLoad_(cb); },
     addToHouse: function (c) { bookAdd_(c, true); },
     _fromPhone: function () { phonePick_(function (list) { if (list.length) { guestsAppend_(list); if (bookOpen) { renderDrawer(); } } }); },
