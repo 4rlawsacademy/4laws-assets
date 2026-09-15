@@ -1,4 +1,10 @@
-/* ═══ belt.js v1.0 THE BELT (Bench 40, Tue 9/15/26; THE ARMORY CARD §3 + §3b, cut 3).
+/* ═══ belt.js v1.2 THE PICTURED ROW (Bench 40, Tue 9/15/26): a row whose item carries an image wears it
+ * (an Arsenal weapon's own picture); a page item fires by opening its link anywhere. Cumulative on v1.1.
+ * belt.js v1.1 THE COLUMN (Bench 40, Tue 9/15/26 afternoon): the radial fan stacked the seven on
+ * top of each other -- unreadable. Now the belt opens as a column rising from the buckle (or falling
+ * from it near the top of the screen), one row per weapon: FIRE / OPEN and the name, staggered in.
+ * Cumulative on v1.0.
+ * belt.js v1.0 THE BELT (Bench 40, Tue 9/15/26; THE ARMORY CARD §3 + §3b, cut 3).
  * One organ, one belt, everywhere. A small emblem — the member's own image — floats on
  * every page of the house that carries this line. Drag it where you like; it remembers its
  * spot on this device. Tap it and the seven fan out around it (a soft drift, never a pop);
@@ -47,7 +53,7 @@
   function normalize(raw) {
     var r = raw; if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { r = null; } }
     if (!r || typeof r !== 'object') return { tools: [], pins: [], proposed: false };
-    var tools = Array.isArray(r.tools) ? r.tools.filter(function (t) { return t && t.key && t.name; }).slice(0, MAX) : [];
+    var tools = Array.isArray(r.tools) ? r.tools.filter(function (t) { return t && t.key && t.name; }).slice(0, MAX).map(function (t) { return { key: t.key, name: t.name, kind: t.kind || 'tool', url: t.url || '', image: t.image || '', home: t.home || '' }; }) : [];
     return { tools: tools, pins: Array.isArray(r.pins) ? r.pins : [], proposed: !!r.proposed, updatedAt: r.updatedAt || '' };
   }
   function load(cb) {
@@ -73,12 +79,22 @@
     + '#beltRoot.open #beltEmblem{transform:scale(1.08);}'
     + '#beltRoot.over #beltEmblem{box-shadow:0 0 0 6px rgba(200,168,75,0.45),0 6px 24px rgba(0,0,0,0.6);}'
     + '#beltFan{position:absolute;left:32px;top:32px;width:0;height:0;pointer-events:none;}'
-    + '.belt-item{position:absolute;left:-58px;top:-24px;width:116px;padding:10px 10px;border-radius:8px;background:rgba(4,6,8,0.96);border:1px solid rgba(200,168,75,0.5);color:#f0e6cc;font-family:"Cormorant Garamond",Georgia,serif;font-size:15px;line-height:1.15;text-align:center;cursor:pointer;opacity:0;transform:translate(0,0) scale(.6) rotate(-8deg);transition:transform .55s cubic-bezier(.2,.8,.2,1),opacity .35s ease;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.55);}'
-    + '.belt-item .belt-kind{display:block;font-family:Cinzel,serif;font-size:9px;letter-spacing:.16em;color:#c8a84b;margin-bottom:3px;}'
+    + '#beltFan{width:220px;}'
+    + '#beltFan.up{bottom:0;top:auto;left:auto;right:0;}'
+    + '#beltFan.down{top:0;bottom:auto;left:auto;right:0;}'
+    + '#beltFan.left{right:0;left:auto;}'
+    + '#beltFan.rightside{left:0;right:auto;}'
+    + '.belt-col{position:absolute;right:0;width:220px;display:flex;flex-direction:column;gap:6px;pointer-events:none;}'
+    + '#beltFan.up .belt-col{bottom:74px;flex-direction:column-reverse;}'
+    + '#beltFan.down .belt-col{top:74px;}'
+    + '#beltFan.rightside .belt-col{right:auto;left:0;}'
+    + '.belt-item{padding:9px 12px;border-radius:8px;background:rgba(4,6,8,0.96);border:1px solid rgba(200,168,75,0.5);color:#f0e6cc;font-family:"Cormorant Garamond",Georgia,serif;font-size:16px;line-height:1.15;text-align:left;cursor:pointer;opacity:0;transform:translateY(10px) scale(.96);transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .3s ease;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.55);display:flex;align-items:baseline;gap:8px;}'
+    + '.belt-item .belt-kind{font-family:Cinzel,serif;font-size:9px;letter-spacing:.16em;color:#c8a84b;flex-shrink:0;}'
     + '.belt-item.pinned{border-color:#c8a84b;}'
-    + '#beltRoot.open .belt-item{opacity:1;pointer-events:auto;transform:translate(var(--bx),var(--by)) scale(1) rotate(0deg);}'
+    + '.belt-item.pictured{min-height:56px;align-items:flex-end;text-shadow:0 2px 6px rgba(0,0,0,.9);}'
+    + '#beltRoot.open .belt-item{opacity:1;pointer-events:auto;transform:translateY(0) scale(1);}'
     + '#beltRoot.open .belt-item:hover{background:rgba(200,168,75,0.14);}'
-    + '.belt-empty{position:absolute;left:-90px;top:-20px;width:180px;color:rgba(240,230,204,.85);font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:15px;text-align:center;background:rgba(4,6,8,.96);border:1px solid rgba(200,168,75,.4);border-radius:8px;padding:10px;opacity:0;pointer-events:none;transition:opacity .35s;}'
+    + '.belt-empty{position:absolute;right:0;bottom:74px;width:220px;color:rgba(240,230,204,.85);font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:15px;text-align:center;background:rgba(4,6,8,.96);border:1px solid rgba(200,168,75,.4);border-radius:8px;padding:10px;opacity:0;pointer-events:none;transition:opacity .35s;}'
     + '#beltRoot.open .belt-empty{opacity:1;pointer-events:auto;}'
     + '#beltSay{position:fixed;z-index:9401;left:50%;bottom:24px;transform:translateX(-50%);max-width:min(92vw,520px);background:rgba(4,6,8,.96);border:1px solid rgba(200,168,75,.5);color:#f0e6cc;font-family:"Cormorant Garamond",Georgia,serif;font-size:17px;padding:12px 18px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .3s;text-align:center;}'
     + '#beltSay.on{opacity:1;}'
@@ -150,23 +166,24 @@
       emp.addEventListener('click', function () { window.location.href = HOMES.talent; });
       fan.appendChild(emp); return;
     }
-    /* which way to fan: away from the nearest edges */
-    var r = root.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    var toLeft = cx > window.innerWidth / 2, toUp = cy > window.innerHeight / 2;
-    var n = tools.length, radius = 112, start = toLeft ? (toUp ? 180 : 180) : (toUp ? 0 : 0);
+    /* the column rises from the buckle, or falls from it near the top; it hugs whichever side has room */
+    var r = root.getBoundingClientRect(), cy = r.top + r.height / 2, cx = r.left + r.width / 2;
+    var up = cy > window.innerHeight * 0.45, leftRoom = cx > 240;
+    fan.className = (up ? 'up' : 'down') + ' ' + (leftRoom ? 'left' : 'rightside');
+    fan.style.left = ''; fan.style.top = ''; fan.style.right = '0'; fan.style.width = '';
+    fan.style.position = 'absolute'; fan.style.bottom = up ? '0' : 'auto'; fan.style.top = up ? 'auto' : '0';
+    if (!leftRoom) { fan.style.left = '0'; fan.style.right = 'auto'; }
+    var col = document.createElement('div'); col.className = 'belt-col';
     tools.forEach(function (t, i) {
-      var el = document.createElement('div'); el.className = 'belt-item' + ((_row.pins || []).indexOf(t.key) !== -1 ? ' pinned' : '');
-      var ang; /* spread over a quarter-to-half circle pointing into the page */
-      var span = 100, base = toLeft ? (toUp ? 190 : 170) : (toUp ? -10 : 10);
-      ang = (base + (toLeft ? -1 : 1) * (toUp ? 1 : -1) * ((n === 1) ? span / 2 : (i * span / (n - 1)))) * Math.PI / 180;
-      var bx = Math.cos(ang) * radius, by = Math.sin(ang) * radius;
-      el.style.setProperty('--bx', bx.toFixed(1) + 'px'); el.style.setProperty('--by', by.toFixed(1) + 'px');
-      el.style.transitionDelay = (i * 45) + 'ms';
+      var el = document.createElement('div'); el.className = 'belt-item' + ((_row.pins || []).indexOf(t.key) !== -1 ? ' pinned' : '') + (t.image ? ' pictured' : '');
+      if (t.image) { el.style.background = 'linear-gradient(rgba(4,6,8,0.2),rgba(4,6,8,0.85)),url(' + JSON.stringify(t.image) + ') center/cover no-repeat'; }
+      el.style.transitionDelay = (i * 40) + 'ms';
       var k = document.createElement('span'); k.className = 'belt-kind'; k.textContent = t.kind === 'page' ? T('OPEN', 'ABRIR') : T('FIRE', 'DISPARAR');
       el.appendChild(k); el.appendChild(document.createTextNode(t.name));
       el.addEventListener('click', function (e) { e.stopPropagation(); fire(t); });
-      fan.appendChild(el);
+      col.appendChild(el);
     });
+    fan.appendChild(col);
   }
   function fire(t) {
     setOpen(false);
