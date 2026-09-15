@@ -1,4 +1,7 @@
-/* ═══ belt.js v1.2 THE PICTURED ROW (Bench 40, Tue 9/15/26): a row whose item carries an image wears it
+/* ═══ belt.js v1.3 THE SEAL (Bench 40, Tue 9/15/26 evening): the column's rows wear gold, bold, larger names
+ * and a lighter veil over a pictured row; the shell now loads this organ with a ?v= stamp so a new version
+ * is never hidden behind the CDN's memory. Cumulative on v1.2.
+ * belt.js v1.2 THE PICTURED ROW (Bench 40, Tue 9/15/26): a row whose item carries an image wears it
  * (an Arsenal weapon's own picture); a page item fires by opening its link anywhere. Cumulative on v1.1.
  * belt.js v1.1 THE COLUMN (Bench 40, Tue 9/15/26 afternoon): the radial fan stacked the seven on
  * top of each other -- unreadable. Now the belt opens as a column rising from the buckle (or falling
@@ -88,10 +91,10 @@
     + '#beltFan.up .belt-col{bottom:74px;flex-direction:column-reverse;}'
     + '#beltFan.down .belt-col{top:74px;}'
     + '#beltFan.rightside .belt-col{right:auto;left:0;}'
-    + '.belt-item{padding:9px 12px;border-radius:8px;background:rgba(4,6,8,0.96);border:1px solid rgba(200,168,75,0.5);color:#f0e6cc;font-family:"Cormorant Garamond",Georgia,serif;font-size:16px;line-height:1.15;text-align:left;cursor:pointer;opacity:0;transform:translateY(10px) scale(.96);transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .3s ease;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.55);display:flex;align-items:baseline;gap:8px;}'
+    + '.belt-item{padding:11px 12px;border-radius:8px;background:rgba(4,6,8,0.96);border:1px solid rgba(200,168,75,0.5);color:#f2d98a;font-family:Cinzel,serif;font-size:14px;font-weight:700;letter-spacing:.06em;line-height:1.2;text-align:left;cursor:pointer;opacity:0;transform:translateY(10px) scale(.96);transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .3s ease;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.55);display:flex;align-items:baseline;gap:8px;text-shadow:0 2px 4px #000,0 3px 10px rgba(0,0,0,.9);}'
     + '.belt-item .belt-kind{font-family:Cinzel,serif;font-size:9px;letter-spacing:.16em;color:#c8a84b;flex-shrink:0;}'
     + '.belt-item.pinned{border-color:#c8a84b;}'
-    + '.belt-item.pictured{min-height:56px;align-items:flex-end;text-shadow:0 2px 6px rgba(0,0,0,.9);}'
+    + '.belt-item.pictured{min-height:64px;align-items:flex-end;}'
     + '#beltRoot.open .belt-item{opacity:1;pointer-events:auto;transform:translateY(0) scale(1);}'
     + '#beltRoot.open .belt-item:hover{background:rgba(200,168,75,0.14);}'
     + '.belt-empty{position:absolute;right:0;bottom:74px;width:220px;color:rgba(240,230,204,.85);font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:15px;text-align:center;background:rgba(4,6,8,.96);border:1px solid rgba(200,168,75,.4);border-radius:8px;padding:10px;opacity:0;pointer-events:none;transition:opacity .35s;}'
@@ -176,7 +179,7 @@
     var col = document.createElement('div'); col.className = 'belt-col';
     tools.forEach(function (t, i) {
       var el = document.createElement('div'); el.className = 'belt-item' + ((_row.pins || []).indexOf(t.key) !== -1 ? ' pinned' : '') + (t.image ? ' pictured' : '');
-      if (t.image) { el.style.background = 'linear-gradient(rgba(4,6,8,0.2),rgba(4,6,8,0.85)),url(' + JSON.stringify(t.image) + ') center/cover no-repeat'; }
+      if (t.image) { el.style.background = 'linear-gradient(rgba(4,6,8,0.05),rgba(4,6,8,0.7)),url(' + JSON.stringify(t.image) + ') center/cover no-repeat'; }
       el.style.transitionDelay = (i * 40) + 'ms';
       var k = document.createElement('span'); k.className = 'belt-kind'; k.textContent = t.kind === 'page' ? T('OPEN', 'ABRIR') : T('FIRE', 'DISPARAR');
       el.appendChild(k); el.appendChild(document.createTextNode(t.name));
