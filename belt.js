@@ -1,4 +1,9 @@
-/* ═══ belt.js v1.3 THE SEAL (Bench 40, Tue 9/15/26 evening): the column's rows wear gold, bold, larger names
+/* ═══ belt.js v1.5 THE NAME JUMPS (Bench 40, Tue 9/15/26 night): move over a row and it grows and
+ * brightens; rows are taller with the name on its own line. Cumulative on v1.4.
+ * belt.js v1.4 THE PANEL (Bench 40, Tue 9/15/26 night): the column is now a fixed panel placed by
+ * measured coordinates beside the buckle -- every row static, in a plain column, wide enough to read;
+ * nothing can stack. Cumulative on v1.3.
+ * belt.js v1.3 THE SEAL (Bench 40, Tue 9/15/26 evening): the column's rows wear gold, bold, larger names
  * and a lighter veil over a pictured row; the shell now loads this organ with a ?v= stamp so a new version
  * is never hidden behind the CDN's memory. Cumulative on v1.2.
  * belt.js v1.2 THE PICTURED ROW (Bench 40, Tue 9/15/26): a row whose item carries an image wears it
@@ -87,18 +92,20 @@
     + '#beltFan.down{top:0;bottom:auto;left:auto;right:0;}'
     + '#beltFan.left{right:0;left:auto;}'
     + '#beltFan.rightside{left:0;right:auto;}'
-    + '.belt-col{position:absolute;right:0;width:220px;display:flex;flex-direction:column;gap:6px;pointer-events:none;}'
-    + '#beltFan.up .belt-col{bottom:74px;flex-direction:column-reverse;}'
-    + '#beltFan.down .belt-col{top:74px;}'
-    + '#beltFan.rightside .belt-col{right:auto;left:0;}'
+    + '#beltPanel{position:fixed;z-index:9402;width:270px;display:none;flex-direction:column;gap:8px;pointer-events:none;}'
+    + '#beltPanel.on{display:flex;}'
+    + '#beltPanel .belt-item{position:relative !important;left:auto !important;top:auto !important;transform:none !important;width:100%;box-sizing:border-box;}'
     + '.belt-item{padding:11px 12px;border-radius:8px;background:rgba(4,6,8,0.96);border:1px solid rgba(200,168,75,0.5);color:#f2d98a;font-family:Cinzel,serif;font-size:14px;font-weight:700;letter-spacing:.06em;line-height:1.2;text-align:left;cursor:pointer;opacity:0;transform:translateY(10px) scale(.96);transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .3s ease;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.55);display:flex;align-items:baseline;gap:8px;text-shadow:0 2px 4px #000,0 3px 10px rgba(0,0,0,.9);}'
     + '.belt-item .belt-kind{font-family:Cinzel,serif;font-size:9px;letter-spacing:.16em;color:#c8a84b;flex-shrink:0;}'
     + '.belt-item.pinned{border-color:#c8a84b;}'
     + '.belt-item.pictured{min-height:64px;align-items:flex-end;}'
-    + '#beltRoot.open .belt-item{opacity:1;pointer-events:auto;transform:translateY(0) scale(1);}'
-    + '#beltRoot.open .belt-item:hover{background:rgba(200,168,75,0.14);}'
-    + '.belt-empty{position:absolute;right:0;bottom:74px;width:220px;color:rgba(240,230,204,.85);font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:15px;text-align:center;background:rgba(4,6,8,.96);border:1px solid rgba(200,168,75,.4);border-radius:8px;padding:10px;opacity:0;pointer-events:none;transition:opacity .35s;}'
-    + '#beltRoot.open .belt-empty{opacity:1;pointer-events:auto;}'
+    + '#beltPanel.on .belt-item{opacity:1;pointer-events:auto;}'
+    + '#beltPanel.on .belt-item:hover{background:rgba(200,168,75,0.22);transform:scale(1.06) !important;border-color:#f2d585;color:#fff3c4;z-index:2;}'
+    + '#beltPanel .belt-item{display:block;min-height:58px;font-size:16px;padding:12px 14px;}'
+    + '#beltPanel .belt-item .belt-kind{display:block;margin-bottom:4px;}'
+    + '#beltPanel .belt-item.pictured{text-shadow:0 2px 8px rgba(0,0,0,1);}'
+    + '.belt-empty{position:relative;width:100%;box-sizing:border-box;color:rgba(240,230,204,.85);font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:15px;text-align:center;background:rgba(4,6,8,.96);border:1px solid rgba(200,168,75,.4);border-radius:8px;padding:10px;opacity:0;pointer-events:none;transition:opacity .35s;}'
+    + '#beltPanel.on .belt-empty{opacity:1;pointer-events:auto;}'
     + '#beltSay{position:fixed;z-index:9401;left:50%;bottom:24px;transform:translateX(-50%);max-width:min(92vw,520px);background:rgba(4,6,8,.96);border:1px solid rgba(200,168,75,.5);color:#f0e6cc;font-family:"Cormorant Garamond",Georgia,serif;font-size:17px;padding:12px 18px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .3s;text-align:center;}'
     + '#beltSay.on{opacity:1;}'
     + '@media (max-width:640px){#beltRoot{right:12px;bottom:88px;width:56px;height:56px;}#beltEmblem{width:56px;height:56px;}#beltFan{left:28px;top:28px;}}';
@@ -117,13 +124,13 @@
     var img = (window.PWS_ARMORY_IMAGES && window.PWS_ARMORY_IMAGES.belt) || '';
     if (img) { emblem.style.backgroundImage = 'url(' + JSON.stringify(img) + ')'; }
     else { emblem.style.backgroundImage = "url(\"data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="32" fill="#1a1408"/><rect x="8" y="26" width="48" height="12" rx="3" fill="#5a3a12" stroke="#c8a84b" stroke-width="1.5"/><rect x="27" y="23" width="10" height="18" rx="2" fill="none" stroke="#c8a84b" stroke-width="2"/><circle cx="16" cy="32" r="1.6" fill="#c8a84b"/><circle cx="48" cy="32" r="1.6" fill="#c8a84b"/></svg>') + "\")"; }
-    fan = document.createElement('div'); fan.id = 'beltFan';
-    root.appendChild(emblem); root.appendChild(fan); document.body.appendChild(root);
+    fan = document.createElement('div'); fan.id = 'beltPanel';
+    root.appendChild(emblem); document.body.appendChild(root); document.body.appendChild(fan);
     /* remembered spot on this device */
     try { var p = JSON.parse(localStorage.getItem(POS_KEY) || 'null'); if (p && typeof p.x === 'number') { placeAt(p.x, p.y); } } catch (e) {}
     wireDrag(); wireDrop();
     emblem.addEventListener('click', function (e) { if (_dragged) { _dragged = false; return; } toggle(); });
-    document.addEventListener('click', function (e) { if (_open && !root.contains(e.target)) { setOpen(false); } }, true);
+    document.addEventListener('click', function (e) { if (_open && !root.contains(e.target) && !fan.contains(e.target)) { setOpen(false); } }, true);
   }
   function placeAt(x, y) {
     var w = root.offsetWidth || 64, h = root.offsetHeight || 64;
@@ -157,7 +164,7 @@
   }
 
   /* ── the fan ── */
-  function setOpen(on) { _open = !!on; root.classList.toggle('open', _open); if (_open) render(); }
+  function setOpen(on) { _open = !!on; root.classList.toggle('open', _open); fan.classList.toggle('on', _open); if (_open) render(); }
   function toggle() { setOpen(!_open); }
   function render() {
     if (!fan) return;
@@ -167,16 +174,18 @@
       var emp = document.createElement('div'); emp.className = 'belt-empty';
       emp.textContent = _loaded ? T('Your belt is empty. Arm it in Tools & Entertainment.', 'Tu cinturón está vacío. Ármalo en Herramientas y Entretenimiento.') : T('Reading your belt…', 'Leyendo tu cinturón…');
       emp.addEventListener('click', function () { window.location.href = HOMES.talent; });
+      var r0 = root.getBoundingClientRect(); fan.style.left = Math.max(8, (r0.left > 290 ? r0.left - 280 : r0.right + 10)) + 'px'; fan.style.top = Math.max(8, r0.top - 10) + 'px';
       fan.appendChild(emp); return;
     }
-    /* the column rises from the buckle, or falls from it near the top; it hugs whichever side has room */
-    var r = root.getBoundingClientRect(), cy = r.top + r.height / 2, cx = r.left + r.width / 2;
-    var up = cy > window.innerHeight * 0.45, leftRoom = cx > 240;
-    fan.className = (up ? 'up' : 'down') + ' ' + (leftRoom ? 'left' : 'rightside');
-    fan.style.left = ''; fan.style.top = ''; fan.style.right = '0'; fan.style.width = '';
-    fan.style.position = 'absolute'; fan.style.bottom = up ? '0' : 'auto'; fan.style.top = up ? 'auto' : '0';
-    if (!leftRoom) { fan.style.left = '0'; fan.style.right = 'auto'; }
-    var col = document.createElement('div'); col.className = 'belt-col';
+    /* the panel sits beside the buckle: above it when the buckle is low, below when high; on the side with room */
+    var r = root.getBoundingClientRect(), W = 270, GAP = 10;
+    var left = (r.left > W + 20) ? (r.left - W - GAP) : (r.right + GAP);
+    left = Math.max(8, Math.min(window.innerWidth - W - 8, left));
+    fan.style.left = left + 'px';
+    var rowsH = tools.length * 54 + (tools.length - 1) * 8;
+    var top = (r.top + r.height / 2 > window.innerHeight * 0.5) ? (r.bottom - rowsH) : r.top;
+    top = Math.max(8, Math.min(window.innerHeight - rowsH - 8, top));
+    fan.style.top = top + 'px';
     tools.forEach(function (t, i) {
       var el = document.createElement('div'); el.className = 'belt-item' + ((_row.pins || []).indexOf(t.key) !== -1 ? ' pinned' : '') + (t.image ? ' pictured' : '');
       if (t.image) { el.style.background = 'linear-gradient(rgba(4,6,8,0.05),rgba(4,6,8,0.7)),url(' + JSON.stringify(t.image) + ') center/cover no-repeat'; }
@@ -184,9 +193,8 @@
       var k = document.createElement('span'); k.className = 'belt-kind'; k.textContent = t.kind === 'page' ? T('OPEN', 'ABRIR') : T('FIRE', 'DISPARAR');
       el.appendChild(k); el.appendChild(document.createTextNode(t.name));
       el.addEventListener('click', function (e) { e.stopPropagation(); fire(t); });
-      col.appendChild(el);
+      fan.appendChild(el);
     });
-    fan.appendChild(col);
   }
   function fire(t) {
     setOpen(false);
