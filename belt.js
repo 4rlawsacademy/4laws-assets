@@ -1,4 +1,6 @@
-/* ═══ belt.js v1.5 THE NAME JUMPS (Bench 40, Tue 9/15/26 night): move over a row and it grows and
+/* ═══ belt.js v1.6 THE LEFT HAND (Bench 40, Wed 9/16/26): the buckle's home is the left edge above the piano
+ * on every device -- on the phone it was hiding under the LVL chip on the right. Cumulative on v1.5.
+ * belt.js v1.5 THE NAME JUMPS (Bench 40, Tue 9/15/26 night): move over a row and it grows and
  * brightens; rows are taller with the name on its own line. Cumulative on v1.4.
  * belt.js v1.4 THE PANEL (Bench 40, Tue 9/15/26 night): the column is now a fixed panel placed by
  * measured coordinates beside the buckle -- every row static, in a plain column, wide enough to read;
@@ -81,7 +83,7 @@
 
   /* ── the emblem ── */
   var css = ''
-    + '#beltRoot{position:fixed;z-index:9400;left:auto;right:18px;bottom:96px;width:64px;height:64px;touch-action:none;}'
+    + '#beltRoot{position:fixed;z-index:9400;left:14px;right:auto;bottom:132px;width:64px;height:64px;touch-action:none;}'
     + '#beltEmblem{width:64px;height:64px;border-radius:50%;border:2px solid #c8a84b;box-shadow:0 6px 24px rgba(0,0,0,0.6),0 0 0 3px rgba(4,6,8,0.85);background:#1a1408 center/cover no-repeat;cursor:grab;user-select:none;-webkit-user-select:none;transition:transform .25s ease;}'
     + '#beltEmblem:active{cursor:grabbing;}'
     + '#beltRoot.open #beltEmblem{transform:scale(1.08);}'
@@ -108,7 +110,7 @@
     + '#beltPanel.on .belt-empty{opacity:1;pointer-events:auto;}'
     + '#beltSay{position:fixed;z-index:9401;left:50%;bottom:24px;transform:translateX(-50%);max-width:min(92vw,520px);background:rgba(4,6,8,.96);border:1px solid rgba(200,168,75,.5);color:#f0e6cc;font-family:"Cormorant Garamond",Georgia,serif;font-size:17px;padding:12px 18px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .3s;text-align:center;}'
     + '#beltSay.on{opacity:1;}'
-    + '@media (max-width:640px){#beltRoot{right:12px;bottom:88px;width:56px;height:56px;}#beltEmblem{width:56px;height:56px;}#beltFan{left:28px;top:28px;}}';
+    + '@media (max-width:640px){#beltRoot{left:10px;right:auto;bottom:150px;width:56px;height:56px;}#beltEmblem{width:56px;height:56px;}}';
 
   var root, emblem, fan, sayEl, sayTimer;
   function say(text, ms) {
