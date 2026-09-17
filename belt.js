@@ -1,4 +1,8 @@
-/* ═══ belt.js v1.6 THE LEFT HAND (Bench 40, Wed 9/16/26): the buckle's home is the left edge above the piano
+/* ═══ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- the Responsibility
+ * face (equip row 'belt') and the Respect face (equip row 'belt2': the Vanisher, the Exposer, the Replacer, Doc B
+ * AI). The panel opens on the face last used and carries a turn control; a 'respect' item fires the Respect room
+ * on PWS Talent or carries the member there. Cumulative on v1.6.
+ * belt.js v1.6 THE LEFT HAND (Bench 40, Wed 9/16/26): the buckle's home is the left edge above the piano
  * on every device -- on the phone it was hiding under the LVL chip on the right. Cumulative on v1.5.
  * belt.js v1.5 THE NAME JUMPS (Bench 40, Tue 9/15/26 night): move over a row and it grows and
  * brightens; rows are taller with the name on its own line. Cumulative on v1.4.
@@ -49,7 +53,8 @@
   var MAX = 7;
   var HOMES = { talent: '/pws', todos: '/todos', arsenal: '/arsenal' };
 
-  var _row = null, _open = false, _loaded = false;
+  var _row = null, _row2 = null, _open = false, _loaded = false, _face = 'work';
+  try { _face = localStorage.getItem('4laws-belt-face') || 'work'; } catch (e0) {}
   var _session = '', _memberId = '';
   try { _session = localStorage.getItem(SESSION_KEY) || ''; _memberId = localStorage.getItem(MEMBER_KEY) || ''; } catch (e) {}
 
@@ -64,16 +69,24 @@
     var r = raw; if (typeof r === 'string') { try { r = JSON.parse(r); } catch (e) { r = null; } }
     if (!r || typeof r !== 'object') return { tools: [], pins: [], proposed: false };
     var tools = Array.isArray(r.tools) ? r.tools.filter(function (t) { return t && t.key && t.name; }).slice(0, MAX).map(function (t) { return { key: t.key, name: t.name, kind: t.kind || 'tool', url: t.url || '', image: t.image || '', home: t.home || '' }; }) : [];
-    return { tools: tools, pins: Array.isArray(r.pins) ? r.pins : [], proposed: !!r.proposed, updatedAt: r.updatedAt || '' };
+    return { tools: tools, pins: Array.isArray(r.pins) ? r.pins : [], proposed: !!r.proposed, touched: !!r.touched, updatedAt: r.updatedAt || '' };
   }
   function load(cb) {
     if (!_session || !_memberId) { _row = { tools: [], pins: [], proposed: false }; _loaded = true; if (cb) cb(_row); return; }
     post({ action: 'pwsGetEquipAll', sessionId: _session, requestingMemberId: _memberId }).then(function (d) {
       var c = null;
-      if (d && d.status === 'ok') { c = (d.data && d.data.belt) || (d.legacy && d.legacy.belt) || null; }
-      _row = normalize(c); _loaded = true; if (cb) cb(_row);
-    })['catch'](function () { _row = _row || { tools: [], pins: [], proposed: false }; _loaded = true; if (cb) cb(_row); });
+      var c2 = null;
+      if (d && d.status === 'ok') { c = (d.data && d.data.belt) || (d.legacy && d.legacy.belt) || null; c2 = (d.data && d.data.belt2) || (d.legacy && d.legacy.belt2) || null; }
+      _row = normalize(c); _row2 = normalize(c2); if (c2 && typeof c2 === 'object' && c2.touched) _row2.touched = true; _loaded = true; if (cb) cb(_row);
+    })['catch'](function () { _row = _row || { tools: [], pins: [], proposed: false }; _row2 = _row2 || { tools: [], pins: [], proposed: false }; _loaded = true; if (cb) cb(_row); });
   }
+  function save2(row) {
+    _row2 = normalize(row); _row2.updatedAt = new Date().toISOString(); _row2.touched = !!row.touched || !row.proposed;
+    render();
+    if (!_session || !_memberId) return Promise.resolve(null);
+    return post({ action: 'pwsSaveEquip', sessionId: _session, requestingMemberId: _memberId, activityName: 'belt2', config: _row2 });
+  }
+  function setFace(f) { _face = f === 'respect' ? 'respect' : 'work'; try { localStorage.setItem('4laws-belt-face', _face); } catch (e) {} render(); }
   function save(row) {
     _row = normalize(row); _row.updatedAt = new Date().toISOString();
     render();
@@ -171,9 +184,15 @@
   function render() {
     if (!fan) return;
     fan.innerHTML = '';
-    var tools = (_row && _row.tools) ? _row.tools : [];
+    var cur = _face === 'respect' ? _row2 : _row;
+    var tools = (cur && cur.tools) ? cur.tools : [];
+    /* the turn control sits first in the panel */
+    var turn = document.createElement('div'); turn.className = 'belt-item belt-turn'; turn.style.cssText = 'text-align:center;justify-content:center;background:rgba(200,168,75,0.12);';
+    turn.innerHTML = '<span class="belt-kind">' + T('TURN THE BELT', 'GIRA EL CINTURÓN') + '</span>' + (_face === 'respect' ? T('\u21c4 Responsibility', '\u21c4 Responsabilidad') : T('\u21c4 Respect', '\u21c4 Respeto'));
+    turn.addEventListener('click', function (e) { e.stopPropagation(); setFace(_face === 'respect' ? 'work' : 'respect'); });
     if (!tools.length) {
       var emp = document.createElement('div'); emp.className = 'belt-empty';
+      fan.appendChild(turn);
       emp.textContent = _loaded ? T('Your belt is empty. Arm it in Tools & Entertainment.', 'Tu cinturón está vacío. Ármalo en Herramientas y Entretenimiento.') : T('Reading your belt…', 'Leyendo tu cinturón…');
       emp.addEventListener('click', function () { window.location.href = HOMES.talent; });
       var r0 = root.getBoundingClientRect(); fan.style.left = Math.max(8, (r0.left > 290 ? r0.left - 280 : r0.right + 10)) + 'px'; fan.style.top = Math.max(8, r0.top - 10) + 'px';
@@ -184,15 +203,16 @@
     var left = (r.left > W + 20) ? (r.left - W - GAP) : (r.right + GAP);
     left = Math.max(8, Math.min(window.innerWidth - W - 8, left));
     fan.style.left = left + 'px';
-    var rowsH = tools.length * 54 + (tools.length - 1) * 8;
+    var rowsH = (tools.length + 1) * 66 + tools.length * 8;
     var top = (r.top + r.height / 2 > window.innerHeight * 0.5) ? (r.bottom - rowsH) : r.top;
     top = Math.max(8, Math.min(window.innerHeight - rowsH - 8, top));
     fan.style.top = top + 'px';
+    fan.appendChild(turn);
     tools.forEach(function (t, i) {
       var el = document.createElement('div'); el.className = 'belt-item' + ((_row.pins || []).indexOf(t.key) !== -1 ? ' pinned' : '') + (t.image ? ' pictured' : '');
       if (t.image) { el.style.background = 'linear-gradient(rgba(4,6,8,0.05),rgba(4,6,8,0.7)),url(' + JSON.stringify(t.image) + ') center/cover no-repeat'; }
       el.style.transitionDelay = (i * 40) + 'ms';
-      var k = document.createElement('span'); k.className = 'belt-kind'; k.textContent = t.kind === 'page' ? T('OPEN', 'ABRIR') : T('FIRE', 'DISPARAR');
+      var k = document.createElement('span'); k.className = 'belt-kind'; k.textContent = t.kind === 'page' ? T('OPEN', 'ABRIR') : (t.kind === 'respect' ? T('RESPECT', 'RESPETO') : T('FIRE', 'DISPARAR'));
       el.appendChild(k); el.appendChild(document.createTextNode(t.name));
       el.addEventListener('click', function (e) { e.stopPropagation(); fire(t); });
       fan.appendChild(el);
@@ -202,6 +222,7 @@
     setOpen(false);
     try { if (window.BeltHost && typeof window.BeltHost.fire === 'function' && window.BeltHost.fire(t)) return; } catch (e) {}
     if (t.kind === 'page' && t.url) { window.location.href = t.url; return; }
+    if (t.kind === 'respect' && t.url) { window.location.href = t.url; return; }
     var home = HOMES[t.home] || HOMES.talent;
     say(T('No room on this page — taking you to its home.', 'No hay sala en esta página; te llevo a su casa.'), 2600);
     setTimeout(function () { window.location.href = home + (home.indexOf('?') === -1 ? '?' : '&') + 'belt=' + encodeURIComponent(t.key); }, 700);
@@ -211,7 +232,12 @@
   window.Belt = {
     load: load,
     row: function () { return _row; },
+    row2: function () { return _row2; },
     save: save,
+    save2: save2,
+    remove2: function (key) { var row = normalize(_row2 || {}); row.tools = row.tools.filter(function (t) { return t.key !== key; }); row.pins = row.pins.filter(function (k) { return k !== key; }); row.proposed = false; row.touched = true; return save2(row); },
+    face: function () { return _face; },
+    setFace: setFace,
     has: function (key) { return !!(_row && _row.tools.some(function (t) { return t.key === key; })); },
     put: function (item) {
       var row = normalize(_row || {}); if (row.tools.some(function (t) { return t.key === item.key; })) return Promise.resolve(row);
