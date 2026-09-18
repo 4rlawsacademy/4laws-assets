@@ -1,4 +1,14 @@
 /* ============================================================
+   DOCB-SIGN.JS v1.3 — THE EYES (9/17/26, founder: "If I can see the f'ng
+   document I would be able to decide. If I can't see the document, I
+   can't decide whether I need it." The pen's chooser was a number prompt
+   -- "one, two, or three, and they all look alike" -- and three letters
+   got signed plain before the right one was found). Two exports for any
+   room: choose({title, items, onPick}) -- a veil of cards, each showing
+   its first page (PDF via pdf.js, images as themselves, a mark for the
+   rest), its name, a tag; and thumb(el, b64, mime) -- the same picture
+   drawn into any element (the shelf list uses it). v1.2 below.
+   ============================================================
    DOCB-SIGN.JS v1.2 — THE PEN'S OWN SIZE (9/10/26, founder: "signed by a
    giant"): the signature landed at 170pt wide on every letter and made
    the member shrink it each time. Now it opens at a pen-sized 120pt, the
@@ -243,5 +253,74 @@
     });
   }
 
-  window.DocBSign = { open: open, close: close_, version: '1.0' };
+  /* ---------------- v1.3 THE EYES: see the paper before you choose it ---------------- */
+  function thumbInto_(el, b64, mime) {
+    if (!el) { return Promise.resolve(); }
+    el.innerHTML = '';
+    if (b64 && /^image\//i.test(mime || '')) {
+      var img = document.createElement('img'); img.src = 'data:' + mime + ';base64,' + b64; img.style.cssText = 'max-width:100%;max-height:100%;display:block;margin:auto;';
+      el.appendChild(img); return Promise.resolve();
+    }
+    if (!b64 || !/pdf/i.test(mime || '')) {
+      var mark = /word|docx?/i.test(mime || '') ? 'W' : /sheet|xlsx|csv/i.test(mime || '') ? 'X' : /audio/i.test(mime || '') ? '\u266a' : /pdf/i.test(mime || '') ? 'PDF' : '\u25a1';
+      el.innerHTML = '<div style="font:700 26px Cinzel,serif;color:#c8a84b;text-align:center;padding-top:34px;">' + mark + '</div>';
+      return Promise.resolve();
+    }
+    return libs_().then(function () {
+      return window.pdfjsLib.getDocument({ data: b64ToU8_(b64) }).promise;
+    }).then(function (doc) { return doc.getPage(1); }).then(function (pg) {
+      var base = pg.getViewport({ scale: 1 });
+      var scale = Math.min((el.clientWidth || 160) / base.width, (el.clientHeight || 200) / base.height) || 0.2;
+      var vp = pg.getViewport({ scale: scale });
+      var c = document.createElement('canvas'); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height); c.style.cssText = 'display:block;margin:auto;background:#fff;';
+      el.innerHTML = ''; el.appendChild(c);
+      return pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+    })['catch'](function () { el.innerHTML = '<div style="font:700 26px Cinzel,serif;color:#c8a84b;text-align:center;padding-top:34px;">PDF</div>'; });
+  }
+  function chooseCss_() {
+    if (document.getElementById('dcCss')) { return; }
+    var st2 = document.createElement('style'); st2.id = 'dcCss';
+    st2.textContent = ''
+      + '#dcVeil{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2600000;background:rgba(4,6,8,.94);overflow:auto;padding:16px;font-family:\'Cormorant Garamond\',Georgia,serif;color:#f0e6cc;}'
+      + '.dcTitle{font-family:Cinzel,serif;font-size:20px;letter-spacing:.06em;color:#f0e6cc;text-align:center;margin:8px 0 14px;}'
+      + '.dcGrid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:14px;-webkit-justify-content:center;justify-content:center;}'
+      + '.dcCard{width:180px;background:rgba(10,13,18,.98);border:2px solid rgba(200,168,75,.55);border-radius:12px;padding:10px;cursor:pointer;text-align:center;}'
+      + '.dcCard:hover{border-color:#ffd75e;}'
+      + '.dcThumb{width:160px;height:200px;margin:0 auto 8px;background:#fff;border:1px solid rgba(200,168,75,.35);overflow:hidden;}'
+      + '.dcName{font-size:16px;line-height:1.25;color:#f0e6cc;word-break:break-word;}'
+      + '.dcTag{font-family:Cinzel,serif;font-size:10px;letter-spacing:.12em;color:#c8a84b;margin-top:4px;}'
+      + '.dcClose{position:fixed;top:12px;right:16px;background:none;border:1px solid rgba(200,168,75,.5);color:#c8a84b;border-radius:999px;font-size:22px;line-height:1;width:44px;height:44px;cursor:pointer;}';
+    document.head.appendChild(st2);
+  }
+  function choose(o) {
+    if (!o || !o.items || !o.items.length) { return; }
+    chooseCss_();
+    var old = document.getElementById('dcVeil'); if (old && old.parentNode) { old.parentNode.removeChild(old); }
+    var v = document.createElement('div'); v.id = 'dcVeil';
+    var h = '<button class="dcClose" aria-label="Close">\u00d7</button><p class="dcTitle">' + esc(o.title || T({ en: 'Pick one.', es: 'Elige uno.' })) + '</p><div class="dcGrid">';
+    for (var i = 0; i < o.items.length; i++) {
+      var it = o.items[i];
+      h += '<div class="dcCard" data-i="' + i + '"><div class="dcThumb" id="dcT_' + i + '"><div style="color:#999;font-size:13px;text-align:center;padding-top:90px;">\u2026</div></div><div class="dcName">' + esc(it.name || '') + '</div>' + (it.tag ? '<div class="dcTag">' + esc(it.tag) + '</div>' : '') + '</div>';
+    }
+    h += '</div>';
+    v.innerHTML = h;
+    document.body.appendChild(v);
+    function closeC() { if (v.parentNode) { v.parentNode.removeChild(v); } }
+    v.querySelector('.dcClose').onclick = function () { closeC(); if (typeof o.onCancel === 'function') { o.onCancel(); } };
+    var cards = v.querySelectorAll('.dcCard');
+    for (var c = 0; c < cards.length; c++) {
+      (function (card) {
+        card.addEventListener('click', function () { var it2 = o.items[parseInt(card.getAttribute('data-i'), 10)]; closeC(); if (typeof o.onPick === 'function') { o.onPick(it2); } });
+      })(cards[c]);
+    }
+    for (var k = 0; k < o.items.length; k++) {
+      (function (idx) {
+        var it3 = o.items[idx], el = document.getElementById('dcT_' + idx);
+        if (typeof it3.fetch !== 'function') { thumbInto_(el, '', it3.mime || ''); return; }
+        it3.fetch().then(function (r) { if (r && r.b64) { return thumbInto_(el, r.b64, r.mime || ''); } return thumbInto_(el, '', it3.mime || ''); })['catch'](function () { thumbInto_(el, '', it3.mime || ''); });
+      })(k);
+    }
+  }
+
+  window.DocBSign = { open: open, close: close_, choose: choose, thumb: thumbInto_, version: '1.3' };
 })();
