@@ -1,5 +1,6 @@
 /* ============================================================
-   DOCB-REMINDERS.JS v2.8 — THE PEOPLE HAND (Bench 41, Sun 9/13/26; the
+   DOCB-REMINDERS.JS v2.9 — THE QUIET TAB (Bench 34, 9/18/26; see refresh()) on
+   v2.8 — THE PEOPLE HAND (Bench 41, Sun 9/13/26; the
    founder: "put the contacts into GitHub... then I can access it from
    anywhere"). The picker leaves /todos and lives HERE, in the organ every
    page seats: one hand, DocBReminders.pickPerson(cb), opens a big centered
@@ -804,7 +805,17 @@
   }
 
   /* ---------------- the sweep -- now a server fetch, not a localStorage read ---------------- */
+  /* v2.9 THE QUIET TAB (Bench 34, 9/18/26; re-cut on v2.8 after the gate caught a
+     v2.6 collision cut on a stale v2.5): every open Doc B tab checked in every 45s,
+     so a dozen tabs opened together knocked on the script server a dozen times in
+     the same second, once a minute, and a build landing in that burst was turned
+     away with no answer. Now a tab you are not looking at checks in every 5
+     minutes; the one you are looking at keeps its 45s; switching to a tab refreshes
+     it at once (the visibilitychange listener below). Nothing else moved. */
+  var _lastRefresh = 0;
   function refresh() {
+    try { if (document.hidden && (Date.now() - _lastRefresh) < 300000) { return; } } catch (eH) {}
+    _lastRefresh = Date.now();
     var mid = memberId();
     if (!mid || listInFlight) { return; }
     listInFlight = true;
@@ -876,7 +887,7 @@
     } catch (eK) {}
     setInterval(refresh, 45000); /* a touch gentler than v1.x's 30s, now that each tick is a real network call */
     try {
-      document.addEventListener('visibilitychange', function () { if (!document.hidden) { refresh(); } });
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) { _lastRefresh = 0; refresh(); } }); /* v2.9: a tab coming back always refreshes */
       window.addEventListener('focus', refresh);
     } catch (e) {}
   }
