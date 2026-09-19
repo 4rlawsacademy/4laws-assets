@@ -1,3 +1,6 @@
+/* ═══ belt.js v1.9 FOUR FACES (Bench 42, Fri 9/18/26): the Talent face (equip row 'belt4': the Spark, the Patron, the Forge,
+ * the Herald, Doc B AI). TURN THE BELT cycles Responsibility -> Respect -> Limits -> Talent; a 'talent' item fires the Talent
+ * room on PWS Talent or carries the member there (/pws?talent=<key>). Cumulative on v1.8.
 /* ═══ belt.js v1.8 THREE FACES (Bench 42, Fri 9/18/26): the Limits face (equip row 'belt3': the Surveyor, the Fence
  * Builder, Secret Agent, Doc B AI). TURN THE BELT cycles Responsibility -> Respect -> Limits; a 'limits' item fires the
  * Limits room on PWS Talent or carries the member there (/pws?limits=<key>). Cumulative on v1.7.
@@ -56,7 +59,7 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
   var MAX = 7;
   var HOMES = { talent: '/pws', todos: '/todos', arsenal: '/arsenal' };
 
-  var _row = null, _row2 = null, _row3 = null, _open = false, _loaded = false, _face = 'work';
+  var _row = null, _row2 = null, _row3 = null, _row4 = null, _open = false, _loaded = false, _face = 'work';
   try { _face = localStorage.getItem('4laws-belt-face') || 'work'; } catch (e0) {}
   var _session = '', _memberId = '';
   try { _session = localStorage.getItem(SESSION_KEY) || ''; _memberId = localStorage.getItem(MEMBER_KEY) || ''; } catch (e) {}
@@ -78,10 +81,10 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
     if (!_session || !_memberId) { _row = { tools: [], pins: [], proposed: false }; _loaded = true; if (cb) cb(_row); return; }
     post({ action: 'pwsGetEquipAll', sessionId: _session, requestingMemberId: _memberId }).then(function (d) {
       var c = null;
-      var c2 = null, c3 = null;
-      if (d && d.status === 'ok') { c = (d.data && d.data.belt) || (d.legacy && d.legacy.belt) || null; c2 = (d.data && d.data.belt2) || (d.legacy && d.legacy.belt2) || null; c3 = (d.data && d.data.belt3) || (d.legacy && d.legacy.belt3) || null; }
-      _row = normalize(c); _row2 = normalize(c2); if (c2 && typeof c2 === 'object' && c2.touched) _row2.touched = true; _row3 = normalize(c3); if (c3 && typeof c3 === 'object' && c3.touched) _row3.touched = true; _loaded = true; if (cb) cb(_row);
-    })['catch'](function () { _row = _row || { tools: [], pins: [], proposed: false }; _row2 = _row2 || { tools: [], pins: [], proposed: false }; _row3 = _row3 || { tools: [], pins: [], proposed: false }; _loaded = true; if (cb) cb(_row); });
+      var c2 = null, c3 = null, c4 = null;
+      if (d && d.status === 'ok') { c = (d.data && d.data.belt) || (d.legacy && d.legacy.belt) || null; c2 = (d.data && d.data.belt2) || (d.legacy && d.legacy.belt2) || null; c3 = (d.data && d.data.belt3) || (d.legacy && d.legacy.belt3) || null; c4 = (d.data && d.data.belt4) || (d.legacy && d.legacy.belt4) || null; }
+      _row = normalize(c); _row2 = normalize(c2); if (c2 && typeof c2 === 'object' && c2.touched) _row2.touched = true; _row3 = normalize(c3); if (c3 && typeof c3 === 'object' && c3.touched) _row3.touched = true; _row4 = normalize(c4); if (c4 && typeof c4 === 'object' && c4.touched) _row4.touched = true; _loaded = true; if (cb) cb(_row);
+    })['catch'](function () { _row = _row || { tools: [], pins: [], proposed: false }; _row2 = _row2 || { tools: [], pins: [], proposed: false }; _row3 = _row3 || { tools: [], pins: [], proposed: false }; _row4 = _row4 || { tools: [], pins: [], proposed: false }; _loaded = true; if (cb) cb(_row); });
   }
   function save2(row) {
     _row2 = normalize(row); _row2.updatedAt = new Date().toISOString(); _row2.touched = !!row.touched || !row.proposed;
@@ -95,8 +98,14 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
     if (!_session || !_memberId) return Promise.resolve(null);
     return post({ action: 'pwsSaveEquip', sessionId: _session, requestingMemberId: _memberId, activityName: 'belt3', config: _row3 });
   }
-  function setFace(f) { _face = (f === 'respect' || f === 'limits') ? f : 'work'; try { localStorage.setItem('4laws-belt-face', _face); } catch (e) {} render(); }
-  function nextFace() { return _face === 'work' ? 'respect' : (_face === 'respect' ? 'limits' : 'work'); }
+  function save4(row) {
+    _row4 = normalize(row); _row4.updatedAt = new Date().toISOString(); _row4.touched = !!row.touched || !row.proposed;
+    render();
+    if (!_session || !_memberId) return Promise.resolve(null);
+    return post({ action: 'pwsSaveEquip', sessionId: _session, requestingMemberId: _memberId, activityName: 'belt4', config: _row4 });
+  }
+  function setFace(f) { _face = (f === 'respect' || f === 'limits' || f === 'talent') ? f : 'work'; try { localStorage.setItem('4laws-belt-face', _face); } catch (e) {} render(); }
+  function nextFace() { return _face === 'work' ? 'respect' : (_face === 'respect' ? 'limits' : (_face === 'limits' ? 'talent' : 'work')); }
   function save(row) {
     _row = normalize(row); _row.updatedAt = new Date().toISOString();
     render();
@@ -194,11 +203,11 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
   function render() {
     if (!fan) return;
     fan.innerHTML = '';
-    var cur = _face === 'respect' ? _row2 : (_face === 'limits' ? _row3 : _row);
+    var cur = _face === 'respect' ? _row2 : (_face === 'limits' ? _row3 : (_face === 'talent' ? _row4 : _row));
     var tools = (cur && cur.tools) ? cur.tools : [];
     /* the turn control sits first in the panel */
     var turn = document.createElement('div'); turn.className = 'belt-item belt-turn'; turn.style.cssText = 'text-align:center;justify-content:center;background:rgba(200,168,75,0.12);';
-    turn.innerHTML = '<span class="belt-kind">' + T('TURN THE BELT', 'GIRA EL CINTURÓN') + '</span>' + (nextFace() === 'respect' ? T('\u21c4 Respect', '\u21c4 Respeto') : nextFace() === 'limits' ? T('\u21c4 Limits', '\u21c4 L\u00edmites') : T('\u21c4 Responsibility', '\u21c4 Responsabilidad'));
+    turn.innerHTML = '<span class="belt-kind">' + T('TURN THE BELT', 'GIRA EL CINTURÓN') + '</span>' + (nextFace() === 'respect' ? T('\u21c4 Respect', '\u21c4 Respeto') : nextFace() === 'limits' ? T('\u21c4 Limits', '\u21c4 L\u00edmites') : nextFace() === 'talent' ? T('\u21c4 Talent', '\u21c4 Talento') : T('\u21c4 Responsibility', '\u21c4 Responsabilidad'));
     turn.addEventListener('click', function (e) { e.stopPropagation(); setFace(nextFace()); });
     if (!tools.length) {
       var emp = document.createElement('div'); emp.className = 'belt-empty';
@@ -222,7 +231,7 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
       var el = document.createElement('div'); el.className = 'belt-item' + ((_row.pins || []).indexOf(t.key) !== -1 ? ' pinned' : '') + (t.image ? ' pictured' : '');
       if (t.image) { el.style.background = 'linear-gradient(rgba(4,6,8,0.05),rgba(4,6,8,0.7)),url(' + JSON.stringify(t.image) + ') center/cover no-repeat'; }
       el.style.transitionDelay = (i * 40) + 'ms';
-      var k = document.createElement('span'); k.className = 'belt-kind'; k.textContent = t.kind === 'page' ? T('OPEN', 'ABRIR') : (t.kind === 'respect' ? T('RESPECT', 'RESPETO') : t.kind === 'limits' ? T('LIMITS', 'L\u00cdMITES') : T('FIRE', 'DISPARAR'));
+      var k = document.createElement('span'); k.className = 'belt-kind'; k.textContent = t.kind === 'page' ? T('OPEN', 'ABRIR') : (t.kind === 'respect' ? T('RESPECT', 'RESPETO') : t.kind === 'limits' ? T('LIMITS', 'L\u00cdMITES') : t.kind === 'talent' ? T('TALENT', 'TALENTO') : T('FIRE', 'DISPARAR'));
       el.appendChild(k); el.appendChild(document.createTextNode(t.name));
       el.addEventListener('click', function (e) { e.stopPropagation(); fire(t); });
       fan.appendChild(el);
@@ -232,7 +241,7 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
     setOpen(false);
     try { if (window.BeltHost && typeof window.BeltHost.fire === 'function' && window.BeltHost.fire(t)) return; } catch (e) {}
     if (t.kind === 'page' && t.url) { window.location.href = t.url; return; }
-    if ((t.kind === 'respect' || t.kind === 'limits') && t.url) { window.location.href = t.url; return; }
+    if ((t.kind === 'respect' || t.kind === 'limits' || t.kind === 'talent') && t.url) { window.location.href = t.url; return; }
     var home = HOMES[t.home] || HOMES.talent;
     say(T('No room on this page — taking you to its home.', 'No hay sala en esta página; te llevo a su casa.'), 2600);
     setTimeout(function () { window.location.href = home + (home.indexOf('?') === -1 ? '?' : '&') + 'belt=' + encodeURIComponent(t.key); }, 700);
@@ -244,9 +253,12 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
     row: function () { return _row; },
     row2: function () { return _row2; },
     row3: function () { return _row3; },
+    row4: function () { return _row4; },
     save: save,
     save2: save2,
     save3: save3,
+    save4: save4,
+    remove4: function (key) { var row = normalize(_row4 || {}); row.tools = row.tools.filter(function (t) { return t.key !== key; }); row.pins = row.pins.filter(function (k) { return k !== key; }); row.proposed = false; row.touched = true; return save4(row); },
     remove3: function (key) { var row = normalize(_row3 || {}); row.tools = row.tools.filter(function (t) { return t.key !== key; }); row.pins = row.pins.filter(function (k) { return k !== key; }); row.proposed = false; row.touched = true; return save3(row); },
     remove2: function (key) { var row = normalize(_row2 || {}); row.tools = row.tools.filter(function (t) { return t.key !== key; }); row.pins = row.pins.filter(function (k) { return k !== key; }); row.proposed = false; row.touched = true; return save2(row); },
     face: function () { return _face; },
