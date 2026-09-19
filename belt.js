@@ -1,3 +1,6 @@
+/* ═══ belt.js v2.0 SHORTCUTS (Bench 42, Sat 9/19/26): on phones the loose pills -- REMINDERS (#drFab), the piano (found by its 🎹),
+ * the LVL chip (#lcChip) -- leave the screen and live under a SHORTCUTS title at the foot of the buckle's panel, as rows in the
+ * weapons' dress; tap one and it does what the pill did. Desktops unchanged. TODOS and TRUST stay at the bottom. Cumulative on v1.9.
 /* ═══ belt.js v1.9 FOUR FACES (Bench 42, Fri 9/18/26): the Talent face (equip row 'belt4': the Spark, the Patron, the Forge,
  * the Herald, Doc B AI). TURN THE BELT cycles Responsibility -> Respect -> Limits -> Talent; a 'talent' item fires the Talent
  * room on PWS Talent or carries the member there (/pws?talent=<key>). Cumulative on v1.8.
@@ -140,6 +143,9 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
     + '#beltPanel .belt-item.pictured{text-shadow:0 2px 8px rgba(0,0,0,1);}'
     + '.belt-empty{position:relative;width:100%;box-sizing:border-box;color:rgba(240,230,204,.85);font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:15px;text-align:center;background:rgba(4,6,8,.96);border:1px solid rgba(200,168,75,.4);border-radius:8px;padding:10px;opacity:0;pointer-events:none;transition:opacity .35s;}'
     + '#beltPanel.on .belt-empty{opacity:1;pointer-events:auto;}'
+    + '#beltPanel .belt-sc-title{font-family:Cinzel,serif;font-weight:700;font-size:12px;letter-spacing:0.22em;color:#f2d585;text-align:center;margin:6px 0 -2px;text-shadow:0 2px 8px rgba(0,0,0,1);}'
+    + '#beltPanel .belt-item.belt-sc{min-height:44px;padding:9px 14px;font-size:15px;}'
+    + 'body.belt-phone #drFab,body.belt-phone #lcChip,body.belt-phone .belt-sc-hidden{display:none !important;}'
     + '#beltSay{position:fixed;z-index:9401;left:50%;bottom:24px;transform:translateX(-50%);max-width:min(92vw,520px);background:rgba(4,6,8,.96);border:1px solid rgba(200,168,75,.5);color:#f0e6cc;font-family:"Cormorant Garamond",Georgia,serif;font-size:17px;padding:12px 18px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .3s;text-align:center;}'
     + '#beltSay.on{opacity:1;}'
     + '@media (max-width:640px){#beltRoot{left:10px;right:auto;bottom:150px;width:56px;height:56px;}#beltEmblem{width:56px;height:56px;}}';
@@ -215,14 +221,14 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
       emp.textContent = _loaded ? T('Your belt is empty. Arm it in Tools & Entertainment.', 'Tu cinturón está vacío. Ármalo en Herramientas y Entretenimiento.') : T('Reading your belt…', 'Leyendo tu cinturón…');
       emp.addEventListener('click', function () { window.location.href = HOMES.talent; });
       var r0 = root.getBoundingClientRect(); fan.style.left = Math.max(8, (r0.left > 290 ? r0.left - 280 : r0.right + 10)) + 'px'; fan.style.top = Math.max(8, r0.top - 10) + 'px';
-      fan.appendChild(emp); return;
+      fan.appendChild(emp); appendShortcuts(); return;
     }
     /* the panel sits beside the buckle: above it when the buckle is low, below when high; on the side with room */
     var r = root.getBoundingClientRect(), W = 270, GAP = 10;
     var left = (r.left > W + 20) ? (r.left - W - GAP) : (r.right + GAP);
     left = Math.max(8, Math.min(window.innerWidth - W - 8, left));
     fan.style.left = left + 'px';
-    var rowsH = (tools.length + 1) * 66 + tools.length * 8;
+    var scN = isPhone() ? shortcuts().length : 0; var rowsH = (tools.length + 1) * 66 + tools.length * 8 + (scN ? 22 + scN * 52 : 0);
     var top = (r.top + r.height / 2 > window.innerHeight * 0.5) ? (r.bottom - rowsH) : r.top;
     top = Math.max(8, Math.min(window.innerHeight - rowsH - 8, top));
     fan.style.top = top + 'px';
@@ -236,6 +242,32 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
       el.addEventListener('click', function (e) { e.stopPropagation(); fire(t); });
       fan.appendChild(el);
     });
+    appendShortcuts();
+  }
+  /* v2.0 SHORTCUTS */
+  function isPhone() { try { return window.matchMedia && window.matchMedia('(max-width: 760px)').matches; } catch (e) { return window.innerWidth <= 760; } }
+  function pianoEl() {
+    var els = document.querySelectorAll('button,div,a,span'); for (var i = 0; i < els.length; i++) { var el = els[i]; if (el.id === 'beltPanel' || el.closest && el.closest('#beltPanel')) continue; var t = (el.textContent || '').trim(); if (t.length <= 4 && t.indexOf('\uD83C\uDFB9') !== -1) { var fixedEl = el; while (fixedEl && fixedEl !== document.body) { try { if (window.getComputedStyle(fixedEl).position === 'fixed') return fixedEl; } catch (e) {} fixedEl = fixedEl.parentNode; } } }
+    return null;
+  }
+  function shortcuts() {
+    var list = [];
+    var fab = document.getElementById('drFab'); if (fab) list.push({ name: T('REMINDERS', 'RECORDATORIOS'), icon: '\uD83D\uDCEC', el: fab });
+    var pn = pianoEl(); if (pn) { pn.classList.add('belt-sc-hidden'); list.push({ name: T('PIANO', 'PIANO'), icon: '\uD83C\uDFB9', el: pn }); }
+    var chip = document.getElementById('lcChip'); if (chip) list.push({ name: (chip.textContent || '').replace(/\s+/g, ' ').trim() || 'LVL', icon: '\uD83C\uDFAE', el: chip });
+    return list;
+  }
+  function applyPhone() { try { document.body.classList.toggle('belt-phone', isPhone()); if (isPhone()) pianoEl(); else { var h = document.querySelectorAll('.belt-sc-hidden'); for (var i = 0; i < h.length; i++) h[i].classList.remove('belt-sc-hidden'); } } catch (e) {} }
+  function appendShortcuts() {
+    if (!isPhone()) return 0;
+    var sc = shortcuts(); if (!sc.length) return 0;
+    var t = document.createElement('div'); t.className = 'belt-sc-title'; t.textContent = T('SHORTCUTS', 'ATAJOS'); fan.appendChild(t);
+    sc.forEach(function (x) {
+      var el = document.createElement('div'); el.className = 'belt-item belt-sc'; el.textContent = x.icon + '  ' + x.name;
+      el.addEventListener('click', function (e) { e.stopPropagation(); setOpen(false); try { var target = x.el; var inner = target.querySelector && target.querySelector('button,a'); (inner && inner !== target ? inner : target).click(); } catch (eC) {} });
+      fan.appendChild(el);
+    });
+    return sc.length;
   }
   function fire(t) {
     setOpen(false);
@@ -287,6 +319,8 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
     if (!document.body) { setTimeout(boot, 60); return; }
     build();
     load(function () { render(); });
+    /* v2.0: the pills fold into SHORTCUTS on phones; the organs draw their pills late, so look again a few times */
+    applyPhone(); [800, 2000, 4500].forEach(function (ms) { setTimeout(applyPhone, ms); }); window.addEventListener('resize', applyPhone);
   }
   boot();
 })();
