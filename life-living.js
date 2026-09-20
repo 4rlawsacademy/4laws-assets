@@ -1,4 +1,7 @@
 /* ============================================================
+   v1.5.1 THE SEVENTH SHELF (his catch, 9/20: the KNOCKOUTS bell fell off the six-wide shelf row
+   and the mosaic gave it the whole page). Seven shelves now sit in one row; no tile can grow
+   past a seventh of the Wall.
    v1.5 THE KO TILE (Bench 35, Sun 9/20/26, the founder's ruling with the Sparring Ring): the
    Wall gains a KNOCKOUTS shelf (the ring's bell as its tile) and each monster's face wears
    KO × n in red beneath its name, read from lifeHonors.spar. Needs GamesCode v3.43.
@@ -61,7 +64,7 @@
    ============================================================ */
 (function () {
   if (window.LifeLiving) { return; }
-  var LL = { v: '1.5', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
+  var LL = { v: '1.5.1', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
   window.LifeLiving = LL;
 
   var MON = {
@@ -108,7 +111,7 @@
       '.llKill .llCount{-webkit-flex:none;flex:none;font-family:"Cinzel",serif;font-size:34px;color:#ffd75e;line-height:1;text-shadow:0 0 14px rgba(255,215,94,.45);}' +
       '.llKill .llCount small{display:block;font-size:9px;letter-spacing:.2em;color:#a89968;text-align:right;margin-top:2px;}' +
       '.llShelves{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:2px;margin-bottom:2px;}' +
-      '.llShelfCard{-webkit-flex:1 1 130px;flex:1 1 130px;aspect-ratio:1/1;background:#0c1016 center/cover no-repeat;border:1px solid #1a1408;cursor:pointer;position:relative;overflow:hidden;-webkit-transition:box-shadow .25s,-webkit-filter .25s;transition:box-shadow .25s,filter .25s;}' +
+      '.llShelfCard{-webkit-flex:1 1 100px;flex:1 1 100px;max-width:calc(100% / 7 - 2px);aspect-ratio:1/1;background:#0c1016 center/cover no-repeat;border:1px solid #1a1408;cursor:pointer;position:relative;overflow:hidden;-webkit-transition:box-shadow .25s,-webkit-filter .25s;transition:box-shadow .25s,filter .25s;}' +
       '.llShelfCard .llTileShade{position:absolute;left:0;right:0;bottom:0;top:55%;background:linear-gradient(180deg,rgba(4,6,8,0) 0%,rgba(4,6,8,.92) 100%);}' +
       '.llShelfCard .llIcon{position:absolute;left:50%;top:44%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);font-size:30px;opacity:.8;}' +
       '.llShelfCard .llN{position:absolute;left:0;right:0;bottom:20px;text-align:center;font-family:"Cinzel",serif;font-size:26px;color:#ffd75e;line-height:1;text-shadow:0 0 12px rgba(0,0,0,.9),0 0 16px rgba(255,215,94,.5);}' +
