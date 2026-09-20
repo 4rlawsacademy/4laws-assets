@@ -1,4 +1,7 @@
 /* ============================================================
+   v1.5.3 THE SMALL BELL (founder, 9/20, final: "I like the shape, it's a beautiful bell — don't
+   get rid of it, make it small"): the KNOCKOUTS bell keeps its shelf as the seventh tile at the
+   same size as the six, never larger; v1.5.2's removal is withdrawn.
    v1.5.1 THE SEVENTH SHELF (his catch, 9/20: the KNOCKOUTS bell fell off the six-wide shelf row
    and the mosaic gave it the whole page). Seven shelves now sit in one row; no tile can grow
    past a seventh of the Wall.
@@ -64,7 +67,7 @@
    ============================================================ */
 (function () {
   if (window.LifeLiving) { return; }
-  var LL = { v: '1.5.1', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
+  var LL = { v: '1.5.3', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
   window.LifeLiving = LL;
 
   var MON = {
@@ -247,7 +250,7 @@
     { kind: 'streak', en: 'STREAKS',  es: 'RACHAS' },
     { kind: 'forge',  en: 'FORGES',   es: 'FRAGUAS' },
     { kind: 'legacy', en: 'LEGACIES', es: 'LEGADOS' },
-    { kind: 'ko', en: 'KNOCKOUTS', es: 'NOCAUTS' }   /* v1.5 THE KO TILE: the ring's knockouts, by the founder's ruling */
+    { kind: 'ko', en: 'KNOCKOUTS', es: 'NOCAUTS' }   /* v1.5.3 THE SMALL BELL: the founder keeps the bell -- seventh shelf, same size as the six */
   ];
   function artKey(law) { return law === 'responsibility' ? 'resp' : law; }
   function bannerArt() { var A = art(), keys = ['window-wall', 'wall', 'banner-wall', 'trophy-case'], i, u; for (i = 0; i < keys.length; i++) { try { u = A.get(keys[i]); if (u) { return u; } } catch (e) {} } return ''; }
