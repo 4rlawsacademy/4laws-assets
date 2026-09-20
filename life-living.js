@@ -1,4 +1,7 @@
 /* ============================================================
+   v1.5 THE KO TILE (Bench 35, Sun 9/20/26, the founder's ruling with the Sparring Ring): the
+   Wall gains a KNOCKOUTS shelf (the ring's bell as its tile) and each monster's face wears
+   KO × n in red beneath its name, read from lifeHonors.spar. Needs GamesCode v3.43.
    v1.4.1 — flame (streaks) and the legacy sword delivered; all seven honor
    kinds now carry real art. Complete.
    v1.4 THE GLASS WALL — the founder's two rulings before deploy: (1) never
@@ -58,7 +61,7 @@
    ============================================================ */
 (function () {
   if (window.LifeLiving) { return; }
-  var LL = { v: '1.4.1', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
+  var LL = { v: '1.5', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
   window.LifeLiving = LL;
 
   var MON = {
@@ -74,6 +77,7 @@
     ribbon: 'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/b22c1595-3754-4222-8445-4bcb943f230b/imgg-gdl-jf7xfovj.png?format=1500w',
     forge:  'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/bc0abcc4-919d-46fd-8fcf-7d11837435c4/imgg-o38-cwf6u1nx.png?format=1500w',
     streak: 'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/c4bc220d-a140-453c-8b5c-8dd141dad67a/imgg-vww-u9ghd1t9.png?format=1500w',
+    ko: 'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/be269e51-06cd-49cf-aca4-68b084fed0c5/imgg-r10-n7fjn3ui.png?format=1500w',   /* the ring's bell, for the KNOCKOUTS tile */
     legacy: 'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/756e6018-db58-42ff-9e73-79fc31350afa/imgg-gzk-usqgtcl5.png?format=1500w'
   };
   var COIN_ART = 'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/5fa9b77f-b9f4-4e34-8726-9c0f31b5300f/imgg-9ad-b9rlsrh7.png?format=1500w';
@@ -192,10 +196,10 @@
   };
 
   /* ---------- honors ---------- */
-  function sym(kind) { return { trophy: '\uD83C\uDFC6', medal: '\uD83C\uDF96\uFE0F', ribbon: '\uD83C\uDF97\uFE0F', streak: '\uD83D\uDD25', forge: '\u2692\uFE0F', legacy: '\u2694\uFE0F', kill: '\u2694\uFE0F' }[kind] || '\u2605'; }
+  function sym(kind) { return { trophy: '\uD83C\uDFC6', medal: '\uD83C\uDF96\uFE0F', ribbon: '\uD83C\uDF97\uFE0F', streak: '\uD83D\uDD25', forge: '\u2692\uFE0F', legacy: '\u2694\uFE0F', kill: '\u2694\uFE0F', ko: '\uD83E\uDD4A' }[kind] || '\u2605'; }
   function kindWord(kind) {
-    var en = { trophy: 'TROPHY', medal: 'MEDAL', ribbon: 'RIBBON', streak: 'STREAK', forge: 'THE FORGE', legacy: 'LEGACY', kill: 'KILL' }[kind] || 'HONOR';
-    var es = { trophy: 'TROFEO', medal: 'MEDALLA', ribbon: 'LIST\u00d3N', streak: 'RACHA', forge: 'LA FRAGUA', legacy: 'LEGADO', kill: 'CAZA' }[kind] || 'HONOR';
+    var en = { trophy: 'TROPHY', medal: 'MEDAL', ribbon: 'RIBBON', streak: 'STREAK', forge: 'THE FORGE', legacy: 'LEGACY', kill: 'KILL', ko: 'KNOCKOUT' }[kind] || 'HONOR';
+    var es = { trophy: 'TROFEO', medal: 'MEDALLA', ribbon: 'LIST\u00d3N', streak: 'RACHA', forge: 'LA FRAGUA', legacy: 'LEGADO', kill: 'CAZA', ko: 'NOCAUT' }[kind] || 'HONOR';
     return T(en, es);
   }
   function line(h) { return sym(h.kind) + ' ' + (h.kind === 'kill' ? '' : (kindWord(h.kind) + ' \u00b7 ')) + h.name + (h.detail ? (' \u2014 ' + h.detail) : ''); }
@@ -239,7 +243,8 @@
     { kind: 'ribbon', en: 'RIBBONS',  es: 'LISTONES' },
     { kind: 'streak', en: 'STREAKS',  es: 'RACHAS' },
     { kind: 'forge',  en: 'FORGES',   es: 'FRAGUAS' },
-    { kind: 'legacy', en: 'LEGACIES', es: 'LEGADOS' }
+    { kind: 'legacy', en: 'LEGACIES', es: 'LEGADOS' },
+    { kind: 'ko', en: 'KNOCKOUTS', es: 'NOCAUTS' }   /* v1.5 THE KO TILE: the ring's knockouts, by the founder's ruling */
   ];
   function artKey(law) { return law === 'responsibility' ? 'resp' : law; }
   function bannerArt() { var A = art(), keys = ['window-wall', 'wall', 'banner-wall', 'trophy-case'], i, u; for (i = 0; i < keys.length; i++) { try { u = A.get(keys[i]); if (u) { return u; } } catch (e) {} } return ''; }
@@ -263,7 +268,8 @@
         if (!MON.hasOwnProperty(k)) { continue; }
         var m = MON[k], img = '';
         try { img = A.pair(m.law).monster || A.get(k) || ''; } catch (e1) { img = ''; }
-        h += '<div class="llKill">' + (img ? '<img src="' + esc(img) + '" alt="">' : '') + '<div class="llName">' + T(m.en, m.es) + '</div><div class="llCount">' + (D.kills[k] || 0) + '<small>' + T('HEADS', 'CABEZAS') + '</small></div></div>';
+        var kos = (D.spar && D.spar[k] && D.spar[k].kos) || 0;   /* v1.5 THE KO TILE */
+        h += '<div class="llKill">' + (img ? '<img src="' + esc(img) + '" alt="">' : '') + '<div class="llName">' + T(m.en, m.es) + (kos ? '<div style="font-size:11px;letter-spacing:.2em;color:#ff3b3b;margin-top:4px;">KO \u00d7 ' + kos + '</div>' : '') + '</div><div class="llCount">' + (D.kills[k] || 0) + '<small>' + T('HEADS', 'CABEZAS') + '</small></div></div>';
       }
       h += '</div>';
     }
