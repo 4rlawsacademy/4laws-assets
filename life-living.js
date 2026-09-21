@@ -1,5 +1,7 @@
 /* ============================================================
-   v1.6.3 THE FORGE FLUSH (Bench 44, 9/21/26): gray bar gone -- llForgeBg is position:absolute filling full block; block taller (340px); inner row pushed to bottom half.
+   v1.6.5 THE TWO ROWS (Bench 44, 9/21/26): Forge is its own dark row; quest painting stands alone below as a 300px banner.
+   Fixes over v1.6.4: removed orphaned duplicate .llBanner rule (old rule was winning the cascade), removed a JS comment
+   sitting between two + operators that turned the .llForgeInner selector into NaN, removed the dead llForgeBg div.
    v1.5.3 THE SMALL BELL (founder, 9/20, final: "I like the shape, it's a beautiful bell — don't
    get rid of it, make it small"): the KNOCKOUTS bell keeps its shelf as the seventh tile at the
    same size as the six, never larger; v1.5.2's removal is withdrawn.
@@ -68,7 +70,7 @@
    ============================================================ */
 (function () {
   if (window.LifeLiving) { return; }
-  var LL = { v: '1.6.3', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
+  var LL = { v: '1.6.5', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
   window.LifeLiving = LL;
 
   var MON = {
@@ -157,12 +159,11 @@
       '.llBook .llMonth{font-size:12px;color:#a89968;letter-spacing:.1em;margin-bottom:10px;}' +
       '.llBook p{margin:0;font-size:16px;line-height:1.55;color:#e8dcc0;white-space:pre-line;}' +
       /* v1.3 THE FORGE: art, coins, a gold plate */
-      '#llForge{width:100%;margin-top:18px;border-radius:14px;border:1.5px solid #7a5a12;position:relative;overflow:hidden;min-height:340px;background:#0c1016;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:stretch;align-items:stretch;-webkit-justify-content:flex-end;justify-content:flex-end;padding:0;text-align:center;}' +
-      '#llForge .llForgeBg{position:absolute;left:0;top:0;right:0;bottom:0;width:100%;height:100%;background-size:cover;background-position:center 20%;background-repeat:no-repeat;}' +
-      '#llForge .llForgeBg:after{content:"";position:absolute;left:0;right:0;top:0;bottom:0;background:rgba(4,6,8,.28);}' +
-      '#llForge .llForgeInner{position:relative;z-index:1;width:100%;display:-webkit-flex;display:flex;-webkit-flex-direction:row;flex-direction:row;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;gap:24px;padding:20px 20px 20px;background:linear-gradient(0deg,rgba(4,6,8,.72) 0%,rgba(4,6,8,0) 100%);}' +
+      '#llForge{width:100%;margin-top:18px;border-radius:12px;border:1.5px solid #2a2416;background:#0c1016;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;padding:0;text-align:center;}' +
+      '#llForge .llForgeInner{position:relative;z-index:1;width:100%;display:-webkit-flex;display:flex;-webkit-flex-direction:row;flex-direction:row;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;gap:24px;padding:20px;}' +
       '#llForge .llForgeLeft{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;gap:8px;-webkit-flex:none;flex:none;}' +
       '#llForge .llForgeRight{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:flex-start;align-items:flex-start;gap:10px;-webkit-flex:1;flex:1;}' +
+      '.llBanner{width:100%;height:300px;border-radius:12px;margin-top:14px;background:#10141b center 20%/cover no-repeat;border:1.5px solid #7a5a12;}' +
       '.llAnvil{display:inline-block;width:148px;height:148px;border-radius:50%;border:3px solid #7a5a12;background:#10141b center 30%/cover no-repeat;cursor:pointer;opacity:.5;-webkit-filter:grayscale(.7);filter:grayscale(.7);position:relative;-webkit-transition:opacity .3s,box-shadow .3s,transform .3s,-webkit-filter .3s;transition:opacity .3s,box-shadow .3s,transform .3s,filter .3s;}' +
       '.llAnvil.hot{-webkit-filter:none;filter:none;}' +
       '.llAnvil .llAnvilSym{position:absolute;left:50%;top:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);font-size:52px;line-height:1;}' +
@@ -177,8 +178,6 @@
       '.llBadgePlate{display:inline-block;margin-top:8px;padding:8px 18px;border:1.5px solid #ffd75e;border-radius:10px;background:linear-gradient(180deg,#2a2010,#151009);font-family:"Cinzel",serif;font-size:14px;color:#ffd75e;letter-spacing:.1em;box-shadow:0 0 16px rgba(255,215,94,.3),inset 0 0 0 1px rgba(255,215,94,.15);}' +
       '.llForgeRest{font-family:"Cinzel",serif;font-size:13px;color:#a89968;letter-spacing:.12em;}' +
       '.llForgeDoor{display:inline-block;margin-top:12px;padding:12px 24px;border-radius:999px;background:linear-gradient(180deg,#ffd75e,#c8a84b);color:#040608;font-family:"Cinzel",serif;font-size:13px;letter-spacing:.16em;text-decoration:none;font-weight:700;box-shadow:0 0 18px rgba(255,215,94,.45);}' +
-      '.llBanner{width:100%;height:280px;border-radius:14px;margin-top:18px;background:#10141b center top/cover no-repeat;border:1.5px solid #7a5a12;position:relative;overflow:hidden;}' +
-      '.llBanner:after{content:"";position:absolute;left:0;right:0;bottom:0;height:60px;background:linear-gradient(0deg,rgba(4,6,8,.85),rgba(4,6,8,0));}' +
       '.llWeapons{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:12px;-webkit-justify-content:center;justify-content:center;margin-top:12px;}' +
       '.llWeapon{width:128px;text-decoration:none;color:inherit;}' +
       '.llWeaponCover{width:128px;height:96px;border-radius:10px;border:1.5px solid #c8a84b;background:#10141b center/cover no-repeat;position:relative;overflow:hidden;box-shadow:0 0 12px rgba(255,215,94,.25);}' +
@@ -296,7 +295,9 @@
     }
     h += '</div><div class="llList" id="llList"></div>';
     h += '<div id="llForge"></div>';
-    /* banner is now the Forge block background -- no separate llBanner */
+    /* quest banner: standalone cinematic row below the Forge */
+    var ban = BANNER_ART || '';
+    if (ban) { h += '<div class="llBanner" style="background-image:url(' + esc(ban) + ')"></div>'; }
     var wrap = document.createElement('div'); wrap.id = 'llWall'; wrap.innerHTML = h;
     var empty = w.querySelector('.emptyWall'); if (empty && (anyMounted || (D.kills && (D.kills.pile || D.kills.cold || D.kills.fog || D.kills.conq)))) { empty.style.display = 'none'; }
     if (w.firstChild) { w.insertBefore(wrap, w.firstChild); } else { w.appendChild(wrap); }
@@ -342,8 +343,6 @@
     var F = LL.forge; if (!F) { f.innerHTML = ''; return; }
     css();
     var hot = (F.available || 0) > 0, i, h = '', fa = FORGE_FACE_ART || forgeArt();
-    var ban = BANNER_ART || '';
-    h += '<div class="llForgeBg"' + (ban ? ' style="background-image:url(' + esc(ban) + ')"' : '') + '></div>';
     h += '<div class="llForgeInner">';
     /* LEFT: forge face + coins + title */
     h += '<div class="llForgeLeft">';
