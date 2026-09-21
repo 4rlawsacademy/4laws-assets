@@ -1,4 +1,5 @@
 /* ============================================================
+   v1.6 THE WALL (Bench 44, 9/20/26): monsters 2x2, honors 2 rows, banner 280px cinematic.
    v1.5.3 THE SMALL BELL (founder, 9/20, final: "I like the shape, it's a beautiful bell — don't
    get rid of it, make it small"): the KNOCKOUTS bell keeps its shelf as the seventh tile at the
    same size as the six, never larger; v1.5.2's removal is withdrawn.
@@ -107,14 +108,14 @@
       '.llHdr{font-family:"Cinzel",serif;font-size:13px;letter-spacing:.28em;color:#c8a84b;text-align:center;margin:4px 0 10px;}' +
       '.llHdr:before,.llHdr:after{content:"\u2014";color:#7a5a12;margin:0 10px;}' +
       '.llCard{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:10px;margin-bottom:14px;}' +
-      '.llKill{-webkit-flex:1 1 200px;flex:1 1 200px;background:linear-gradient(180deg,#151a22,#0c1016);border:1.5px solid #7a5a12;border-radius:12px;padding:12px 14px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:12px;box-shadow:inset 0 0 0 1px rgba(255,215,94,.08);}' +
+      '.llKill{-webkit-flex:1 1 calc(50% - 6px);flex:1 1 calc(50% - 6px);max-width:calc(50% - 6px);background:linear-gradient(180deg,#151a22,#0c1016);border:1.5px solid #7a5a12;border-radius:12px;padding:12px 14px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:12px;box-shadow:inset 0 0 0 1px rgba(255,215,94,.08);}' +
       '.llKill img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #c8a84b;-webkit-flex:none;flex:none;cursor:pointer;-webkit-transition:width .35s,height .35s,box-shadow .35s;transition:width .35s,height .35s,box-shadow .35s;}' +
       '.llKill img:hover,.llKill img.big{width:148px;height:148px;box-shadow:0 0 24px rgba(255,215,94,.6);border-color:#ffd75e;}' +
       '.llKill .llName{-webkit-flex:1;flex:1;font-family:"Cinzel",serif;font-size:19px;font-weight:700;color:#ffd75e;letter-spacing:.06em;line-height:1.15;text-shadow:0 1px 0 #7a5a12,0 2px 8px rgba(0,0,0,.8);}' +
       '.llKill .llCount{-webkit-flex:none;flex:none;font-family:"Cinzel",serif;font-size:34px;color:#ffd75e;line-height:1;text-shadow:0 0 14px rgba(255,215,94,.45);}' +
       '.llKill .llCount small{display:block;font-size:9px;letter-spacing:.2em;color:#a89968;text-align:right;margin-top:2px;}' +
       '.llShelves{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:2px;margin-bottom:2px;}' +
-      '.llShelfCard{-webkit-flex:1 1 100px;flex:1 1 100px;max-width:calc(100% / 7 - 2px);aspect-ratio:1/1;background:#0c1016 center/cover no-repeat;border:1px solid #1a1408;cursor:pointer;position:relative;overflow:hidden;-webkit-transition:box-shadow .25s,-webkit-filter .25s;transition:box-shadow .25s,filter .25s;}' +
+      '.llShelfCard{-webkit-flex:1 1 100px;flex:1 1 100px;max-width:calc(25% - 2px);aspect-ratio:1/1;background:#0c1016 center/cover no-repeat;border:1px solid #1a1408;cursor:pointer;position:relative;overflow:hidden;-webkit-transition:box-shadow .25s,-webkit-filter .25s;transition:box-shadow .25s,filter .25s;}' +
       '.llShelfCard .llTileShade{position:absolute;left:0;right:0;bottom:0;top:55%;background:linear-gradient(180deg,rgba(4,6,8,0) 0%,rgba(4,6,8,.92) 100%);}' +
       '.llShelfCard .llIcon{position:absolute;left:50%;top:44%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);font-size:30px;opacity:.8;}' +
       '.llShelfCard .llN{position:absolute;left:0;right:0;bottom:20px;text-align:center;font-family:"Cinzel",serif;font-size:26px;color:#ffd75e;line-height:1;text-shadow:0 0 12px rgba(0,0,0,.9),0 0 16px rgba(255,215,94,.5);}' +
@@ -171,8 +172,8 @@
       '.llBadgePlate{display:inline-block;margin-top:8px;padding:8px 18px;border:1.5px solid #ffd75e;border-radius:10px;background:linear-gradient(180deg,#2a2010,#151009);font-family:"Cinzel",serif;font-size:14px;color:#ffd75e;letter-spacing:.1em;box-shadow:0 0 16px rgba(255,215,94,.3),inset 0 0 0 1px rgba(255,215,94,.15);}' +
       '.llForgeRest{font-family:"Cinzel",serif;font-size:13px;color:#a89968;letter-spacing:.12em;}' +
       '.llForgeDoor{display:inline-block;margin-top:12px;padding:12px 24px;border-radius:999px;background:linear-gradient(180deg,#ffd75e,#c8a84b);color:#040608;font-family:"Cinzel",serif;font-size:13px;letter-spacing:.16em;text-decoration:none;font-weight:700;box-shadow:0 0 18px rgba(255,215,94,.45);}' +
-      '.llBanner{width:100%;height:130px;border-radius:12px;margin-top:18px;background:#10141b center/cover no-repeat;border:1.5px solid #7a5a12;position:relative;overflow:hidden;}' +
-      '.llBanner:after{content:"";position:absolute;left:0;right:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(4,6,8,.55),rgba(4,6,8,0) 40%,rgba(4,6,8,0) 60%,rgba(4,6,8,.55));}' +
+      '.llBanner{width:100%;height:280px;border-radius:14px;margin-top:18px;background:#10141b center top/cover no-repeat;border:1.5px solid #7a5a12;position:relative;overflow:hidden;}' +
+      '.llBanner:after{content:"";position:absolute;left:0;right:0;bottom:0;height:60px;background:linear-gradient(0deg,rgba(4,6,8,.85),rgba(4,6,8,0));}' +
       '.llWeapons{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:12px;-webkit-justify-content:center;justify-content:center;margin-top:12px;}' +
       '.llWeapon{width:128px;text-decoration:none;color:inherit;}' +
       '.llWeaponCover{width:128px;height:96px;border-radius:10px;border:1.5px solid #c8a84b;background:#10141b center/cover no-repeat;position:relative;overflow:hidden;box-shadow:0 0 12px rgba(255,215,94,.25);}' +
