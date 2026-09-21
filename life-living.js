@@ -1,5 +1,5 @@
 /* ============================================================
-   v1.6 THE WALL (Bench 44, 9/20/26): monsters 2x2, honors 2 rows, banner 280px cinematic.
+   v1.6.1 THE FORGE POSTER (Bench 44, 9/21/26): Forge + quest painting unified -- painting is the background, Forge elements float on top.
    v1.5.3 THE SMALL BELL (founder, 9/20, final: "I like the shape, it's a beautiful bell — don't
    get rid of it, make it small"): the KNOCKOUTS bell keeps its shelf as the seventh tile at the
    same size as the six, never larger; v1.5.2's removal is withdrawn.
@@ -68,7 +68,7 @@
    ============================================================ */
 (function () {
   if (window.LifeLiving) { return; }
-  var LL = { v: '1.5.3', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
+  var LL = { v: '1.6.1', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
   window.LifeLiving = LL;
 
   var MON = {
@@ -157,7 +157,10 @@
       '.llBook .llMonth{font-size:12px;color:#a89968;letter-spacing:.1em;margin-bottom:10px;}' +
       '.llBook p{margin:0;font-size:16px;line-height:1.55;color:#e8dcc0;white-space:pre-line;}' +
       /* v1.3 THE FORGE: art, coins, a gold plate */
-      '#llForge{width:100%;border-top:1px solid #2a2416;margin-top:14px;padding-top:12px;text-align:center;}' +
+      '#llForge{width:100%;margin-top:18px;border-radius:14px;border:1.5px solid #7a5a12;position:relative;overflow:hidden;min-height:280px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:28px 16px 24px;text-align:center;}' +
+      '#llForge .llForgeBg{position:absolute;left:0;top:0;right:0;bottom:0;background-size:cover;background-position:center top;background-repeat:no-repeat;}' +
+      '#llForge .llForgeBg:after{content:"";position:absolute;left:0;right:0;top:0;bottom:0;background:rgba(4,6,8,.62);}' +
+      '#llForge .llForgeInner{position:relative;z-index:1;width:100%;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;}' +
       '.llAnvil{display:inline-block;width:148px;height:148px;border-radius:50%;border:3px solid #7a5a12;background:#10141b center 30%/cover no-repeat;cursor:pointer;opacity:.5;-webkit-filter:grayscale(.7);filter:grayscale(.7);position:relative;-webkit-transition:opacity .3s,box-shadow .3s,transform .3s,-webkit-filter .3s;transition:opacity .3s,box-shadow .3s,transform .3s,filter .3s;}' +
       '.llAnvil.hot{-webkit-filter:none;filter:none;}' +
       '.llAnvil .llAnvilSym{position:absolute;left:50%;top:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);font-size:52px;line-height:1;}' +
@@ -291,7 +294,7 @@
     }
     h += '</div><div class="llList" id="llList"></div>';
     h += '<div id="llForge"></div>';
-    var ban = BANNER_ART || bannerArt(); if (ban) { h += '<div class="llBanner" style="background-image:url(' + esc(ban) + ')"></div>'; }
+    /* banner is now the Forge block background -- no separate llBanner */
     var wrap = document.createElement('div'); wrap.id = 'llWall'; wrap.innerHTML = h;
     var empty = w.querySelector('.emptyWall'); if (empty && (anyMounted || (D.kills && (D.kills.pile || D.kills.cold || D.kills.fog || D.kills.conq)))) { empty.style.display = 'none'; }
     if (w.firstChild) { w.insertBefore(wrap, w.firstChild); } else { w.appendChild(wrap); }
@@ -337,7 +340,10 @@
     var F = LL.forge; if (!F) { f.innerHTML = ''; return; }
     css();
     var hot = (F.available || 0) > 0, i, h = '', fa = FORGE_FACE_ART || forgeArt();
-    h += '<div class="llHdr">' + T('THE FORGE', 'LA FRAGUA') + '</div>';
+    var ban = BANNER_ART || '';
+    h += '<div class="llForgeBg"' + (ban ? ' style="background-image:url(' + esc(ban) + ')"' : '') + '></div>';
+    h += '<div class="llForgeInner">';
+    h += '<div class="llHdr" style="color:#ffd75e;text-shadow:0 0 14px rgba(0,0,0,.95);">' + T('THE FORGE', 'LA FRAGUA') + '</div>';
     h += '<div class="llAnvil' + (hot ? ' hot' : '') + (LL.anvilOpen ? ' open' : '') + (fa ? ' hasArt' : '') + '" id="llAnvil"' + (fa ? ' style="background-image:url(' + esc(fa) + ')"' : '') + '><span class="llAnvilSym">\u2692</span></div>';
     var coins = '', total = Math.max(F.available || 0, 0);
     for (i = 0; i < Math.min(total, 6); i++) { coins += '<img src="' + esc(COIN_ART) + '" alt="">'; }
@@ -349,12 +355,13 @@
       for (i = 0; i < W.length; i++) {
         var wpn = W[i], shipped = String(wpn.status || '').toLowerCase() === 'shipped' && wpn.link;
         var inner = '<div class="llWeaponCover' + (shipped ? '' : ' forge') + '"' + (wpn.imageUrl ? ' style="background-image:url(' + esc(wpn.imageUrl) + ')"' : '') + '><div class="llWeaponBadge">' + T('FORGED BY ', 'FORJADA POR ') + esc(wpn.badge || F.badge || '') + '</div></div>'
-          + '<div class="llWeaponTitle">' + esc(wpn.title || T('(unnamed)', '(sin nombre)')) + '</div>'
-          + '<div class="llWeaponState">' + (shipped ? T('IN THE LIBRARY', 'EN LA BIBLIOTECA') : T('AT THE FORGE', 'EN LA FRAGUA')) + '</div>';
+          + '<div class="llWeaponTitle" style="color:#ffd75e;text-shadow:0 1px 4px rgba(0,0,0,.9);">' + esc(wpn.title || T('(unnamed)', '(sin nombre)')) + '</div>'
+          + '<div class="llWeaponState" style="color:#f0e6cc;text-shadow:0 1px 3px rgba(0,0,0,.9);">' + (shipped ? T('IN THE LIBRARY', 'EN LA BIBLIOTECA') : T('AT THE FORGE', 'EN LA FRAGUA')) + '</div>';
         h += shipped ? ('<a class="llWeapon" href="' + esc(wpn.link) + '">' + inner + '</a>') : ('<div class="llWeapon">' + inner + '</div>');
       }
       h += '</div>';
     }
+    h += '</div>'; /* close llForgeInner */
     f.innerHTML = h;
     var a = $('llAnvil'); if (a) { a.onclick = onAnvil; }
     if (LL.anvilOpen) { showForgeLine(); }
