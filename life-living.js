@@ -1,5 +1,5 @@
 /* ============================================================
-   v1.6.2 THE FORGE ROW (Bench 44, 9/21/26): painting brighter (overlay .35), gray bar gone, Forge elements horizontal -- face left, weapons right.
+   v1.6.3 THE FORGE FLUSH (Bench 44, 9/21/26): gray bar gone -- llForgeBg is position:absolute filling full block; block taller (340px); inner row pushed to bottom half.
    v1.5.3 THE SMALL BELL (founder, 9/20, final: "I like the shape, it's a beautiful bell — don't
    get rid of it, make it small"): the KNOCKOUTS bell keeps its shelf as the seventh tile at the
    same size as the six, never larger; v1.5.2's removal is withdrawn.
@@ -68,7 +68,7 @@
    ============================================================ */
 (function () {
   if (window.LifeLiving) { return; }
-  var LL = { v: '1.6.2', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
+  var LL = { v: '1.6.3', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
   window.LifeLiving = LL;
 
   var MON = {
@@ -157,10 +157,10 @@
       '.llBook .llMonth{font-size:12px;color:#a89968;letter-spacing:.1em;margin-bottom:10px;}' +
       '.llBook p{margin:0;font-size:16px;line-height:1.55;color:#e8dcc0;white-space:pre-line;}' +
       /* v1.3 THE FORGE: art, coins, a gold plate */
-      '#llForge{width:100%;margin-top:18px;border-radius:14px;border:1.5px solid #7a5a12;position:relative;overflow:hidden;min-height:280px;background:#0c1016;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:0;text-align:center;}' +
-      '#llForge .llForgeBg{position:absolute;left:0;top:0;right:0;bottom:0;background-size:cover;background-position:center top;background-repeat:no-repeat;}' +
+      '#llForge{width:100%;margin-top:18px;border-radius:14px;border:1.5px solid #7a5a12;position:relative;overflow:hidden;min-height:340px;background:#0c1016;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:stretch;align-items:stretch;-webkit-justify-content:flex-end;justify-content:flex-end;padding:0;text-align:center;}' +
+      '#llForge .llForgeBg{position:absolute;left:0;top:0;right:0;bottom:0;width:100%;height:100%;background-size:cover;background-position:center 20%;background-repeat:no-repeat;}' +
       '#llForge .llForgeBg:after{content:"";position:absolute;left:0;right:0;top:0;bottom:0;background:rgba(4,6,8,.28);}' +
-      '#llForge .llForgeInner{position:relative;z-index:1;width:100%;display:-webkit-flex;display:flex;-webkit-flex-direction:row;flex-direction:row;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;gap:24px;padding:24px 20px;}' +
+      '#llForge .llForgeInner{position:relative;z-index:1;width:100%;display:-webkit-flex;display:flex;-webkit-flex-direction:row;flex-direction:row;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;gap:24px;padding:20px 20px 20px;background:linear-gradient(0deg,rgba(4,6,8,.72) 0%,rgba(4,6,8,0) 100%);}' +
       '#llForge .llForgeLeft{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;gap:8px;-webkit-flex:none;flex:none;}' +
       '#llForge .llForgeRight{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:flex-start;align-items:flex-start;gap:10px;-webkit-flex:1;flex:1;}' +
       '.llAnvil{display:inline-block;width:148px;height:148px;border-radius:50%;border:3px solid #7a5a12;background:#10141b center 30%/cover no-repeat;cursor:pointer;opacity:.5;-webkit-filter:grayscale(.7);filter:grayscale(.7);position:relative;-webkit-transition:opacity .3s,box-shadow .3s,transform .3s,-webkit-filter .3s;transition:opacity .3s,box-shadow .3s,transform .3s,filter .3s;}' +
