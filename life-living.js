@@ -1,5 +1,5 @@
 /* ============================================================
-   v1.6.1 THE FORGE POSTER (Bench 44, 9/21/26): Forge + quest painting unified -- painting is the background, Forge elements float on top.
+   v1.6.2 THE FORGE ROW (Bench 44, 9/21/26): painting brighter (overlay .35), gray bar gone, Forge elements horizontal -- face left, weapons right.
    v1.5.3 THE SMALL BELL (founder, 9/20, final: "I like the shape, it's a beautiful bell — don't
    get rid of it, make it small"): the KNOCKOUTS bell keeps its shelf as the seventh tile at the
    same size as the six, never larger; v1.5.2's removal is withdrawn.
@@ -68,7 +68,7 @@
    ============================================================ */
 (function () {
   if (window.LifeLiving) { return; }
-  var LL = { v: '1.6.1', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
+  var LL = { v: '1.6.2', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
   window.LifeLiving = LL;
 
   var MON = {
@@ -115,7 +115,7 @@
       '.llKill .llCount{-webkit-flex:none;flex:none;font-family:"Cinzel",serif;font-size:34px;color:#ffd75e;line-height:1;text-shadow:0 0 14px rgba(255,215,94,.45);}' +
       '.llKill .llCount small{display:block;font-size:9px;letter-spacing:.2em;color:#a89968;text-align:right;margin-top:2px;}' +
       '.llShelves{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:2px;margin-bottom:2px;}' +
-      '.llShelfCard{-webkit-flex:1 1 100px;flex:1 1 100px;max-width:calc(25% - 2px);aspect-ratio:1/1;background:#0c1016 center/cover no-repeat;border:1px solid #1a1408;cursor:pointer;position:relative;overflow:hidden;-webkit-transition:box-shadow .25s,-webkit-filter .25s;transition:box-shadow .25s,filter .25s;}' +
+      '.llShelfCard{-webkit-flex:0 0 calc(25% - 6px);flex:0 0 calc(25% - 6px);width:calc(25% - 6px);aspect-ratio:1/1;background:#0c1016 center/cover no-repeat;border:1px solid #1a1408;cursor:pointer;position:relative;overflow:hidden;-webkit-transition:box-shadow .25s,-webkit-filter .25s;transition:box-shadow .25s,filter .25s;}' +
       '.llShelfCard .llTileShade{position:absolute;left:0;right:0;bottom:0;top:55%;background:linear-gradient(180deg,rgba(4,6,8,0) 0%,rgba(4,6,8,.92) 100%);}' +
       '.llShelfCard .llIcon{position:absolute;left:50%;top:44%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);font-size:30px;opacity:.8;}' +
       '.llShelfCard .llN{position:absolute;left:0;right:0;bottom:20px;text-align:center;font-family:"Cinzel",serif;font-size:26px;color:#ffd75e;line-height:1;text-shadow:0 0 12px rgba(0,0,0,.9),0 0 16px rgba(255,215,94,.5);}' +
@@ -157,10 +157,12 @@
       '.llBook .llMonth{font-size:12px;color:#a89968;letter-spacing:.1em;margin-bottom:10px;}' +
       '.llBook p{margin:0;font-size:16px;line-height:1.55;color:#e8dcc0;white-space:pre-line;}' +
       /* v1.3 THE FORGE: art, coins, a gold plate */
-      '#llForge{width:100%;margin-top:18px;border-radius:14px;border:1.5px solid #7a5a12;position:relative;overflow:hidden;min-height:280px;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:28px 16px 24px;text-align:center;}' +
+      '#llForge{width:100%;margin-top:18px;border-radius:14px;border:1.5px solid #7a5a12;position:relative;overflow:hidden;min-height:280px;background:#0c1016;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;padding:0;text-align:center;}' +
       '#llForge .llForgeBg{position:absolute;left:0;top:0;right:0;bottom:0;background-size:cover;background-position:center top;background-repeat:no-repeat;}' +
-      '#llForge .llForgeBg:after{content:"";position:absolute;left:0;right:0;top:0;bottom:0;background:rgba(4,6,8,.62);}' +
-      '#llForge .llForgeInner{position:relative;z-index:1;width:100%;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;}' +
+      '#llForge .llForgeBg:after{content:"";position:absolute;left:0;right:0;top:0;bottom:0;background:rgba(4,6,8,.28);}' +
+      '#llForge .llForgeInner{position:relative;z-index:1;width:100%;display:-webkit-flex;display:flex;-webkit-flex-direction:row;flex-direction:row;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;gap:24px;padding:24px 20px;}' +
+      '#llForge .llForgeLeft{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;gap:8px;-webkit-flex:none;flex:none;}' +
+      '#llForge .llForgeRight{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:flex-start;align-items:flex-start;gap:10px;-webkit-flex:1;flex:1;}' +
       '.llAnvil{display:inline-block;width:148px;height:148px;border-radius:50%;border:3px solid #7a5a12;background:#10141b center 30%/cover no-repeat;cursor:pointer;opacity:.5;-webkit-filter:grayscale(.7);filter:grayscale(.7);position:relative;-webkit-transition:opacity .3s,box-shadow .3s,transform .3s,-webkit-filter .3s;transition:opacity .3s,box-shadow .3s,transform .3s,filter .3s;}' +
       '.llAnvil.hot{-webkit-filter:none;filter:none;}' +
       '.llAnvil .llAnvilSym{position:absolute;left:50%;top:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);font-size:52px;line-height:1;}' +
@@ -343,15 +345,19 @@
     var ban = BANNER_ART || '';
     h += '<div class="llForgeBg"' + (ban ? ' style="background-image:url(' + esc(ban) + ')"' : '') + '></div>';
     h += '<div class="llForgeInner">';
-    h += '<div class="llHdr" style="color:#ffd75e;text-shadow:0 0 14px rgba(0,0,0,.95);">' + T('THE FORGE', 'LA FRAGUA') + '</div>';
+    /* LEFT: forge face + coins + title */
+    h += '<div class="llForgeLeft">';
+    h += '<div style="font-family:Cinzel,serif;font-size:11px;letter-spacing:.22em;color:#ffd75e;text-shadow:0 0 10px rgba(0,0,0,.9);margin-bottom:4px;">' + T('THE FORGE', 'LA FRAGUA') + '</div>';
     h += '<div class="llAnvil' + (hot ? ' hot' : '') + (LL.anvilOpen ? ' open' : '') + (fa ? ' hasArt' : '') + '" id="llAnvil"' + (fa ? ' style="background-image:url(' + esc(fa) + ')"' : '') + '><span class="llAnvilSym">\u2692</span></div>';
     var coins = '', total = Math.max(F.available || 0, 0);
     for (i = 0; i < Math.min(total, 6); i++) { coins += '<img src="' + esc(COIN_ART) + '" alt="">'; }
     h += '<div class="llCoins">' + coins + (total > 6 ? '<span style="font-family:Cinzel,serif;color:#ffd75e;align-self:center;"> +' + (total - 6) + '</span>' : '') + '</div>';
+    h += '</div>'; /* close llForgeLeft */
+    /* RIGHT: forge line + weapons */
+    h += '<div class="llForgeRight">';
     h += '<div class="llForgeLine" id="llForgeLine"></div>';
     var W = F.weapons || [];
     if (W.length) {
-      h += '<div class="llWeapons">';
       for (i = 0; i < W.length; i++) {
         var wpn = W[i], shipped = String(wpn.status || '').toLowerCase() === 'shipped' && wpn.link;
         var inner = '<div class="llWeaponCover' + (shipped ? '' : ' forge') + '"' + (wpn.imageUrl ? ' style="background-image:url(' + esc(wpn.imageUrl) + ')"' : '') + '><div class="llWeaponBadge">' + T('FORGED BY ', 'FORJADA POR ') + esc(wpn.badge || F.badge || '') + '</div></div>'
@@ -359,8 +365,8 @@
           + '<div class="llWeaponState" style="color:#f0e6cc;text-shadow:0 1px 3px rgba(0,0,0,.9);">' + (shipped ? T('IN THE LIBRARY', 'EN LA BIBLIOTECA') : T('AT THE FORGE', 'EN LA FRAGUA')) + '</div>';
         h += shipped ? ('<a class="llWeapon" href="' + esc(wpn.link) + '">' + inner + '</a>') : ('<div class="llWeapon">' + inner + '</div>');
       }
-      h += '</div>';
     }
+    h += '</div>'; /* close llForgeRight */
     h += '</div>'; /* close llForgeInner */
     f.innerHTML = h;
     var a = $('llAnvil'); if (a) { a.onclick = onAnvil; }
