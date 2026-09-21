@@ -1,4 +1,7 @@
 /* ============================================================
+   v1.7 THE TITLES (Bench 44, 9/21/26, founder): MONSTERS / HONORS / LEGACY WEAPONS as large bold centered section
+   titles (the dashes gone); the Forge's small in-block title retired in favor of LEGACY WEAPONS above the block; the
+   homecoming painting wears RETURNING WITH HONOR / REGRESANDO CON HONOR in large gold caps across its sky.
    v1.6.5 THE TWO ROWS (Bench 44, 9/21/26): Forge is its own dark row; quest painting stands alone below as a 300px banner.
    Fixes over v1.6.4: removed orphaned duplicate .llBanner rule (old rule was winning the cascade), removed a JS comment
    sitting between two + operators that turned the .llForgeInner selector into NaN, removed the dead llForgeBg div.
@@ -70,7 +73,7 @@
    ============================================================ */
 (function () {
   if (window.LifeLiving) { return; }
-  var LL = { v: '1.6.5', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
+  var LL = { v: '1.7', honors: null, library: null, forge: null, booted: false, open: '', openVol: '', anvilOpen: false, shelfOpen: '' };
   window.LifeLiving = LL;
 
   var MON = {
@@ -107,8 +110,8 @@
     var st = document.createElement('style'); st.id = 'lifeLivingCss';
     st.textContent =
       '#llWall,#llShelf{width:100%;}' +
-      '.llHdr{font-family:"Cinzel",serif;font-size:13px;letter-spacing:.28em;color:#c8a84b;text-align:center;margin:4px 0 10px;}' +
-      '.llHdr:before,.llHdr:after{content:"\u2014";color:#7a5a12;margin:0 10px;}' +
+      '.llHdr{font-family:\"Cinzel\",serif;font-weight:900;font-size:24px;letter-spacing:.3em;color:#ffd75e;text-align:center;margin:22px 0 12px;text-shadow:0 0 16px rgba(255,215,94,.35),0 2px 0 #7a5a12;}' +
+      '@media(max-width:640px){.llHdr{font-size:17px;letter-spacing:.2em;margin:16px 0 10px;}}' +
       '.llCard{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:10px;margin-bottom:14px;}' +
       '.llKill{-webkit-flex:1 1 calc(50% - 6px);flex:1 1 calc(50% - 6px);max-width:calc(50% - 6px);background:linear-gradient(180deg,#151a22,#0c1016);border:1.5px solid #7a5a12;border-radius:12px;padding:12px 14px;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:12px;box-shadow:inset 0 0 0 1px rgba(255,215,94,.08);}' +
       '.llKill img{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #c8a84b;-webkit-flex:none;flex:none;cursor:pointer;-webkit-transition:width .35s,height .35s,box-shadow .35s;transition:width .35s,height .35s,box-shadow .35s;}' +
@@ -163,7 +166,9 @@
       '#llForge .llForgeInner{position:relative;z-index:1;width:100%;display:-webkit-flex;display:flex;-webkit-flex-direction:row;flex-direction:row;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;gap:24px;padding:20px;}' +
       '#llForge .llForgeLeft{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;gap:8px;-webkit-flex:none;flex:none;}' +
       '#llForge .llForgeRight{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:flex-start;align-items:flex-start;gap:10px;-webkit-flex:1;flex:1;}' +
-      '.llBanner{width:100%;height:300px;border-radius:12px;margin-top:14px;background:#10141b center 20%/cover no-repeat;border:1.5px solid #7a5a12;}' +
+      '.llBanner{width:100%;height:300px;border-radius:12px;margin-top:14px;background:#10141b center 20%/cover no-repeat;border:1.5px solid #7a5a12;position:relative;overflow:hidden;}' +
+      '.llBannerTitle{position:absolute;left:0;right:0;top:22px;text-align:center;font-family:\"Cinzel\",serif;font-weight:900;font-size:34px;letter-spacing:.32em;color:#ffd75e;text-shadow:0 0 22px rgba(0,0,0,.95),0 0 40px rgba(255,215,94,.35),0 3px 0 #5a3d08;padding:0 12px;}' +
+      '@media(max-width:640px){.llBannerTitle{font-size:19px;letter-spacing:.18em;top:14px;}}' +
       '.llAnvil{display:inline-block;width:148px;height:148px;border-radius:50%;border:3px solid #7a5a12;background:#10141b center 30%/cover no-repeat;cursor:pointer;opacity:.5;-webkit-filter:grayscale(.7);filter:grayscale(.7);position:relative;-webkit-transition:opacity .3s,box-shadow .3s,transform .3s,-webkit-filter .3s;transition:opacity .3s,box-shadow .3s,transform .3s,filter .3s;}' +
       '.llAnvil.hot{-webkit-filter:none;filter:none;}' +
       '.llAnvil .llAnvilSym{position:absolute;left:50%;top:50%;-webkit-transform:translate(-50%,-50%);transform:translate(-50%,-50%);font-size:52px;line-height:1;}' +
@@ -297,7 +302,7 @@
     h += '<div id="llForge"></div>';
     /* quest banner: standalone cinematic row below the Forge */
     var ban = BANNER_ART || '';
-    if (ban) { h += '<div class="llBanner" style="background-image:url(' + esc(ban) + ')"></div>'; }
+    if (ban) { h += '<div class=\"llBanner\" style=\"background-image:url(' + esc(ban) + ')\"><div class=\"llBannerTitle\">' + T('RETURNING WITH HONOR', 'REGRESANDO CON HONOR') + '</div></div>'; }
     var wrap = document.createElement('div'); wrap.id = 'llWall'; wrap.innerHTML = h;
     var empty = w.querySelector('.emptyWall'); if (empty && (anyMounted || (D.kills && (D.kills.pile || D.kills.cold || D.kills.fog || D.kills.conq)))) { empty.style.display = 'none'; }
     if (w.firstChild) { w.insertBefore(wrap, w.firstChild); } else { w.appendChild(wrap); }
@@ -343,10 +348,10 @@
     var F = LL.forge; if (!F) { f.innerHTML = ''; return; }
     css();
     var hot = (F.available || 0) > 0, i, h = '', fa = FORGE_FACE_ART || forgeArt();
+    h += '<div class=\"llHdr\">' + T('LEGACY WEAPONS', 'ARMAS LEGADO') + '</div>';
     h += '<div class="llForgeInner">';
     /* LEFT: forge face + coins + title */
     h += '<div class="llForgeLeft">';
-    h += '<div style="font-family:Cinzel,serif;font-size:11px;letter-spacing:.22em;color:#ffd75e;text-shadow:0 0 10px rgba(0,0,0,.9);margin-bottom:4px;">' + T('THE FORGE', 'LA FRAGUA') + '</div>';
     h += '<div class="llAnvil' + (hot ? ' hot' : '') + (LL.anvilOpen ? ' open' : '') + (fa ? ' hasArt' : '') + '" id="llAnvil"' + (fa ? ' style="background-image:url(' + esc(fa) + ')"' : '') + '><span class="llAnvilSym">\u2692</span></div>';
     var coins = '', total = Math.max(F.available || 0, 0);
     for (i = 0; i < Math.min(total, 6); i++) { coins += '<img src="' + esc(COIN_ART) + '" alt="">'; }
