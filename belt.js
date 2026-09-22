@@ -1,3 +1,4 @@
+/* ═══ belt.js v2.1 MY DAY (Bench 42, Sun 9/20/26): on phones the buckle's SHORTCUTS gain MY DAY / MI DÍA -- tap and the page jumps to the MY FAVORITE DAY card (window.pwsMyDayJump, pws-talent v91_91). Cumulative on v2.0. ═══ */
 /* ═══ belt.js v2.0 SHORTCUTS (Bench 42, Sat 9/19/26): on phones the loose pills -- REMINDERS (#drFab), the piano (found by its 🎹),
  * the LVL chip (#lcChip) -- leave the screen and live under a SHORTCUTS title at the foot of the buckle's panel, as rows in the
  * weapons' dress; tap one and it does what the pill did. Desktops unchanged. TODOS and TRUST stay at the bottom. Cumulative on v1.9.
@@ -255,6 +256,7 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
     var fab = document.getElementById('drFab'); if (fab) list.push({ name: T('REMINDERS', 'RECORDATORIOS'), icon: '\uD83D\uDCEC', el: fab });
     var pn = pianoEl(); if (pn) { pn.classList.add('belt-sc-hidden'); list.push({ name: T('PIANO', 'PIANO'), icon: '\uD83C\uDFB9', el: pn }); }
     var chip = document.getElementById('lcChip'); if (chip) list.push({ name: (chip.textContent || '').replace(/\s+/g, ' ').trim() || 'LVL', icon: '\uD83C\uDFAE', el: chip });
+    if (typeof window.pwsMyDayJump === 'function') list.unshift({ name: T('MY DAY', 'MI D\u00cdA'), icon: '\uD83D\uDCC5', fn: window.pwsMyDayJump });   /* v2.1 */
     return list;
   }
   function applyPhone() { try { document.body.classList.toggle('belt-phone', isPhone()); if (isPhone()) pianoEl(); else { var h = document.querySelectorAll('.belt-sc-hidden'); for (var i = 0; i < h.length; i++) h[i].classList.remove('belt-sc-hidden'); } } catch (e) {} }
@@ -264,7 +266,7 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
     var t = document.createElement('div'); t.className = 'belt-sc-title'; t.textContent = T('SHORTCUTS', 'ATAJOS'); fan.appendChild(t);
     sc.forEach(function (x) {
       var el = document.createElement('div'); el.className = 'belt-item belt-sc'; el.textContent = x.icon + '  ' + x.name;
-      el.addEventListener('click', function (e) { e.stopPropagation(); setOpen(false); try { var target = x.el; var inner = target.querySelector && target.querySelector('button,a'); (inner && inner !== target ? inner : target).click(); } catch (eC) {} });
+      el.addEventListener('click', function (e) { e.stopPropagation(); setOpen(false); if (x.fn) { try { x.fn(); } catch (eF) {} return; } try { var target = x.el; var inner = target.querySelector && target.querySelector('button,a'); (inner && inner !== target ? inner : target).click(); } catch (eC) {} });
       fan.appendChild(el);
     });
     return sc.length;
