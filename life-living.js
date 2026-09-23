@@ -1,4 +1,5 @@
 /* ============================================================
+   v1.8 THE LIBRARY WALL (Bench 44, 9/23/26): the shelf renders into #libraryHome (under THE LIBRARY painting on the My Story page) when the Hall offers it; #sagaReal otherwise.
    v1.7 THE TITLES (Bench 44, 9/21/26, founder): MONSTERS / HONORS / LEGACY WEAPONS as large bold centered section
    titles (the dashes gone); the Forge's small in-block title retired in favor of LEGACY WEAPONS above the block; the
    homecoming painting wears RETURNING WITH HONOR / REGRESANDO CON HONOR in large gold caps across its sky.
@@ -398,7 +399,7 @@
 
   /* ---------- THE LIBRARY: a shelf of spines at the foot of the Saga ---------- */
   LL.renderShelf = function () {
-    var s = $('sagaReal'); if (!s || !LL.library) { return; }
+    var s = $('libraryHome') || $('sagaReal'); if (!s || !LL.library) { return; }   /* v1.8: under THE LIBRARY painting when the Hall offers it */
     var old = $('llShelf'); if (old) { old.parentNode.removeChild(old); }
     css();
     var L = lang(), vols = LL.library.volumes || [], i, h = '';
