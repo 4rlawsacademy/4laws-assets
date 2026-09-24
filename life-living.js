@@ -1,4 +1,5 @@
 /* ============================================================
+   v1.9 THE ROW (Bench 44, 9/24/26): legacy weapons render in the horizontal wrapping row (.llWeapons) instead of stacking down the Forge's right column.
    v1.8 THE LIBRARY WALL (Bench 44, 9/23/26): the shelf renders into #libraryHome (under THE LIBRARY painting on the My Story page) when the Hall offers it; #sagaReal otherwise.
    v1.7 THE TITLES (Bench 44, 9/21/26, founder): MONSTERS / HONORS / LEGACY WEAPONS as large bold centered section
    titles (the dashes gone); the Forge's small in-block title retired in favor of LEGACY WEAPONS above the block; the
@@ -184,7 +185,7 @@
       '.llBadgePlate{display:inline-block;margin-top:8px;padding:8px 18px;border:1.5px solid #ffd75e;border-radius:10px;background:linear-gradient(180deg,#2a2010,#151009);font-family:"Cinzel",serif;font-size:14px;color:#ffd75e;letter-spacing:.1em;box-shadow:0 0 16px rgba(255,215,94,.3),inset 0 0 0 1px rgba(255,215,94,.15);}' +
       '.llForgeRest{font-family:"Cinzel",serif;font-size:13px;color:#a89968;letter-spacing:.12em;}' +
       '.llForgeDoor{display:inline-block;margin-top:12px;padding:12px 24px;border-radius:999px;background:linear-gradient(180deg,#ffd75e,#c8a84b);color:#040608;font-family:"Cinzel",serif;font-size:13px;letter-spacing:.16em;text-decoration:none;font-weight:700;box-shadow:0 0 18px rgba(255,215,94,.45);}' +
-      '.llWeapons{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:12px;-webkit-justify-content:center;justify-content:center;margin-top:12px;}' +
+      '.llWeapons{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:14px;-webkit-justify-content:flex-start;justify-content:flex-start;margin-top:6px;width:100%;}' +
       '.llWeapon{width:128px;text-decoration:none;color:inherit;}' +
       '.llWeaponCover{width:128px;height:96px;border-radius:10px;border:1.5px solid #c8a84b;background:#10141b center/cover no-repeat;position:relative;overflow:hidden;box-shadow:0 0 12px rgba(255,215,94,.25);}' +
       '.llWeaponCover.forge{border-style:dashed;opacity:.8;}' +
@@ -363,6 +364,7 @@
     h += '<div class="llForgeLine" id="llForgeLine"></div>';
     var W = F.weapons || [];
     if (W.length) {
+      h += '<div class="llWeapons">';   /* v1.9 THE ROW: the weapons ride in the wrapping row the stylesheet already had; they were stacking in the column */
       for (i = 0; i < W.length; i++) {
         var wpn = W[i], shipped = String(wpn.status || '').toLowerCase() === 'shipped' && wpn.link;
         var inner = '<div class="llWeaponCover' + (shipped ? '' : ' forge') + '"' + (wpn.imageUrl ? ' style="background-image:url(' + esc(wpn.imageUrl) + ')"' : '') + '><div class="llWeaponBadge">' + T('FORGED BY ', 'FORJADA POR ') + esc(wpn.badge || F.badge || '') + '</div></div>'
@@ -370,6 +372,7 @@
           + '<div class="llWeaponState" style="color:#f0e6cc;text-shadow:0 1px 3px rgba(0,0,0,.9);">' + (shipped ? T('IN THE LIBRARY', 'EN LA BIBLIOTECA') : T('AT THE FORGE', 'EN LA FRAGUA')) + '</div>';
         h += shipped ? ('<a class="llWeapon" href="' + esc(wpn.link) + '">' + inner + '</a>') : ('<div class="llWeapon">' + inner + '</div>');
       }
+      h += '</div>'; /* close llWeapons */
     }
     h += '</div>'; /* close llForgeRight */
     h += '</div>'; /* close llForgeInner */
