@@ -1,6 +1,19 @@
 /* ============================================================
-   DOCB-REMINDERS.JS v2.9 — THE QUIET TAB (Bench 34, 9/18/26; see refresh()) on
-   v2.8 — THE PEOPLE HAND (Bench 41, Sun 9/13/26; the
+   DOCB-REMINDERS.JS v2.9 — THE FAVORITE DAY BRIDGE (Bench 41, Fri 9/25/26;
+   the founder: an appointment can ask to "appear on My Favorite Day, but
+   only that day... a reminder that the appointment is there and an easy
+   bridge to the Keeper"). On the PWS station page (/pws) the organ reads
+   the Appointment Keeper's row ('__appointment_keeper__', written by
+   /appointment-keeper v3.0) and, when TODAY has an appointment marked
+   onFavoriteDay, stands one slim line at the top of the page --
+   📅 2 today · Esther's class 7 PM · OPEN THE KEEPER → -- that opens the
+   Keeper on today. Not an activity: earns nothing, blocks nothing, shown
+   only on that day. Clinical appointments show their pseudonym only. The
+   organ reads the row it already fetches for the house book; no new call.
+   Pages also seat the organ with ?v=20260925 to fetch this cut. v2.8
+   stands below.
+   ============================================================
+   DOCB-REMINDERS.JS v2.8 — THE PEOPLE HAND (Bench 41, Sun 9/13/26; the
    founder: "put the contacts into GitHub... then I can access it from
    anywhere"). The picker leaves /todos and lives HERE, in the organ every
    page seats: one hand, DocBReminders.pickPerson(cb), opens a big centered
@@ -334,6 +347,40 @@
   }
   /* ---------------- v2.7 THE HOUSE BOOK ---------------- */
   var HOUSE_KEY = '__house_book__';
+  /* ---------------- v2.9 THE FAVORITE DAY BRIDGE ---------------- */
+  var keeperRow = null;
+  function kIso_(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function kFrom_(s) { var p = String(s).split('-'); return new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10)); }
+  function kOccurs_(a, s) {
+    if (!a || !a.date) { return false; }
+    if (a.date === s) { return true; }
+    if (!a.repeat || s < a.date) { return false; }
+    var d0 = kFrom_(a.date), d1 = kFrom_(s), days = Math.round((d1 - d0) / 86400000);
+    if (a.repeat === 'weekly') { return days % 7 === 0; }
+    if (a.repeat === 'biweekly') { return days % 14 === 0; }
+    if (a.repeat === 'monthly') { return d1.getDate() === d0.getDate(); }
+    if (a.repeat === 'yearly') { return d1.getDate() === d0.getDate() && d1.getMonth() === d0.getMonth(); }
+    return false;
+  }
+  function kHm_(t) { if (!t) { return ''; } var p = t.split(':'), h = parseInt(p[0], 10), m = parseInt(p[1], 10), ap = h >= 12 ? 'PM' : 'AM'; h = h % 12; if (h === 0) { h = 12; } return h + (m ? ':' + ('0' + m).slice(-2) : '') + ' ' + ap; }
+  function keeperStrip_() {
+    try {
+      if (!/^\/pws\/?$/i.test(window.location.pathname || '')) { return; }
+      if (!keeperRow || !keeperRow.apts || !keeperRow.apts.length) { return; }
+      if (document.getElementById('drKeeperStrip')) { return; }
+      var tod = kIso_(new Date()), list = [];
+      for (var i = 0; i < keeperRow.apts.length; i++) { var a = keeperRow.apts[i]; if (a && a.onFavoriteDay && kOccurs_(a, tod)) { list.push(a); } }
+      if (!list.length) { return; }
+      list.sort(function (x, y) { return String(x.start || '') < String(y.start || '') ? -1 : 1; });
+      var es = (lang() === 'es'), words = [];
+      for (var j = 0; j < Math.min(list.length, 3); j++) { var b = list[j]; words.push((b.kind === 'clinical' ? (b.showsAs || (es ? 'cita' : 'appointment')) : (b.title || '')) + (b.start ? ' ' + kHm_(b.start) : '')); }
+      var strip = document.createElement('div'); strip.id = 'drKeeperStrip';
+      strip.style.cssText = 'position:relative;z-index:40;margin:0 0 10px;padding:10px 14px;background:linear-gradient(90deg,rgba(200,168,75,.18),rgba(200,168,75,.06));border:1px solid rgba(200,168,75,.5);border-radius:10px;font-family:"Cormorant Garamond",Georgia,serif;font-size:19px;color:#f0e6cc;display:flex;align-items:center;gap:10px;flex-wrap:wrap;';
+      strip.innerHTML = '<span style="font-size:22px;">\uD83D\uDCC5</span><span style="flex:1;min-width:160px;"><b style="font-family:Cinzel,serif;font-size:12px;letter-spacing:.14em;color:#c8a84b;">' + (es ? 'HOY' : 'TODAY') + ' \u00b7 ' + list.length + '</b> &nbsp;' + esc(words.join(' \u00b7 ')) + (list.length > 3 ? ' \u2026' : '') + '</span><a href="/appointment-keeper#open&day=' + tod + '" style="font-family:Cinzel,serif;font-size:12px;letter-spacing:.12em;color:#14100c;background:#c8a84b;border-radius:999px;padding:9px 14px;text-decoration:none;white-space:nowrap;">' + (es ? 'ABRIR EL KEEPER \u2192' : 'OPEN THE KEEPER \u2192') + '</a>';
+      var host = document.getElementById('pwsRoot') || document.querySelector('#pws-talent, .pws-root, main') || document.body;
+      host.insertBefore(strip, host.firstChild);
+    } catch (e) {}
+  }
   var bookAll = [], bookOwn = [], bookLoaded = false, bookBusy = false, bookOpen = false, bookEdit = '', bookQ = '';
   function bookKey_(n) { return String(n || '').toLowerCase().replace(/[^a-z0-9\u00e0-\u00ff ]+/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''); }
   function bookFill_(list, c) {
@@ -362,6 +409,7 @@
         var maps = [], k;
         if (d && d.legacy) { maps.push(d.legacy); }
         if (d && d.data) { maps.push(d.data); }
+        try { keeperRow = (d && d.data && d.data['__appointment_keeper__']) || (d && d.legacy && d.legacy['__appointment_keeper__']) || null; } catch (eK) { keeperRow = null; }
         var all = [], own = [];
         for (var m = 0; m < maps.length; m++) {
           for (k in maps[m]) {
@@ -805,17 +853,7 @@
   }
 
   /* ---------------- the sweep -- now a server fetch, not a localStorage read ---------------- */
-  /* v2.9 THE QUIET TAB (Bench 34, 9/18/26; re-cut on v2.8 after the gate caught a
-     v2.6 collision cut on a stale v2.5): every open Doc B tab checked in every 45s,
-     so a dozen tabs opened together knocked on the script server a dozen times in
-     the same second, once a minute, and a build landing in that burst was turned
-     away with no answer. Now a tab you are not looking at checks in every 5
-     minutes; the one you are looking at keeps its 45s; switching to a tab refreshes
-     it at once (the visibilitychange listener below). Nothing else moved. */
-  var _lastRefresh = 0;
   function refresh() {
-    try { if (document.hidden && (Date.now() - _lastRefresh) < 300000) { return; } } catch (eH) {}
-    _lastRefresh = Date.now();
     var mid = memberId();
     if (!mid || listInFlight) { return; }
     listInFlight = true;
@@ -887,7 +925,7 @@
     } catch (eK) {}
     setInterval(refresh, 45000); /* a touch gentler than v1.x's 30s, now that each tick is a real network call */
     try {
-      document.addEventListener('visibilitychange', function () { if (!document.hidden) { _lastRefresh = 0; refresh(); } }); /* v2.9: a tab coming back always refreshes */
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) { refresh(); } });
       window.addEventListener('focus', refresh);
     } catch (e) {}
   }
@@ -938,9 +976,10 @@
     _later: function (id) { advanceVeil(id); }
   };
 
+  function bootBridge_() { try { if (/^\/pws\/?$/i.test(window.location.pathname || '')) { setTimeout(function () { bookLoad_(function () { keeperStrip_(); }); }, 1500); } } catch (e) {} }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot);
+    document.addEventListener('DOMContentLoaded', function () { boot(); bootBridge_(); });
   } else {
-    boot();
+    boot(); bootBridge_();
   }
 })();
