@@ -1,4 +1,28 @@
 /* ============================================================
+   DOCB-REMINDERS.JS v2.10.1 — THE ONE PERSON (Bench 43, Mon 9/28/26; v2.10.1: the gate's
+   catch -- a different phone or email on both cards is disqualifying, so two people who share
+   a name are never folded; the six-Sarahs case is unchanged, none of them carried a phone twice)
+   the founder, looking at six Sarah Dolvens in the picker: "each time I
+   enter information, it creates a new contact, and there's no way to
+   delete them. That's not right." Cumulative on v2.9 below. Way back:
+   v2.9 on GitHub.)
+   1. ONE PERSON, ONE CARD. The house book now recognizes a person by
+      phone, by email, or by kin-name (backslashes from vCard imports
+      stripped; "Esq.", "Jr.", "PA-C" and single-letter initials set
+      aside; first and last name compared) — so "Sarah Dolven\, Esq",
+      "Sarah E. Dolven" and "Sarah E. Dolven, Esq." are one Sarah. Every
+      fill and every enrichment lands on that one card; the fullest name
+      stands. The picker pools by the same rule.
+   2. A CARD YOU CAN FIX AND REMOVE. Each row in the picker has a pencil
+      (edit name, phone, email, note — the address rides in the note) and
+      an X (removed from the house: hidden from every list, kept in the
+      house row's own "hidden" list so a window's copy can't resurrect it).
+   3. MERGE THE DOUBLES. One button at the head of the picker folds every
+      set of matching cards into one, keeping every filled field, and
+      says how many became how many.
+   4. The note (address, organization, role) now shows on the row.
+   ============================================================ */
+/* ============================================================
    DOCB-REMINDERS.JS v2.9 — THE FAVORITE DAY BRIDGE (Bench 41, Fri 9/25/26;
    the founder: an appointment can ask to "appear on My Favorite Day, but
    only that day... a reminder that the appointment is there and an easy
@@ -383,19 +407,45 @@
   }
   var bookAll = [], bookOwn = [], bookLoaded = false, bookBusy = false, bookOpen = false, bookEdit = '', bookQ = '';
   function bookKey_(n) { return String(n || '').toLowerCase().replace(/[^a-z0-9\u00e0-\u00ff ]+/g, ' ').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''); }
+  /* v2.10 THE ONE PERSON: recognize a person by phone, by email, or by kin-name */
+  function bookClean_(n) { return String(n || '').replace(/\\/g, '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, ''); }
+  var BOOK_SUFFIX = { esq: 1, esquire: 1, jr: 1, sr: 1, ii: 1, iii: 1, iv: 1, phd: 1, md: 1, dds: 1, do: 1, rn: 1, np: 1, lcsw: 1, licsw: 1, pac: 1, chd: 1, llp: 1, llc: 1, inc: 1, pc: 1, cpa: 1, dr: 1, mr: 1, mrs: 1, ms: 1, mx: 1, atty: 1, attorney: 1 };
+  function bookKin_(n) {
+    var toks = bookKey_(bookClean_(n)).split(' '), out = [];
+    for (var i = 0; i < toks.length; i++) { var t = toks[i]; if (!t || t.length === 1 || BOOK_SUFFIX[t]) continue; out.push(t); }
+    if (!out.length) return '';
+    return out.length === 1 ? out[0] : out[0] + ' ' + out[out.length - 1];
+  }
+  function bookDigits_(p) { var t = String(p || '').toLowerCase().replace(/(,|;|\bext\.?|\bextension|\bx)\s*\.?\s*\d*.*$/, ''); var d = t.replace(/[^0-9]/g, ''); if (d.length === 11 && d.charAt(0) === '1') d = d.slice(1); return d.length > 10 ? d.slice(0, 10) : d; }
+  function bookSame_(a, b) {
+    if (!a || !b) return false;
+    var pa = bookDigits_(a.phone), pb = bookDigits_(b.phone);
+    if (pa && pb && pa.length >= 7 && pa === pb) return true;
+    var ea = String(a.email || '').toLowerCase().replace(/\s+/g, ''), eb = String(b.email || '').toLowerCase().replace(/\s+/g, '');
+    if (ea && eb && ea === eb) return true;
+    /* v2.10.1 (the gate): a different phone, or a different email, on BOTH sides means two people,
+       whatever the name says -- two John Smiths with two phones are never folded */
+    if (pa && pb && pa.length >= 7 && pb.length >= 7 && pa !== pb) return false;
+    if (ea && eb && ea !== eb) return false;
+    var ka = bookKin_(a.name), kb = bookKin_(b.name);
+    return !!(ka && kb && ka === kb);
+  }
+  function bookFuller_(a, b) { a = bookClean_(a); b = bookClean_(b); if (!a) return b; if (!b) return a; return b.length > a.length ? b : a; }
+  var bookHidden = [];
+  function bookIsHidden_(c) { for (var i = 0; i < bookHidden.length; i++) { if (bookSame_(bookHidden[i], c)) return true; } return false; }
   function bookFill_(list, c) {
     /* merge by name: fill gaps, never wipe */
     if (!c || !c.name) { return list; }
-    var k = bookKey_(c.name);
     for (var i = 0; i < list.length; i++) {
-      var e = list[i]; if (!e || bookKey_(e.name) !== k) { continue; }
+      var e = list[i]; if (!e || !bookSame_(e, c)) { continue; }   /* v2.10: kin, phone or email */
       if (c.phone && !e.phone) { e.phone = c.phone; }
       if (c.email && !e.email) { e.email = c.email; }
       if (c.extraLink && !e.extraLink) { e.extraLink = c.extraLink; }
-      if (c.note && !e.note) { e.note = c.note; }
+      if (c.note && (!e.note || String(e.note).indexOf(String(c.note)) === -1)) { e.note = (e.note ? e.note + ' \u00b7 ' : '') + c.note; }
+      e.name = bookFuller_(e.name, c.name);
       return list;
     }
-    list.push({ name: String(c.name).substring(0, 80), phone: c.phone || '', email: c.email || '', extraLink: c.extraLink || '', note: c.note || '' });
+    list.push({ name: bookClean_(c.name).substring(0, 80), phone: c.phone || '', email: c.email || '', extraLink: c.extraLink || '', note: c.note || '' });
     return list;
   }
   function bookLoad_(cb) {
@@ -415,14 +465,16 @@
           for (k in maps[m]) {
             if (!Object.prototype.hasOwnProperty.call(maps[m], k)) { continue; }
             var cfg = maps[m][k]; if (!cfg || !cfg.contacts || !cfg.contacts.length) { continue; }
-            if (k === HOUSE_KEY) { own = cfg.contacts.slice(); continue; }
+            if (k === HOUSE_KEY) { own = cfg.contacts.slice(); bookHidden = (cfg.hidden && cfg.hidden.length) ? cfg.hidden.slice() : []; continue; }
             for (var c = 0; c < cfg.contacts.length; c++) { bookFill_(all, cfg.contacts[c]); }
           }
         }
         /* the book's own row is applied LAST so the member's enrichments win */
-        for (var o = 0; o < own.length; o++) { var oc = own[o]; if (!oc || !oc.name) { continue; } var ok = bookKey_(oc.name), hit = false;
-          for (var a = 0; a < all.length; a++) { if (bookKey_(all[a].name) === ok) { hit = true; if (oc.phone) { all[a].phone = oc.phone; } if (oc.email) { all[a].email = oc.email; } if (oc.extraLink) { all[a].extraLink = oc.extraLink; } if (oc.note) { all[a].note = oc.note; } } }
+        for (var o = 0; o < own.length; o++) { var oc = own[o]; if (!oc || !oc.name) { continue; } var hit = false;
+          for (var a = 0; a < all.length; a++) { if (bookSame_(all[a], oc)) { hit = true; all[a].name = bookFuller_(all[a].name, oc.name); if (oc.phone) { all[a].phone = oc.phone; } if (oc.email) { all[a].email = oc.email; } if (oc.extraLink) { all[a].extraLink = oc.extraLink; } if (oc.note) { all[a].note = oc.note; } } }
           if (!hit) { all.push({ name: oc.name, phone: oc.phone || '', email: oc.email || '', extraLink: oc.extraLink || '', note: oc.note || '' }); } }
+        /* v2.10: the hidden stay hidden, whichever window still holds a copy */
+        all = all.filter(function (c) { return !bookIsHidden_(c); });
         all.sort(function (x, y) { return bookKey_(x.name) < bookKey_(y.name) ? -1 : 1; });
         bookAll = all; bookOwn = own; bookLoaded = true;
         if (cb) { cb(bookAll); }
@@ -431,15 +483,15 @@
   }
   function bookSave_() {
     var mid = memberId(); if (!mid) { return Promise.resolve(false); }
-    return post_({ action: 'pwsSaveEquip', requestingMemberId: mid, activityName: HOUSE_KEY, config: { contacts: bookOwn, houseBook: true, updatedAt: nowMs() } })
+    return post_({ action: 'pwsSaveEquip', requestingMemberId: mid, activityName: HOUSE_KEY, config: { contacts: bookOwn, hidden: bookHidden, houseBook: true, updatedAt: nowMs() } })
       .then(function (d) { return !!(d && (d.status === 'ok' || d.success)); })['catch'](function () { return false; });
   }
   function bookAdd_(c, silent) {
     if (!c || !c.name) { return; }
     bookFill_(bookAll, c); bookFill_(bookOwn, c);
     /* an enrichment overwrites the own row's copy so the newest words stand */
-    for (var i = 0; i < bookOwn.length; i++) { if (bookKey_(bookOwn[i].name) === bookKey_(c.name)) { if (c.phone) { bookOwn[i].phone = c.phone; } if (c.email) { bookOwn[i].email = c.email; } if (c.extraLink) { bookOwn[i].extraLink = c.extraLink; } } }
-    for (var j = 0; j < bookAll.length; j++) { if (bookKey_(bookAll[j].name) === bookKey_(c.name)) { if (c.phone) { bookAll[j].phone = c.phone; } if (c.email) { bookAll[j].email = c.email; } if (c.extraLink) { bookAll[j].extraLink = c.extraLink; } } }
+    for (var i = 0; i < bookOwn.length; i++) { if (bookSame_(bookOwn[i], c)) { if (c.phone) { bookOwn[i].phone = c.phone; } if (c.email) { bookOwn[i].email = c.email; } if (c.extraLink) { bookOwn[i].extraLink = c.extraLink; } if (c.note) { bookOwn[i].note = c.note; } if (c.name) { bookOwn[i].name = bookFuller_(bookOwn[i].name, c.name); } } }
+    for (var j = 0; j < bookAll.length; j++) { if (bookSame_(bookAll[j], c)) { if (c.phone) { bookAll[j].phone = c.phone; } if (c.email) { bookAll[j].email = c.email; } if (c.extraLink) { bookAll[j].extraLink = c.extraLink; } if (c.note) { bookAll[j].note = c.note; } if (c.name) { bookAll[j].name = bookFuller_(bookAll[j].name, c.name); } } }
     bookSave_().then(function (ok) { if (!ok && !silent) { toast_(T({ en: 'Couldn\u2019t reach the house book \u2014 kept on this device for now.', es: 'No alcanc\u00e9 el libro de la casa \u2014 guardado en este dispositivo por ahora.' })); } });
   }
   function phonePick_(cb) {
@@ -512,7 +564,11 @@
     if (_pplPool) { cb(_pplPool); return; }
     bookLoad_(function (house) {
       var pool = [], seen = {};
-      function add(c, inHouse) { if (!c || !c.name) return; var k = bookKey_(c.name); if (!k) return; if (seen[k]) { if (inHouse) _pplIn[k] = 1; return; } seen[k] = 1; if (inHouse) _pplIn[k] = 1; pool.push({ name: c.name, phone: c.phone || '', email: c.email || '' }); }
+      function add(c, inHouse) {
+        if (!c || !c.name || bookIsHidden_(c)) return; var k = bookKey_(c.name); if (!k) return;
+        for (var p = 0; p < pool.length; p++) { if (bookSame_(pool[p], c)) { var e = pool[p]; if (c.phone && !e.phone) e.phone = c.phone; if (c.email && !e.email) e.email = c.email; if (c.note && !e.note) e.note = c.note; e.name = bookFuller_(e.name, c.name); if (inHouse) { _pplIn[bookKey_(e.name)] = 1; _pplIn[k] = 1; } return; } }
+        if (inHouse) _pplIn[k] = 1; pool.push({ name: bookClean_(c.name), phone: c.phone || '', email: c.email || '', note: c.note || '' });
+      }
       for (var i = 0; i < (house || []).length; i++) add(house[i], true);
       var d = pplDropped_(); for (var j = 0; j < d.length; j++) add(d[j], false);
       pool.sort(function (x, y) { return bookKey_(x.name) < bookKey_(y.name) ? -1 : 1; });
@@ -530,6 +586,46 @@
       if (!t || t === el) return;
       var a = t.getAttribute('data-ppl');
       if (a === 'close') { pplClose_(); return; }
+      if (a === 'edit') { _pplEdit = parseInt(t.getAttribute('data-i'), 10); pplRender_(); return; }
+      if (a === 'cancel') { _pplEdit = -1; pplRender_(); return; }
+      if (a === 'save') {
+        var si = parseInt(t.getAttribute('data-i'), 10);
+        pplPool_(function (pool) {
+          var c = pool[si]; if (!c) return;
+          var nn = document.getElementById('drPFn'), np = document.getElementById('drPFp'), ne = document.getElementById('drPFe'), no = document.getElementById('drPFo');
+          var fixed = { name: bookClean_(nn ? nn.value : c.name) || c.name, phone: np ? np.value.replace(/^\s+|\s+$/g, '') : c.phone, email: ne ? ne.value.replace(/^\s+|\s+$/g, '') : c.email, note: no ? no.value.replace(/^\s+|\s+$/g, '') : (c.note || '') };
+          if (!bookSame_(fixed, c)) { bookHidden.push({ name: c.name, phone: c.phone, email: c.email }); }
+          c.name = fixed.name; c.phone = fixed.phone; c.email = fixed.email; c.note = fixed.note;
+          bookAdd_(fixed, true); _pplEdit = -1; _pplPool = null; pplRender_();
+          toast_(T({ en: '\u2713 ' + fixed.name, es: '\u2713 ' + fixed.name }));
+        });
+        return;
+      }
+      if (a === 'drop') {
+        var di = parseInt(t.getAttribute('data-i'), 10);
+        pplPool_(function (pool) {
+          var c = pool[di]; if (!c) return;
+          var es2 = (lang() === 'es');
+          if (!window.confirm((es2 ? 'Quitar a ' : 'Remove ') + c.name + (es2 ? ' de tu gente?' : ' from your people?'))) return;
+          bookHidden.push({ name: c.name, phone: c.phone, email: c.email });
+          bookOwn = bookOwn.filter(function (x) { return !bookSame_(x, c); }); bookAll = bookAll.filter(function (x) { return !bookSame_(x, c); });
+          bookSave_(); _pplPool = null; pplRender_();
+          toast_(T({ en: '\u00d7 ' + c.name, es: '\u00d7 ' + c.name }));
+        });
+        return;
+      }
+      if (a === 'merge') {
+        pplPool_(function (pool) {
+          /* the pool is already folded by kin; write every folded person into the house row so it holds */
+          var before = 0; try { before = (bookAll.length || 0) + pplDropped_().length; } catch (eB) {}
+          for (var mi = 0; mi < pool.length; mi++) { bookFill_(bookOwn, pool[mi]); }
+          bookAll = []; for (var mj = 0; mj < pool.length; mj++) { bookFill_(bookAll, pool[mj]); }
+          bookSave_(); _pplPool = null; pplRender_();
+          var es3 = (lang() === 'es');
+          toast_(T({ en: '\u2942 ' + Math.max(before, pool.length) + ' \u2192 ' + pool.length + ' people', es: '\u2942 ' + Math.max(before, pool.length) + ' \u2192 ' + pool.length + ' personas' }));
+        });
+        return;
+      }
       if (a === 'add') { var i = parseInt(t.getAttribute('data-i'), 10); pplPool_(function (pool) { var c = pool[i]; if (!c) return; bookAdd_(c, true); _pplIn[bookKey_(c.name)] = 1; t.className = 'drPAdd in'; t.textContent = '\u2713'; toast_(T({ en: '\u2713 ' + c.name, es: '\u2713 ' + c.name })); if (_pplCb) { var f = _pplCb; pplClose_(); f(c); } }); return; }
     });
     el.addEventListener('input', function (ev) { if (ev.target && ev.target.id === 'drPQ') { _pplQ = ev.target.value; pplRender_(); } });
@@ -541,10 +637,11 @@
     pplPool_(function (pool) {
       var h = '<input class="drPQ" id="drPQ" type="text" autocomplete="off" autocapitalize="off" placeholder="' + (es ? 'Escribe un nombre\u2026' : 'Type a name\u2026') + '" value="' + esc(_pplQ) + '">', n = 0;
       if (!pool.length) { h += '<div class="drPNote">' + (es ? 'A\u00fan no hay nadie en la casa. Suelta tu libreta (.vcf) en la puerta + de /todos.' : 'No one in the house yet. Drop your address book (.vcf) at the + door on /todos.') + '</div>'; }
-      else if (!q) { h += '<div class="drPNote">' + (es ? pool.length + ' personas \u00b7 escribe para buscar.' : pool.length + ' people \u00b7 type to search.') + '</div>'; }
+      else if (!q) { h += '<div class="drPNote">' + (es ? pool.length + ' personas \u00b7 escribe para buscar.' : pool.length + ' people \u00b7 type to search.') + ' <button class="drPMerge" data-ppl="merge">' + (es ? '\u2942 UNIR LOS DOBLES' : '\u2942 MERGE THE DOUBLES') + '</button></div>'; }
       else {
         for (var i = 0; i < pool.length && n < 40; i++) { var c = pool[i]; if (bookKey_(c.name + ' ' + c.phone + ' ' + c.email).indexOf(q) === -1) continue; n++; var inH = !!_pplIn[bookKey_(c.name)];
-          h += '<div class="drPRow"><div class="drPNm">' + esc(c.name) + (c.phone || c.email ? '<small>' + esc([c.phone, c.email].filter(function (x) { return !!x; }).join(' \u00b7 ')) + '</small>' : '') + '</div><button class="drPAdd' + (inH && !_pplCb ? ' in' : '') + '" data-ppl="add" data-i="' + i + '">' + (inH && !_pplCb ? '\u2713' : '\uFF0B') + '</button></div>'; }
+          if (_pplEdit === i) { h += '<div class="drPRow drPEditRow"><div class="drPNm"><input class="drPF" id="drPFn" value="' + esc(c.name) + '" placeholder="' + (es ? 'Nombre' : 'Name') + '"><input class="drPF" id="drPFp" value="' + esc(c.phone) + '" placeholder="' + (es ? 'Tel\u00e9fono' : 'Phone') + '"><input class="drPF" id="drPFe" value="' + esc(c.email) + '" placeholder="Email"><input class="drPF" id="drPFo" value="' + esc(c.note || '') + '" placeholder="' + (es ? 'Direcci\u00f3n, oficina, cargo' : 'Address, office, role') + '"></div><button class="drPAdd" data-ppl="save" data-i="' + i + '">\u2713</button><button class="drPX" data-ppl="cancel">\u00d7</button></div>'; continue; }
+          h += '<div class="drPRow"><div class="drPNm">' + esc(c.name) + (c.phone || c.email || c.note ? '<small>' + esc([c.phone, c.email, c.note].filter(function (x) { return !!x; }).join(' \u00b7 ')) + '</small>' : '') + '</div><button class="drPX" data-ppl="edit" data-i="' + i + '" title="' + (es ? 'Corregir' : 'Fix') + '">\u270E</button><button class="drPX" data-ppl="drop" data-i="' + i + '" title="' + (es ? 'Quitar' : 'Remove') + '">\u00d7</button><button class="drPAdd' + (inH && !_pplCb ? ' in' : '') + '" data-ppl="add" data-i="' + i + '">' + (inH && !_pplCb ? '\u2713' : '\uFF0B') + '</button></div>'; }
         if (!n) h += '<div class="drPNote">' + (es ? 'Nadie con ese nombre.' : 'No one by that name.') + '</div>';
       }
       var keep = document.activeElement && document.activeElement.id === 'drPQ', pos = keep ? document.activeElement.selectionStart : null;
@@ -552,8 +649,9 @@
       var qq = document.getElementById('drPQ'); if (qq && (keep || !_pplQ)) { try { qq.focus(); if (pos !== null) qq.setSelectionRange(pos, pos); } catch (e) {} }
     });
   }
+  var _pplEdit = -1;
   function pplOpen_(cb, cmd) {
-    _pplCb = cb || null; _pplQ = ''; _pplPool = null; _pplIn = {};
+    _pplCb = cb || null; _pplQ = ''; _pplPool = null; _pplIn = {}; _pplEdit = -1;
     var el = pplShell_(); var es = (lang() === 'es');
     document.getElementById('drPCmd').textContent = cmd || (cb ? (es ? '\u00bfQui\u00e9n?' : 'Who?') : (es ? 'Tu gente.' : 'Your people.'));
     el.className = 'on'; pplRender_();
@@ -734,6 +832,9 @@
       + '.drPNm{flex:1;min-width:0;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:24px;line-height:1.2;color:#f0e6cc;} .drPNm small{display:block;font-size:16px;color:rgba(240,230,204,.55);}'
       + '.drPAdd{flex:0 0 auto;min-width:52px;min-height:46px;font-family:Cinzel,serif;font-size:22px;color:#040608;background:#c8a84b;border:none;border-radius:10px;cursor:pointer;} .drPAdd.in{background:transparent;color:#ffd75e;border:1px solid rgba(255,215,94,.6);}'
       + '.drPNote{font-family:\'Cormorant Garamond\',Georgia,serif;font-style:italic;font-size:17px;color:rgba(240,230,204,.55);margin:4px 0 10px;}'
+      + '.drPX{flex:0 0 auto;min-width:44px;min-height:44px;font-size:22px;color:#c8a84b;background:transparent;border:1px solid rgba(200,168,75,.45);border-radius:10px;cursor:pointer;}'
+      + '.drPF{display:block;width:100%;box-sizing:border-box;margin:3px 0;padding:8px 10px;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:19px;color:#f0e6cc;background:rgba(0,0,0,.35);border:1px solid rgba(200,168,75,.45);border-radius:8px;}'
+      + '.drPMerge{margin-left:10px;padding:6px 12px;font-family:Cinzel,serif;font-style:normal;font-size:12px;letter-spacing:.14em;color:#c8a84b;background:transparent;border:1px solid rgba(200,168,75,.5);border-radius:999px;cursor:pointer;}'
       + '.drBkEmpty{font-family:\'Cormorant Garamond\',Georgia,serif;font-style:italic;font-size:16px;color:rgba(240,230,204,.55);padding:8px 6px;}'
       + '@-webkit-keyframes drPulse{0%{box-shadow:0 0 0 0 rgba(200,168,75,.55);}100%{box-shadow:0 0 0 14px rgba(200,168,75,0);}}'
       + '@keyframes drPulse{0%{box-shadow:0 0 0 0 rgba(200,168,75,.55);}100%{box-shadow:0 0 0 14px rgba(200,168,75,0);}}';
