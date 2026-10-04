@@ -1,3 +1,14 @@
+/* BENCH 49 super-bucket.js v1.8.1 — THE OPEN MOUTH (gate catch 10/3: a refused file no longer stops the files behind it; every refused file is named in one line; text types by file name only; version string now 1.8) (founder's field catch,
+ * 10/2/26: he dragged a contact file (.vcf) from Finder onto Grandpa's bucket
+ * and nothing happened. Verified in this file: accepts() only took pictures
+ * and PDFs; everything else got a 0.9-second red flash and was thrown away
+ * — a silent refusal, which the house law forbids.) v1.8: (1) the bucket
+ * takes FILES — contacts (.vcf), Word, Excel, CSV, text, audio, video, zip —
+ * not only pictures and PDFs; pictures and PDFs still get the "Name it in a
+ * breath" row, every other file goes straight to the page named by its own
+ * file name; (2) a refusal SPEAKS, inline under the mouth in the member's
+ * tongue, naming the file — never a flash. The picker's accept filter opens
+ * to match. Nothing else moved. One organ overwrite + CDN purge. */
 /* BENCH 33 super-bucket.js v1.7 — THE NAMED MOUTH (founder's field catch,
  * 9/2 night: he dragged a true screenshot onto the overlay's bucket and the
  * house said NOTHING — no todo, no bubble, no refusal. Verified in this
@@ -108,7 +119,7 @@
   function mount(host, opts) {
     if (!host || !opts || typeof opts.onFile !== 'function') return null;
     var lang = (typeof opts.lang === 'function') ? opts.lang : function() { return 'en'; };
-    var accept = opts.accept || 'image/*,application/pdf';
+    var accept = opts.accept || 'image/*,application/pdf,.vcf,.vcard,.txt,.csv,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.rtf,.md,.json,.zip,audio/*,video/*'; /* v1.8 */
     var askTitle = (opts.askTitle !== false);
     var allowAny = (opts.allow === 'any'); /* v1.2 THE OPEN SHELF */
     var pending = null;
@@ -209,18 +220,41 @@
       offer(arr[0]);
     }
     function nextInLine() { if (queue.length) { var f = queue.shift(); offer(f); } }
+    /* v1.8 THE OPEN MOUTH: pictures and PDFs ask a title; these files just go */
+    var FILE_RE = /\.(vcf|vcard|txt|csv|docx?|xlsx?|pptx?|rtf|md|json|zip|mp3|m4a|wav|aac|ogg|mp4|mov|m4v|webm)$/;
+    function isPicOrPdf(file) {
+      var t = String(file.type || '').toLowerCase(), nm = String(file.name || '').toLowerCase();
+      return /^image\//.test(t) || t === 'application/pdf' || /\.(pdf|png|jpe?g|gif|webp|heic)$/.test(nm);
+    }
     function accepts(file) {
       var t = String(file.type || '').toLowerCase(), nm = String(file.name || '').toLowerCase();
-      return allowAny || /^image\//.test(t) || t === 'application/pdf' || /\.(pdf|png|jpe?g|gif|webp|heic)$/.test(nm);
+      return allowAny || isPicOrPdf(file) || FILE_RE.test(nm) || /^(audio|video)\//.test(t);   /* v1.8.1: by file name; no text/* catch-all (no .html/.js/.css) */
     }
-    function flashNo(file) { host.style.borderColor = 'rgba(220,80,80,0.8)'; setTimeout(function() { host.style.borderColor = ''; }, 900); }
+    var refusedNames = [], refusedTimer = null;
+    function flashNo(file) {
+      var nm = String((file && file.name) || '');
+      if (nm) refusedNames.push('"' + nm + '"');
+      if (refusedTimer) clearTimeout(refusedTimer);
+      refusedTimer = setTimeout(function() {   /* v1.8.1: one line names every refused file in the handful */
+        var list = refusedNames.length ? refusedNames.join(', ') + ' ' : 'That file ';
+        var listEs = refusedNames.length ? refusedNames.join(', ') + ' ' : 'Ese archivo ';
+        var many = refusedNames.length > 1;
+        refusedNames = []; refusedTimer = null;
+        speakFailure_(
+          '[refused] ' + list + (many ? 'are not kinds this bucket takes.' : 'is not a kind this bucket takes.'),
+          '[rechazado] ' + listEs + (many ? 'no son tipos que este balde acepte.' : 'no es un tipo que este balde acepte.')
+        );
+      }, 150);
+    }
     function offer(file) {
       if (!file) return;
       var t = file.type || '';
       var nm = String(file.name || '').toLowerCase();
-      var ok = allowAny || /^image\//.test(t) || t === 'application/pdf' || /\.(pdf|png|jpe?g|gif|webp|heic)$/.test(nm);
-      if (!ok) { flashBorder('#b05050'); return; }
+      var ok = accepts(file);
+      if (!ok) { flashNo(file); nextInLine(); return; }   /* v1.8.1 gate catch: a refused file never stops the line behind it */
       if (!askTitle) { opts.onFile(file, ''); reset(); return; }
+      /* v1.8: a contact, a document, a recording — no title row; its own name is its title */
+      if (!isPicOrPdf(file)) { var base8 = String(file.name || '').replace(/\.[^.]+$/, ''); opts.onFile(file, base8.substring(0, 60)); reset(); nextInLine(); return; }
       pending = file;
       titleInp.placeholder = lang() === 'es' ? 'N\u00f3mbralo en un suspiro\u2026' : 'Name it in a breath\u2026';
       var base = String(file.name || '').replace(/\.[^.]+$/, '');
@@ -315,5 +349,5 @@
     return { reset: reset, host: zone };
   }
 
-  window.SuperBucket = { mount: mount, version: '1.7' };
+  window.SuperBucket = { mount: mount, version: '1.8' };
 })();
