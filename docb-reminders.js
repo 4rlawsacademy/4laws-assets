@@ -1,4 +1,17 @@
 /* ============================================================
+   DOCB-REMINDERS.JS v2.11 — THE NEW PERSON (Bench 46, Mon 10/5/26; the
+   founder, in a todo's CONTACTS: "I expected a button that is visible that
+   says + Contact and a form pops out. Or better yet, have the Reach My
+   People contact form to fill out, so it adds it to that list"). The WHO?
+   picker -- the one door every page opens: the wall's Reach My People, the
+   rooms' CONTACTS, the Encore, Meetings -- now opens with a BIG GOLD
+   "+ NEW PERSON" button at the very top, before the search. Tap it: name,
+   phone, email; ADD files the person to the house book and, when a page
+   was asking "who?", hands them straight to the page. When a search finds
+   no one, the same button appears with the typed name already in it.
+   (A v2.10 of this hand was cut 9/26 but never reached GitHub; this is it
+   again, on the live v2.10.1.) Nothing else moved.
+   Cumulative on:
    DOCB-REMINDERS.JS v2.10.1 — THE ONE PERSON (Bench 43, Mon 9/28/26; v2.10.1: the gate's
    catch -- a different phone or email on both cards is disqualifying, so two people who share
    a name are never folded; the six-Sarahs case is unchanged, none of them carried a phone twice)
@@ -556,7 +569,7 @@
   function bookFind_(k) { for (var i = 0; i < bookAll.length; i++) { if (bookKey_(bookAll[i].name) === k) { return bookAll[i]; } } return null; }
 
   /* ---------------- v2.8 THE PEOPLE HAND ---------------- */
-  var _pplCb = null, _pplQ = '', _pplPool = null, _pplIn = {};
+  var _pplCb = null, _pplQ = '', _pplPool = null, _pplIn = {}, _pplNew = false;   /* v2.11: the new-person form open? */
   function pplDropped_() {
     try { var r = localStorage.getItem('4laws-book-drop_' + memberId()); var b = r ? (JSON.parse(r) || []) : []; var out = []; for (var i = 0; i < b.length; i++) { if (b[i] && b[i].n) out.push({ name: b[i].n, phone: b[i].p || '', email: b[i].e || '' }); } return out; } catch (e) { return []; }
   }
@@ -586,6 +599,18 @@
       if (!t || t === el) return;
       var a = t.getAttribute('data-ppl');
       if (a === 'close') { pplClose_(); return; }
+      /* v2.11 THE NEW PERSON */
+      if (a === 'new') { _pplNew = true; pplRender_(); return; }
+      if (a === 'newcancel') { _pplNew = false; pplRender_(); return; }
+      if (a === 'newadd') {
+        var nm = document.getElementById('drPNn'), ph = document.getElementById('drPNp'), em = document.getElementById('drPNe');
+        var c2 = { name: nm ? String(nm.value || '').replace(/^\s+|\s+$/g, '') : '', phone: ph ? String(ph.value || '').replace(/^\s+|\s+$/g, '') : '', email: em ? String(em.value || '').replace(/^\s+|\s+$/g, '') : '' };
+        if (!c2.name) { toast_(T({ en: 'Give the person a name.', es: 'Ponle nombre a la persona.' })); if (nm) nm.focus(); return; }
+        bookAdd_(c2, false); _pplIn[bookKey_(c2.name)] = 1; _pplPool = null; _pplNew = false; _pplQ = '';
+        toast_(T({ en: '\u2713 ' + c2.name + ' \u2014 in the house.', es: '\u2713 ' + c2.name + ' \u2014 en la casa.' }));
+        if (_pplCb) { var f2 = _pplCb; pplClose_(); f2(c2); } else { pplRender_(); }
+        return;
+      }
       if (a === 'edit') { _pplEdit = parseInt(t.getAttribute('data-i'), 10); pplRender_(); return; }
       if (a === 'cancel') { _pplEdit = -1; pplRender_(); return; }
       if (a === 'save') {
@@ -635,14 +660,25 @@
     var body = document.getElementById('drPBody'); if (!body) return;
     var es = (lang() === 'es'), q = bookKey_(_pplQ);
     pplPool_(function (pool) {
-      var h = '<input class="drPQ" id="drPQ" type="text" autocomplete="off" autocapitalize="off" placeholder="' + (es ? 'Escribe un nombre\u2026' : 'Type a name\u2026') + '" value="' + esc(_pplQ) + '">', n = 0;
+      var h = '', n = 0;
+      /* v2.11: the big door first -- a new person -- then the search */
+      if (_pplNew) {
+        h += '<div class="drPNew"><div class="drPNote">' + (es ? 'Una persona nueva.' : 'A new person.') + '</div>'
+          + '<input class="drIn" id="drPNn" maxlength="80" placeholder="' + (es ? 'Nombre' : 'Name') + '" value="' + esc(_pplQ) + '">'
+          + '<input class="drIn" id="drPNp" maxlength="40" placeholder="' + (es ? 'Tel\u00e9fono' : 'Phone') + '">'
+          + '<input class="drIn" id="drPNe" maxlength="160" type="email" placeholder="' + (es ? 'Correo' : 'Email') + '">'
+          + '<div class="drFRow"><button class="drBtn" data-ppl="newadd">' + (es ? '\u2713 AGREGAR' : '\u2713 ADD') + '</button><button class="drGhost" data-ppl="newcancel">' + (es ? 'Cancelar' : 'Cancel') + '</button></div></div>';
+        body.innerHTML = h; var nn = document.getElementById('drPNn'); if (nn) { try { nn.focus(); } catch (eF) {} } return;
+      }
+      h += '<button class="drBtn drPNewBtn" data-ppl="new">\uFF0B ' + (es ? 'PERSONA NUEVA' : 'NEW PERSON') + '</button>';
+      h += '<input class="drPQ" id="drPQ" type="text" autocomplete="off" autocapitalize="off" placeholder="' + (es ? 'O escribe un nombre para buscar\u2026' : 'Or type a name to search\u2026') + '" value="' + esc(_pplQ) + '">';
       if (!pool.length) { h += '<div class="drPNote">' + (es ? 'A\u00fan no hay nadie en la casa. Suelta tu libreta (.vcf) en la puerta + de /todos.' : 'No one in the house yet. Drop your address book (.vcf) at the + door on /todos.') + '</div>'; }
       else if (!q) { h += '<div class="drPNote">' + (es ? pool.length + ' personas \u00b7 escribe para buscar.' : pool.length + ' people \u00b7 type to search.') + ' <button class="drPMerge" data-ppl="merge">' + (es ? '\u2942 UNIR LOS DOBLES' : '\u2942 MERGE THE DOUBLES') + '</button></div>'; }
       else {
         for (var i = 0; i < pool.length && n < 40; i++) { var c = pool[i]; if (bookKey_(c.name + ' ' + c.phone + ' ' + c.email).indexOf(q) === -1) continue; n++; var inH = !!_pplIn[bookKey_(c.name)];
           if (_pplEdit === i) { h += '<div class="drPRow drPEditRow"><div class="drPNm"><input class="drPF" id="drPFn" value="' + esc(c.name) + '" placeholder="' + (es ? 'Nombre' : 'Name') + '"><input class="drPF" id="drPFp" value="' + esc(c.phone) + '" placeholder="' + (es ? 'Tel\u00e9fono' : 'Phone') + '"><input class="drPF" id="drPFe" value="' + esc(c.email) + '" placeholder="Email"><input class="drPF" id="drPFo" value="' + esc(c.note || '') + '" placeholder="' + (es ? 'Direcci\u00f3n, oficina, cargo' : 'Address, office, role') + '"></div><button class="drPAdd" data-ppl="save" data-i="' + i + '">\u2713</button><button class="drPX" data-ppl="cancel">\u00d7</button></div>'; continue; }
           h += '<div class="drPRow"><div class="drPNm">' + esc(c.name) + (c.phone || c.email || c.note ? '<small>' + esc([c.phone, c.email, c.note].filter(function (x) { return !!x; }).join(' \u00b7 ')) + '</small>' : '') + '</div><button class="drPX" data-ppl="edit" data-i="' + i + '" title="' + (es ? 'Corregir' : 'Fix') + '">\u270E</button><button class="drPX" data-ppl="drop" data-i="' + i + '" title="' + (es ? 'Quitar' : 'Remove') + '">\u00d7</button><button class="drPAdd' + (inH && !_pplCb ? ' in' : '') + '" data-ppl="add" data-i="' + i + '">' + (inH && !_pplCb ? '\u2713' : '\uFF0B') + '</button></div>'; }
-        if (!n) h += '<div class="drPNote">' + (es ? 'Nadie con ese nombre.' : 'No one by that name.') + '</div>';
+        if (!n) h += '<div class="drPNote">' + (es ? 'Nadie con ese nombre.' : 'No one by that name.') + ' <button class="drGhost" data-ppl="new" style="margin-left:6px;">\uFF0B ' + (es ? 'AGREGAR A ' : 'ADD ') + esc(_pplQ.toUpperCase()) + '</button></div>';
       }
       var keep = document.activeElement && document.activeElement.id === 'drPQ', pos = keep ? document.activeElement.selectionStart : null;
       body.innerHTML = h;
@@ -651,12 +687,12 @@
   }
   var _pplEdit = -1;
   function pplOpen_(cb, cmd) {
-    _pplCb = cb || null; _pplQ = ''; _pplPool = null; _pplIn = {}; _pplEdit = -1;
+    _pplCb = cb || null; _pplNew = false; _pplQ = ''; _pplPool = null; _pplIn = {}; _pplEdit = -1;
     var el = pplShell_(); var es = (lang() === 'es');
     document.getElementById('drPCmd').textContent = cmd || (cb ? (es ? '\u00bfQui\u00e9n?' : 'Who?') : (es ? 'Tu gente.' : 'Your people.'));
     el.className = 'on'; pplRender_();
   }
-  function pplClose_() { var el = document.getElementById('drPeople'); if (el) el.className = ''; _pplCb = null; }
+  function pplClose_() { var el = document.getElementById('drPeople'); if (el) el.className = ''; _pplCb = null; _pplNew = false; }
 
   function mtgFormHtml_() {
     var es = (lang() === 'es');
@@ -831,6 +867,7 @@
       + '.drPRow{display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid rgba(200,168,75,.15);}'
       + '.drPNm{flex:1;min-width:0;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:24px;line-height:1.2;color:#f0e6cc;} .drPNm small{display:block;font-size:16px;color:rgba(240,230,204,.55);}'
       + '.drPAdd{flex:0 0 auto;min-width:52px;min-height:46px;font-family:Cinzel,serif;font-size:22px;color:#040608;background:#c8a84b;border:none;border-radius:10px;cursor:pointer;} .drPAdd.in{background:transparent;color:#ffd75e;border:1px solid rgba(255,215,94,.6);}'
+      + '.drPNewBtn{display:block;width:100%;box-sizing:border-box;font-size:15px;letter-spacing:.14em;padding:14px 16px;min-height:52px;margin:0 0 10px;} .drPNew{margin:6px 0 12px;} .drPNew .drIn{margin:4px 0;font-size:18px;padding:10px 12px;} .drPNew .drFRow{margin-top:8px;}'
       + '.drPNote{font-family:\'Cormorant Garamond\',Georgia,serif;font-style:italic;font-size:17px;color:rgba(240,230,204,.55);margin:4px 0 10px;}'
       + '.drPX{flex:0 0 auto;min-width:44px;min-height:44px;font-size:22px;color:#c8a84b;background:transparent;border:1px solid rgba(200,168,75,.45);border-radius:10px;cursor:pointer;}'
       + '.drPF{display:block;width:100%;box-sizing:border-box;margin:3px 0;padding:8px 10px;font-family:\'Cormorant Garamond\',Georgia,serif;font-size:19px;color:#f0e6cc;background:rgba(0,0,0,.35);border:1px solid rgba(200,168,75,.45);border-radius:8px;}'
