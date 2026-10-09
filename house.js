@@ -1,4 +1,13 @@
-/* 4 LAWS ACADEMY -- house.js v1.2 BUTLER AT THE GATE (Bench 54, 10/9/26)
+/* 4 LAWS ACADEMY -- house.js v1.3 THE ONE MAKER'S DOOR (Bench 54, 10/9/26)
+ * The founder's ruling (10/8): the Production Studio takes Studio Create's
+ * place. From this version every plain header link to /studio-create reads
+ * PRODUCTION STUDIO (ESTUDIO DE PRODUCCION) and opens /production-studio.
+ * A link that carries an errand (/studio-create?edit=..., ?project=...) is
+ * left exactly as it is, so editing an existing Window still opens the old
+ * room, and the old room itself is untouched and reachable by its address.
+ * To undo: set RENAME_ON to false (or upload v1.2).
+ * -- carried below:
+ * 4 LAWS ACADEMY -- house.js v1.2 BUTLER AT THE GATE (Bench 54, 10/9/26)
  * Founder's correction the morning v1.1 went live: at the gate on PWS
  * Trust the bar says BUTLER B, not WINSTON ("No butler anywhere. You put
  * Winston." -- his ruling the night before was Butler at the gate; the
@@ -43,7 +52,7 @@
 (function () {
   'use strict';
   if (window.__house4laws) return;
-  window.__house4laws = '1.2';
+  window.__house4laws = '1.3';
 
   var FACE = 'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/b89dd487-6077-4b22-9ea2-50a853ded0c1/imgg-xzu-k936r3e9.png?format=300w';
   var WINSTON_FACE = 'https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/winston-medallion.png';
@@ -89,9 +98,9 @@
      so its links keep their old name today. On the day the Production Studio
      takes that address, set RENAME_ON to true (one upload) and every header
      link to it reads PRODUCTION STUDIO / ESTUDIO DE PRODUCCION. */
-  var RENAME_ON = false;
+  var RENAME_ON = true;
   var ROOMS = [
-    { path: '/studio-create', en: 'Production Studio', es: 'Estudio de Producci\u00F3n', old: /^[\s\u2190-\u21FF]*studio\s*create[\s\u2190-\u21FF]*$/i, oldEs: /^[\s\u2190-\u21FF]*(estudio\s*crear|crear\s*en\s*el\s*estudio|studio\s*create)[\s\u2190-\u21FF]*$/i }
+    { path: '/studio-create', to: '/production-studio', en: 'Production Studio', es: 'Estudio de Producci\u00F3n', old: /^[\s\u2190-\u21FF]*studio\s*create[\s\u2190-\u21FF]*$/i, oldEs: /^[\s\u2190-\u21FF]*(estudio\s*crear|crear\s*en\s*el\s*estudio|studio\s*create)[\s\u2190-\u21FF]*$/i }
   ];
 
   function lang() {
@@ -192,7 +201,11 @@
         for (var r = 0; r < ROOMS.length; r++) {
           var room = ROOMS[r];
           if (href.indexOf(room.path) === -1) continue;
+          /* only the plain door: a link with an errand (?edit=, ?project=, #...) keeps its old room */
+          var plain = /^(https?:\/\/(www\.)?4lawsacademy\.com)?\/studio-create\/?$/i.test(href);
+          if (!plain) continue;
           renameNode(a, room);
+          if (room.to) a.setAttribute('href', room.to);
         }
       }
     } catch (e) {}
