@@ -1,3 +1,4 @@
+/* ✦ v91_102 TALENT TIME GOES TO THE COACH (Bench 54, Fri 10/9/26; founder's ruling on the talent road: 'the least steps possible'). ONE change in pwsOpenUse: when the window being launched from My Favorite Day is Talent Time (Tiempo de Talento; the legacy 'Work on my project' label too), the page goes to /studio?coach=1, where Coach B is already open ('Hi, it's talent time. How's your creation work feeling?'). Every other window, tool and card is byte-identical. The file keeps its name (pws-talent-v91_101.js) so the page needs no paste: upload over the old one and purge. Pairs with /studio v44 and Production Studio v2.3. Way back: GitHub's history for this file. */
 /* ✦ v91_101 THE INVITATION LEAVES FROM YOUR OWN PHONE (Bench 49, Mon 9/28/26; founder's ruling 'Road 2' after Twilio rejected the A2P campaign 9/26): INVITE MY FAMILY no longer texts through Twilio. It still asks the backend for the join link (generateJoinCode), then opens the member's own Messages app with the number and the invitation already typed -- the member taps Send. On a computer the text is copied to the clipboard instead. The carrier bits ('4 LAWS Academy:' prefix, 'Reply STOP / HELP' tail) are dropped: this is a person writing to a person. NO_SEATS from the backend is honored (opens the $3 seat). The Twilio road is kept behind window.PWS_INVITE_VIA_TWILIO = true for the day the campaign is approved. Button label set from code: SEND FROM MY PHONE. Cumulative on v91_100. ✦ */
 /* ✦ v91_100 THE NAME RIDES THE CODE (Bench 48, Sun 9/27/26): INVITE MY FAMILY now sends the invitee's name with the join-code request (name), so Code.gs AUDIT 55 can store it on the code and the Hall's front door never asks for it -- the member is born with the name the inviter typed. One line in pwsSendInvite. Cumulative on v91_99. ✦ */
 /* ✦ v91_99 THE INVITATION, IN THE LIGHT OF DAY (Bench 48, Sun 9/27/26; the founder's words, reread fresh): the family invitation now reads "4 LAWS Academy: Hi [name], this is [sender]. Our family is starting the 4 LAWS of Trust & Talent, with the LIFE video game, where you earn money to grow your talents and live the life you want. Let's get started. Tap to join: [link]. Reply STOP to opt out, HELP for help." -- the game keeps its one name, LIFE; the money is the hook; the sender is the family member's own public name. Spanish twin in ES. Replaces v91_98's DREAM LIFE line. pwsBuildInviteMessage only. Cumulative on v91_98. ✦ */
@@ -6547,6 +6548,21 @@
       tool = validTools[toolIdx];
     }
     if (!tool) return;
+
+    /* v91_102 TALENT TIME GOES TO THE COACH (Bench 54, 10/9/26; founder: "the least steps
+       possible ... right from favorite day ... right to the coach itself"). A tap on the
+       day's Talent Time opens Coach B at the Studio, already in front of the member --
+       no card, no hunting. Every other window opens as it always has. */
+    try {
+      if (tool._isWindowLaunch) {
+        var ttl102 = String(tool._windowLabel || tool.label || '').toLowerCase();
+        if (ttl102.indexOf('talent time') !== -1 || ttl102.indexOf('tiempo de talento') !== -1 || ttl102.indexOf('work on my project') !== -1 || ttl102.indexOf('trabajar en mi proyecto') !== -1) {
+          _useTool = null;
+          window.location.href = '/studio?coach=1';
+          return;
+        }
+      }
+    } catch (eTT102) {}
 
     if (tool.isTalent === true || tool.type === 'talent') {
       _useTool = tool;
