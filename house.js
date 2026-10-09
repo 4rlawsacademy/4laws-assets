@@ -1,4 +1,12 @@
-/* 4 LAWS ACADEMY -- house.js v1.3 THE ONE MAKER'S DOOR (Bench 54, 10/9/26)
+/* 4 LAWS ACADEMY -- house.js v1.4 THE PILL STEPS ASIDE (Bench 54, 10/9/26)
+ * Founder's field report from his phone: the REMINDERS pill sat on top of
+ * Coach B's first words ("That pill should vanish when I reach coach").
+ * One addition: while a Doc B chat is open and the REMINDERS pill would
+ * lie over that chat's window, the pill steps out of sight; it returns the
+ * moment the chat closes. Where the pill sits clear of the chat (a wide
+ * screen) it stays. Nothing else changed. Way back: house.js v1.3.
+ * -- carried below:
+ * 4 LAWS ACADEMY -- house.js v1.3 THE ONE MAKER'S DOOR (Bench 54, 10/9/26)
  * The founder's ruling (10/8): the Production Studio takes Studio Create's
  * place. From this version every plain header link to /studio-create reads
  * PRODUCTION STUDIO (ESTUDIO DE PRODUCCION) and opens /production-studio.
@@ -52,7 +60,7 @@
 (function () {
   'use strict';
   if (window.__house4laws) return;
-  window.__house4laws = '1.3';
+  window.__house4laws = '1.4';
 
   var FACE = 'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/b89dd487-6077-4b22-9ea2-50a853ded0c1/imgg-xzu-k936r3e9.png?format=300w';
   var WINSTON_FACE = 'https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/winston-medallion.png';
@@ -233,11 +241,35 @@
     walk(a, false);
   }
 
-  function run() { placeBars(); renameLinks(); }
+  /* v1.4 THE PILL STEPS ASIDE: REMINDERS never lies over an open Doc B chat */
+  function pillYield() {
+    try {
+      var pill = document.getElementById('drFab'); if (!pill) return;
+      var pr = pill.getBoundingClientRect();
+      var over = false;
+      if (pr.width && pr.height) {
+        var bars = document.querySelectorAll('.hb-butler[data-hb="1"]');
+        for (var i = 0; i < bars.length && !over; i++) {
+          var b = bars[i], br = b.getBoundingClientRect();
+          if (!br.width || !br.height) continue;                 /* that chat is not open */
+          var panel = b.parentNode; if (!panel || !panel.getBoundingClientRect) continue;
+          var r = panel.getBoundingClientRect();
+          if (pr.left < r.right && pr.right > r.left && pr.top < r.bottom && pr.bottom > r.top) over = true;
+        }
+      }
+      if (over) {
+        if (pill.getAttribute('data-hb-away') !== '1') { pill.setAttribute('data-hb-away', '1'); pill.style.visibility = 'hidden'; pill.style.pointerEvents = 'none'; }
+      } else if (pill.getAttribute('data-hb-away') === '1') {
+        pill.removeAttribute('data-hb-away'); pill.style.visibility = ''; pill.style.pointerEvents = '';
+      }
+    } catch (e) {}
+  }
+  function run() { placeBars(); renameLinks(); pillYield(); }
   function start() {
     run();
     /* rooms that are built or opened after the page loads are caught here */
     window.setInterval(function () { run(); }, 1500);
+    window.setInterval(pillYield, 350);   /* quick, so the pill is gone as the chat opens */
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
