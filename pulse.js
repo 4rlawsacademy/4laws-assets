@@ -237,3 +237,16 @@
     } catch (err) {}
   });
 })();
+
+/* ── house.js loader (Bench 54, 10/9/26): brings the one shared list -- the
+   Butler bar on every Doc B chat and the names of the rooms. Guarded: if it
+   fails, this file is untouched. Way back: delete these lines. */
+(function () {
+  try {
+    if (window.__house4laws || document.getElementById('houseJs')) return;
+    var s = document.createElement('script');
+    s.id = 'houseJs'; s.async = true;
+    s.src = 'https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/house.js';
+    (document.head || document.documentElement).appendChild(s);
+  } catch (e) {}
+})();
