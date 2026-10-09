@@ -1,4 +1,15 @@
-/* 4 LAWS ACADEMY -- house.js v1.1 THE THREE HATS (Bench 54, 10/9/26)
+/* 4 LAWS ACADEMY -- house.js v1.2 BUTLER AT THE GATE (Bench 54, 10/9/26)
+ * Founder's correction the morning v1.1 went live: at the gate on PWS
+ * Trust the bar says BUTLER B, not WINSTON ("No butler anywhere. You put
+ * Winston." -- his ruling the night before was Butler at the gate; the
+ * bench misread a dictated word). One change: the gate wears BUTLER B;
+ * when a Law coach takes over in that window it wears COACH B, as before.
+ * Also: the bar now stays pinned at the top of a window whose whole body
+ * scrolls (the PWS Talent tool window), where before it scrolled away with
+ * the chat and looked as if it were missing.
+ * Way back: house.js v1.1.
+ * -- carried below:
+ * 4 LAWS ACADEMY -- house.js v1.1 THE THREE HATS (Bench 54, 10/9/26)
  * Founder's rulings, the night v1.0 went live: there is ONE Doc B and he
  * wears three hats -- BUTLER B (gets things done), COACH B (trains you in
  * the laws), TRUST B (ongoing trust repair). Whichever one you talk to
@@ -32,7 +43,7 @@
 (function () {
   'use strict';
   if (window.__house4laws) return;
-  window.__house4laws = '1.1';
+  window.__house4laws = '1.2';
 
   var FACE = 'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/b89dd487-6077-4b22-9ea2-50a853ded0c1/imgg-xzu-k936r3e9.png?format=300w';
   var WINSTON_FACE = 'https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/winston-medallion.png';
@@ -61,7 +72,7 @@
     /* PWS Trust: ONE window, two speakers -- Winston at the gate, then the coach */
     { feed: 'ptTWSFeed', hide: '#ptTWSCoachName', who: function () {
         var t = document.getElementById('ptTWSTitle');
-        return (t && /winston/i.test(t.textContent || '')) ? 'winston' : 'coach';
+        return (t && /winston|gate/i.test(t.textContent || '')) ? 'butler' : 'coach';   /* v1.2: the gate is the Butler's */
       } },
     { feed: 'sessMessages', who: 'trust' },                                  /* the AI Companion */
     { feed: 'stFoundFeed', who: 'butler' },                                  /* /studio: founding a project */
@@ -98,7 +109,7 @@
     } catch (e) {}
     var s = document.createElement('style'); s.id = 'hbCss';
     s.textContent =
-      '.hb-butler{display:flex;align-items:center;gap:12px;flex:none;box-sizing:border-box;width:100%;padding:8px 14px;margin:0;background:#000;border:1px solid #c8a84b;border-bottom-width:2px;border-radius:10px 10px 0 0;box-shadow:inset 0 0 0 3px #000,inset 0 0 0 4px rgba(200,168,75,.5);text-align:left;}' +
+      '.hb-butler{display:flex;align-items:center;gap:12px;flex:none;box-sizing:border-box;width:100%;padding:8px 14px;margin:0;background:#000;border:1px solid #c8a84b;border-bottom-width:2px;border-radius:10px 10px 0 0;box-shadow:inset 0 0 0 3px #000,inset 0 0 0 4px rgba(200,168,75,.5);text-align:left;position:sticky;top:0;z-index:6;}' +
       '.hb-face{flex:none;display:block;width:52px;height:52px;border-radius:50%;border:2px solid #c8a84b;background:#000 no-repeat;background-size:172% auto;background-position:47% 34%;box-shadow:0 0 10px rgba(200,168,75,.45);}' +
       '.hb-face.hb-plain{background-size:cover;background-position:center;}' +
       '.hb-star{flex:none;font-size:32px;line-height:1;color:#e8c96a;}' +
