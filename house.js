@@ -1,4 +1,17 @@
-/* 4 LAWS ACADEMY -- house.js v1.0 THE BUTLER'S HOUSE (Bench 54, 10/9/26)
+/* 4 LAWS ACADEMY -- house.js v1.1 THE THREE HATS (Bench 54, 10/9/26)
+ * Founder's rulings, the night v1.0 went live: there is ONE Doc B and he
+ * wears three hats -- BUTLER B (gets things done), COACH B (trains you in
+ * the laws), TRUST B (ongoing trust repair). Whichever one you talk to
+ * knows what you told the others. The names are the same in English and
+ * Spanish ("Trust B" stays; "Confianza B" would be a huge word). So the bar
+ * now wears the hat of the room, and where a member of his STAFF is the
+ * one speaking (Winston at the gate on PWS Trust) the bar wears that
+ * name and that face. Bruno's chat already carries his own face, name and
+ * line, so it is left as it is. Only the bar's words and face changed;
+ * placement, the loader and the room-name list are as in v1.0.
+ * Way back: house.js v1.0.
+ * -- carried below:
+ * 4 LAWS ACADEMY -- house.js v1.0 THE BUTLER'S HOUSE (Bench 54, 10/9/26)
  * ONE shared list for the whole site. v1 does two jobs:
  *  (1) THE BUTLER BAR on every Doc B chat: his face, BUTLER, and
  *      "A butler that knows the 4 LAWS" / "Un mayordomo que conoce las
@@ -19,26 +32,46 @@
 (function () {
   'use strict';
   if (window.__house4laws) return;
-  window.__house4laws = '1.0';
+  window.__house4laws = '1.1';
 
   var FACE = 'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/b89dd487-6077-4b22-9ea2-50a853ded0c1/imgg-xzu-k936r3e9.png?format=300w';
-  var SUB = { en: 'A butler that knows the 4 LAWS', es: 'Un mayordomo que conoce las 4 LEYES' };
+  var WINSTON_FACE = 'https://cdn.jsdelivr.net/gh/4rlawsacademy/4laws-assets@main/winston-medallion.png';
+
+  /* ── WHO IS SPEAKING: Doc B's three hats, and his staff ─────────────────
+     The names are names: the same in English and Spanish. Only the line
+     under the name changes tongue.                                       */
+  var WHO = {
+    butler:  { name: 'BUTLER B', en: 'A butler that knows the 4 LAWS', es: 'Un mayordomo que conoce las 4 LEYES' },
+    coach:   { name: 'COACH B',  en: 'A coach that knows the 4 LAWS',  es: 'Un coach que conoce las 4 LEYES' },
+    trust:   { name: 'TRUST B',  en: 'Ongoing trust repair',           es: 'Reparaci\u00F3n continua de la confianza' },
+    winston: { name: 'WINSTON',  en: 'The tech guy',                   es: 'El t\u00E9cnico', face: WINSTON_FACE, plainFace: true }
+  };
 
   /* ── THE LIST: every Doc B chat on the site ─────────────────────────────
      feed  = the id of the box the chat messages appear in
      hide  = the room's old small name line, which the bar replaces      */
   var CHATS = [
-    { feed: 'pwsUseFeed' },                                   /* /todos: Grandpa and the tool window */
-    { feed: 'drFeed' },                                       /* /life: the coach's room */
-    { feed: 'pwsDocBFeed' },                                  /* PWS Talent: Doc B */
-    { feed: 'pwsFundingFeed' }, { feed: 'pwsMasteryFeed' }, { feed: 'pwsModifyFeed' },
-    { feed: 'pwsTWSFeed', hide: '#pwsTWSCoachLabel' },        /* PWS Talent coach; the Coaching Center's Talent Coach */
-    { feed: 'pwsTalentFeed' }, { feed: 'pwsUnlockFeed' },
-    { feed: 'ptTWSFeed', hide: '#ptTWSCoachName' },           /* PWS Trust: Coach B */
-    { feed: 'sessMessages' },                                 /* the AI Companion */
-    { feed: 'stFoundFeed' },                                  /* /studio: founding a project */
-    { feed: 'faDocBMessages', hide: '.fa-tws-coach-name' }    /* Family Atelier */
+    { feed: 'pwsUseFeed', who: 'butler' },                                   /* /todos: Grandpa and the tool window */
+    { feed: 'drFeed', who: 'coach' },                                        /* /life: the coach's room */
+    { feed: 'pwsDocBFeed', who: 'butler' },                                  /* PWS Talent: Doc B */
+    { feed: 'pwsFundingFeed', who: 'butler' }, { feed: 'pwsModifyFeed', who: 'butler' },
+    { feed: 'pwsMasteryFeed', who: 'coach' },                                /* PWS Talent: the practice check-in */
+    { feed: 'pwsTWSFeed', who: 'coach', hide: '#pwsTWSCoachLabel' },         /* PWS Talent coach; the Coaching Center's Talent Coach */
+    { feed: 'pwsTalentFeed', who: 'butler' }, { feed: 'pwsUnlockFeed', who: 'butler' },
+    /* PWS Trust: ONE window, two speakers -- Winston at the gate, then the coach */
+    { feed: 'ptTWSFeed', hide: '#ptTWSCoachName', who: function () {
+        var t = document.getElementById('ptTWSTitle');
+        return (t && /winston/i.test(t.textContent || '')) ? 'winston' : 'coach';
+      } },
+    { feed: 'sessMessages', who: 'trust' },                                  /* the AI Companion */
+    { feed: 'stFoundFeed', who: 'butler' },                                  /* /studio: founding a project */
+    { feed: 'faDocBMessages', who: 'butler', hide: '.fa-tws-coach-name' }    /* Family Atelier */
   ];
+  function whoOf(c) {
+    var w = 'butler';
+    try { w = (typeof c.who === 'function') ? c.who() : (c.who || 'butler'); } catch (e) { w = 'butler'; }
+    return WHO[w] ? w : 'butler';
+  }
 
   /* ── THE LIST: the names of the rooms (header links are renamed from here) */
   /* THE SWAP IS NOT DONE YET: /studio-create still opens the old Studio Create,
@@ -67,6 +100,7 @@
     s.textContent =
       '.hb-butler{display:flex;align-items:center;gap:12px;flex:none;box-sizing:border-box;width:100%;padding:8px 14px;margin:0;background:#000;border:1px solid #c8a84b;border-bottom-width:2px;border-radius:10px 10px 0 0;box-shadow:inset 0 0 0 3px #000,inset 0 0 0 4px rgba(200,168,75,.5);text-align:left;}' +
       '.hb-face{flex:none;display:block;width:52px;height:52px;border-radius:50%;border:2px solid #c8a84b;background:#000 no-repeat;background-size:172% auto;background-position:47% 34%;box-shadow:0 0 10px rgba(200,168,75,.45);}' +
+      '.hb-face.hb-plain{background-size:cover;background-position:center;}' +
       '.hb-star{flex:none;font-size:32px;line-height:1;color:#e8c96a;}' +
       '.hb-word{display:block;font-family:"Bangers","Comic Sans MS","Chalkboard SE",cursive;font-size:32px;line-height:1;letter-spacing:.09em;color:#fff;text-shadow:2px 2px 0 #000,4px 4px 0 rgba(200,168,75,.85);}' +
       '.hb-sub{display:block;font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-size:17px;line-height:1.15;color:rgba(240,230,204,.88);margin-top:3px;}' +
@@ -74,28 +108,42 @@
     document.head.appendChild(s);
   }
 
-  var _faceOk = null;   /* null = not known yet, true/false once tried */
-  function faceInto(holder) {
+  var _faceOk = {};   /* per picture: undefined = not known yet, true/false once tried */
+  function faceInto(holder, w) {
+    var src = w.face || FACE;
     var star = function () { holder.className = 'hb-star'; holder.style.backgroundImage = ''; holder.textContent = '\u2605'; };
-    var face = function () { holder.className = 'hb-face'; holder.textContent = ''; holder.style.backgroundImage = 'url("' + FACE + '")'; };
-    if (_faceOk === true) { face(); return; }
+    var face = function () { holder.className = 'hb-face' + (w.plainFace ? ' hb-plain' : ''); holder.textContent = ''; holder.style.backgroundImage = 'url("' + src + '")'; };
+    if (_faceOk[src] === true) { face(); return; }
     star();
-    if (_faceOk === false) return;
+    if (_faceOk[src] === false) return;
     var probe = new Image();
-    probe.onload = function () { _faceOk = true; face(); };
-    probe.onerror = function () { _faceOk = false; };
-    probe.src = FACE;
+    probe.onload = function () { _faceOk[src] = true; if (holder.getAttribute('data-src') === src) face(); };
+    probe.onerror = function () { _faceOk[src] = false; };
+    holder.setAttribute('data-src', src);
+    probe.src = src;
   }
 
   function makeBar() {
     var bar = document.createElement('div'); bar.className = 'hb-butler'; bar.setAttribute('data-hb', '1');
-    var holder = document.createElement('span'); faceInto(holder);
+    var holder = document.createElement('span'); holder.className = 'hb-star';
     var txt = document.createElement('span');
-    var word = document.createElement('span'); word.className = 'hb-word'; word.textContent = 'BUTLER';
-    var sub = document.createElement('span'); sub.className = 'hb-sub'; sub.textContent = SUB[lang()];
+    var word = document.createElement('span'); word.className = 'hb-word';
+    var sub = document.createElement('span'); sub.className = 'hb-sub';
     txt.appendChild(word); txt.appendChild(sub);
     bar.appendChild(holder); bar.appendChild(txt);
     return bar;
+  }
+  /* the bar wears the name, the line and the face of whoever is speaking now */
+  function dress(bar, key) {
+    var w = WHO[key], l = lang();
+    var word = bar.querySelector('.hb-word'), sub = bar.querySelector('.hb-sub'), holder = bar.firstChild;
+    if (word && word.textContent !== w.name) word.textContent = w.name;
+    if (sub && sub.textContent !== w[l]) sub.textContent = w[l];
+    if (bar.getAttribute('data-who') !== key) {
+      bar.setAttribute('data-who', key);
+      holder.setAttribute('data-src', w.face || FACE);
+      faceInto(holder, w);
+    }
   }
 
   function placeBars() {
@@ -109,6 +157,7 @@
           prev = makeBar();
           feed.parentNode.insertBefore(prev, feed);
         }
+        dress(prev, whoOf(c));
         /* the bar is seen only while its chat is: a chat that has not opened yet shows no bar */
         var hidden = false;
         try { hidden = (window.getComputedStyle(feed).display === 'none'); } catch (eH) {}
@@ -120,13 +169,6 @@
         }
       } catch (e) {}
     }
-  }
-
-  function retongue() {
-    try {
-      var subs = document.querySelectorAll('.hb-butler .hb-sub'), t = SUB[lang()];
-      for (var i = 0; i < subs.length; i++) { if (subs[i].textContent !== t) subs[i].textContent = t; }
-    } catch (e) {}
   }
 
   /* header links: the room's name comes from THE LIST */
@@ -167,7 +209,7 @@
     walk(a, false);
   }
 
-  function run() { placeBars(); retongue(); renameLinks(); }
+  function run() { placeBars(); renameLinks(); }
   function start() {
     run();
     /* rooms that are built or opened after the page loads are caught here */
