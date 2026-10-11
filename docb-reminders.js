@@ -1,4 +1,21 @@
 /* ============================================================
+   DOCB-REMINDERS.JS v2.13 — THE STILL FORM (the Twilio bench, Sun 10/11/26
+   night; the founder set a reminder for 7:15 and the list said 8:12; again,
+   and it said 8:18 -- each time exactly one hour after he pressed Save).
+   1. THE STILL FORM. Every 45 seconds the organ fetched the list and rebuilt
+      the whole drawer, the open form included: whatever was typed was wiped
+      and the time box went back to "an hour from now", under the member's
+      hands. The timed sweep no longer redraws the drawer while a form in it
+      is open (+ New reminder, + New meeting, a meeting's reschedule). The
+      badge and the Veil still update; the list catches up when the form
+      closes.
+   2. THE CLOCK, EVERY DOOR. v2.12 wrote the time out for reminders only.
+      The meeting form and a meeting's reschedule handed the house the same
+      bare number and were refused the same way ("Couldn't create the
+      meeting -- check your connection"). post_() now writes any remindAt or
+      startAt out before it leaves.
+   No backend change, no Main deployment. Way back: v2.12 on GitHub.
+   Cumulative on:
    DOCB-REMINDERS.JS v2.12 — THE CLOCK THE HOUSE CAN READ (the Twilio bench,
    Sun 10/11/26; the founder, testing reminder texts: "Couldn't save the
    reminder" from the + New reminder form, every time). The form handed the
@@ -261,7 +278,17 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  /* v2.13: the house reads a time only when it is written out. Any bare number of milliseconds
+     (the reminder form, the meeting form, a meeting's reschedule) is written out here, once, for every door. */
+  function clockWords_(v) {
+    if (v === undefined || v === null || v === '') { return v; }
+    if (typeof v === 'number' || /^\d{11,}$/.test(String(v))) { var dC = new Date(Number(v)); if (!isNaN(dC.getTime())) { return dC.toISOString(); } }
+    return v;
+  }
+  /* v2.13 THE STILL FORM: is the member in the middle of filling a form in the drawer? */
+  function fillingForm_() { return !!(formOpen || mtgFormOpen || reschedMtg); }
   function post_(body) {
+    if (body) { if (body.remindAt !== undefined) { body.remindAt = clockWords_(body.remindAt); } if (body.startAt !== undefined) { body.startAt = clockWords_(body.startAt); } }
     body.sessionId = sessionId_(); /* v2.2: every action on this backend is now auth-gated; inject once here so no call site can forget it */
     return fetch(POST_URL, {
       method: 'POST',
@@ -1025,7 +1052,7 @@
           }
         }
         renderFab();
-        if (drawerOpen) { renderDrawer(); }
+        if (drawerOpen && !fillingForm_()) { renderDrawer(); } /* v2.13: the 45-second sweep used to rebuild the drawer under the member's hands -- words gone, time back to an hour from now */
       })
       ['catch'](function () { listInFlight = false; });
     /* v2.5: the meetings ride a second, independent fetch -- a failure here never blanks the reminders */
@@ -1043,7 +1070,7 @@
           queueVeil({ id: occ, _meeting: m });
         }
         renderFab();
-        if (drawerOpen) { renderDrawer(); }
+        if (drawerOpen && !fillingForm_()) { renderDrawer(); } /* v2.13: the 45-second sweep used to rebuild the drawer under the member's hands -- words gone, time back to an hour from now */
       })
       ['catch'](function () {});
   }
