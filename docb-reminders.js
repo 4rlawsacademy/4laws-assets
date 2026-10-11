@@ -1,4 +1,13 @@
 /* ============================================================
+   DOCB-REMINDERS.JS v2.12 — THE CLOCK THE HOUSE CAN READ (the Twilio bench,
+   Sun 10/11/26; the founder, testing reminder texts: "Couldn't save the
+   reminder" from the + New reminder form, every time). The form handed the
+   house its time as a bare number; the house (PWS.gs handlePWSReminderAdd)
+   reads a time only when it is written out, and refused it as unreadable.
+   Reminders set by talking to Doc B were never affected. One line in add()
+   now writes the number out before it leaves. No backend change, no Main
+   deployment. Nothing else moved. Way back: v2.11 on GitHub.
+   Cumulative on:
    DOCB-REMINDERS.JS v2.11 — THE NEW PERSON (Bench 46, Mon 10/5/26; the
    founder, in a todo's CONTACTS: "I expected a button that is visible that
    says + Contact and a form pops out. Or better yet, have the Reach My
@@ -265,7 +274,12 @@
   function add(o) {
     var mid = memberId();
     if (!mid || !o || !o.msg || !o.remindAt) { return Promise.resolve(null); }
-    return post_({ action: 'pwsReminderAdd', requestingMemberId: mid, message: String(o.msg).substring(0, 400), remindAt: o.remindAt, room: o.room || '', seriesId: o.seriesId || '' })
+    /* v2.12 THE CLOCK THE HOUSE CAN READ: the house reads a time only when it is written out (ISO words).
+       The + New reminder form hands a bare number (milliseconds); the house could not read it and
+       refused every save from the form. One translation here covers every caller. */
+    var when = o.remindAt;
+    if (typeof when === 'number' || /^\d{11,}$/.test(String(when))) { var dW = new Date(Number(when)); if (!isNaN(dW.getTime())) { when = dW.toISOString(); } }
+    return post_({ action: 'pwsReminderAdd', requestingMemberId: mid, message: String(o.msg).substring(0, 400), remindAt: when, room: o.room || '', seriesId: o.seriesId || '' })
       .then(function (d) {
         if (!d || !d.success) { return null; }
         refresh(); /* the new one should appear in the scroll right away, not wait for the next poll */
