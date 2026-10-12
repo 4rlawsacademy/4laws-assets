@@ -1,3 +1,4 @@
+/* ═══ v91_104 THE PINNED TOP (uploaded over the first v91_104 at the founder's ask) (Bench 45, Sun 10/11/26; the founder on his phone, in the Limits room: 'How am I supposed to close the window?'): the four docked rooms (Bruno, Respect, Limits, Talent) sit in the page, so on a phone the page scrolled and the room's title bar with the speaker and the X rode off the screen. Now on a phone (<=768px) an open docked room fills the screen like the overlay room does: title bar pinned on top, Butler B under it, the text box pinned at the bottom, the middle scrolls -- the Law of the Room. The Mac is unchanged. Also: the phone sheet's title now reads MUSIC / GAMES / NEWS by what was opened (the gate's note on v91_104). Cumulative on v91_104. ═══ */
 /* ═══ v91_104 THE PHONE SHEET (Bench 45, Sun 10/11/26; founder on his phone: 'I took the time to find the link I want but I can't save it'): the room's accessory box (#pwsToolPanelZone, a 260px scroll under seven buttons) swallowed SAVE on the phone. Now on a phone (<=768px) any Links / Music / Games / Cash Request / Contacts panel opens as a full-screen sheet with a big gold ← BACK bar, big boxes, a big SAVE and big OPEN rows; BACK returns to the room untouched; the Mac is unchanged; the timer stays in its box. Plus ▶ PLAY under the room's header whenever this window holds a music link, labeled 'opens in a new tab'. Cumulative on v91_103. ═══ */
 /* ✦ v91_103 THE BUTTON GOES TO THE COACH TOO (Bench 54, Fri 10/9/26; founder's field report from his phone: GO TO MY PROJECT under Talent Time still scrolled to the Talent card). v91_102 caught the row's window launch but missed this button, which had its own inline scroll. ONE change: the button now opens /studio?coach=1, where Coach B is already in front of the member. File name unchanged. Way back: GitHub's history. */
 /* ✦ v91_102 TALENT TIME GOES TO THE COACH (Bench 54, Fri 10/9/26; founder's ruling on the talent road: 'the least steps possible'). ONE change in pwsOpenUse: when the window being launched from My Favorite Day is Talent Time (Tiempo de Talento; the legacy 'Work on my project' label too), the page goes to /studio?coach=1, where Coach B is already open ('Hi, it's talent time. How's your creation work feeling?'). Every other window, tool and card is byte-identical. The file keeps its name (pws-talent-v91_101.js) so the page needs no paste: upload over the old one and purge. Pairs with /studio v44 and Production Studio v2.3. Way back: GitHub's history for this file. */
@@ -7940,6 +7941,24 @@
     try { pwsSheetInstall_(); pwsPlayBar_(); } catch (ePS) {}   /* v91_104 THE PHONE SHEET */
   }
 
+  /* v91_104 THE PINNED TOP (uploaded over the first v91_104 at the founder's ask): docked rooms fill the phone screen */
+  function pwsPhoneRoomCss_() {
+    if (document.getElementById('pwsPhoneRoomCss')) return;
+    var docks = ['#pwsBrunoDock', '#pwsRespectDock', '#pwsLimitsDock', '#pwsTalentDock'];
+    var sel = function(tail) { return docks.map(function(d) { return d + ':not(.folded) ' + tail; }).join(','); };
+    var st = document.createElement('style'); st.id = 'pwsPhoneRoomCss';
+    st.textContent =
+      '@media (max-width:768px){' +
+      sel('.pws-unlock-panel') + '{position:fixed !important;left:0 !important;top:0 !important;right:0 !important;bottom:0 !important;width:100% !important;height:100% !important;max-height:none !important;z-index:9450 !important;border-radius:0 !important;display:flex !important;flex-direction:column !important;overflow:hidden !important;background:#07101f;}' +
+      sel('.pws-unlock-header') + '{flex-shrink:0 !important;}' +
+      sel('.pws-docb-feed') + '{flex:1 1 auto !important;min-height:80px !important;max-height:none !important;overflow-y:auto !important;}' +
+      sel('.pws-use-footer') + '{flex:0 1 auto !important;max-height:42vh !important;overflow-y:auto !important;}' +
+      sel('.pws-docb-input-row') + '{flex-shrink:0 !important;}' +
+      '}';
+    (document.head || document.documentElement).appendChild(st);
+  }
+  try { pwsPhoneRoomCss_(); } catch (ePR) {}
+
   /* v91_104 THE PHONE SHEET ----------------------------------------------- */
   var _sheetObs = null;
   function pwsSheetIsPhone_() { return (window.innerWidth || 1024) <= 768; }
@@ -8003,6 +8022,7 @@
     }
     var names = { pwsLinksPanelInner: ['LINKS', 'ENLACES'], pwsECMenuInner: ['MUSIC', 'M\u00daSICA'], pwsCashPanelInner: ['CASH REQUEST', 'PEDIR DINERO'], pwsContactsPanelInner: ['CONTACTS', 'CONTACTOS'] };
     var nm = names[panel.id] || ['', ''];
+    if (panel.id === 'pwsECMenuInner') { var ecc = panel.getAttribute('data-cat') || 'music'; nm = ecc === 'games' ? ['GAMES', 'JUEGOS'] : (ecc === 'news' ? ['NEWS', 'NOTICIAS'] : ['MUSIC', 'M\u00daSICA']); }
     var t = document.getElementById('pwsSheetTitle') || bar.querySelector('#pwsSheetTitle');
     if (t) t.textContent = _lang === 'es' ? nm[1] : nm[0];
     if (zone.firstChild !== bar) zone.insertBefore(bar, zone.firstChild);
@@ -11024,6 +11044,7 @@
     var panel = document.createElement('div');
     panel.className = 'pws-links-panel';
     panel.id = 'pwsECMenuInner';
+    panel.setAttribute('data-cat', cat);   /* v91_105: the phone sheet names the room */
 
     var listDiv = document.createElement('div');
     panel.appendChild(listDiv);
