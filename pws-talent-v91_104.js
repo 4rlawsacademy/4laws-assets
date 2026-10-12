@@ -1,3 +1,4 @@
+/* ═══ v91_104 THE CLEAN FEED (Bench 45, Mon 10/12/26 1 a.m., fourth upload under this name; the founder on his phone in Morning Spirit: 'once I remove the tools to chat freely... the links occupy half the space... you can have a button to remove the link area'): the line to blame was pwsTWSGetFeed -- it used the accessory box only when the room was the pop-up overlay, so in a DOCKED room (Limits, Respect, Talent, Bruno) every accessory fell into the chat feed itself, rode with the bubbles, never became the phone sheet, and stayed when the tools were hidden. Now (1) the accessory box is used whenever the room is on screen, docked or not; (2) every accessory wears a close bar at every width -- a slim LINKS ✕ CLOSE row on desktop, the full-screen ← BACK sheet on phones -- with REMINDER / TIMER / CAMERA / HELP titles added; (3) tapping FULL CHAT puts the accessories away (the timer stays); (4) on phones the saved links no longer open by themselves on room entry (the sheet would cover the room; PLAY and LINKS are one tap away) -- desktops keep the auto-open. Replaces v91_104 THE HEADROOM. ═══ */
 /* ═══ v91_104 THE HEADROOM (Bench 45, Sun 10/11/26 night, third upload under this name; the founder: 'add a little headroom... without changing anything else'): on a phone the overlay room (Morning Spirit and every window room) sat centered with a gap above its title bar; now on phones it fills the screen top to bottom. Nothing else moves. Replaces v91_104 THE PINNED TOP. ═══ */
 /* ═══ v91_104 THE PINNED TOP (uploaded over the first v91_104 at the founder's ask) (Bench 45, Sun 10/11/26; the founder on his phone, in the Limits room: 'How am I supposed to close the window?'): the four docked rooms (Bruno, Respect, Limits, Talent) sit in the page, so on a phone the page scrolled and the room's title bar with the speaker and the X rode off the screen. Now on a phone (<=768px) an open docked room fills the screen like the overlay room does: title bar pinned on top, Butler B under it, the text box pinned at the bottom, the middle scrolls -- the Law of the Room. The Mac is unchanged. Also: the phone sheet's title now reads MUSIC / GAMES / NEWS by what was opened (the gate's note on v91_104). Cumulative on v91_104. ═══ */
 /* ═══ v91_104 THE PHONE SHEET (Bench 45, Sun 10/11/26; founder on his phone: 'I took the time to find the link I want but I can't save it'): the room's accessory box (#pwsToolPanelZone, a 260px scroll under seven buttons) swallowed SAVE on the phone. Now on a phone (<=768px) any Links / Music / Games / Cash Request / Contacts panel opens as a full-screen sheet with a big gold ← BACK bar, big boxes, a big SAVE and big OPEN rows; BACK returns to the room untouched; the Mac is unchanged; the timer stays in its box. Plus ▶ PLAY under the room's header whenever this window holds a music link, labeled 'opens in a new tab'. Cumulative on v91_103. ═══ */
@@ -2299,10 +2300,18 @@
      Panel toggles that target pwsUseFeed will be patched to call
      pwsTWSGetFeed() instead, returning the right host div.
   */
+  /* v91_104 THE CLEAN FEED: is the room (#pwsUsePanel) on screen -- as the pop-up overlay OR docked in a card? */
+  function pwsRoomLive_() {
+    try {
+      var pnl = document.getElementById('pwsUsePanel'); if (!pnl) return false;
+      var ov = document.getElementById('pwsUseOverlay');
+      if (ov && ov.classList.contains('open')) return true;
+      if (ov && ov.contains(pnl)) return false;
+      return pnl.getClientRects().length > 0;
+    } catch (e) { return false; }
+  }
   function pwsTWSGetFeed() {
-    var useOverlay = document.getElementById('pwsUseOverlay');
-    var overlayOpen = useOverlay && useOverlay.classList.contains('open');
-    if (overlayOpen) {
+    if (pwsRoomLive_()) {   /* v91_104 THE CLEAN FEED: accessories never land in the chat feed of a docked room */
       var panelZone = document.getElementById('pwsToolPanelZone');
       if (panelZone) return panelZone;
     }
@@ -6883,7 +6892,7 @@
         if (closeBtn && closeBtn.parentNode) { closeBtn.parentNode.insertBefore(rfBtn, closeBtn); } /* old-shell graceful */
       }
     }());
-    if (tool.configured && tool.links && tool.links.length) {
+    if (tool.configured && tool.links && tool.links.length && !pwsSheetIsPhone_()) {   /* v91_104 THE CLEAN FEED: on a phone the list would cover the room; PLAY and LINKS are one tap away */
       setTimeout(pwsToggleLinksPanel, 120);
     }
     var inp = document.getElementById('pwsUseInput'); if (inp) setTimeout(function() { inp.value = ''; inp.focus(); }, 80);
@@ -7163,6 +7172,7 @@
   function pwsViewToggle() {
     _useFullChat = !_useFullChat;
     try { localStorage.setItem(PWS_VIEW_KEY, _useFullChat ? 'full' : 'menu'); } catch (eV2) {}
+    if (_useFullChat) { try { pwsZoneClear_(); } catch (eZ) {} }   /* v91_104 THE CLEAN FEED: full chat means the whole screen is the chat */
     pwsViewApply();
     pwsViewToast_(_useFullChat
       ? (_lang === 'es' ? '\u26F6 Chat completo \u2014 toca \u25A4 para el banco' : '\u26F6 Full chat \u2014 tap \u25A4 for the workbench')
@@ -7970,11 +7980,14 @@
     if (!document.getElementById('pwsSheetCss')) {
       var st = document.createElement('style'); st.id = 'pwsSheetCss';
       st.textContent =
+        '#pwsSheetBar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 6px;border-bottom:1px solid rgba(200,168,75,0.3);margin-bottom:8px;}' +
+        '#pwsSheetTitle{font-family:Cinzel,serif;font-size:14px;letter-spacing:0.14em;color:#c8a84b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
+        '#pwsSheetBack{font-family:Cinzel,serif;font-size:14px;font-weight:700;letter-spacing:0.12em;color:#ffe9a8;background:linear-gradient(180deg,#3a2c0f,#1a1408);border:1px solid #c8a84b;border-radius:8px;padding:8px 14px;cursor:pointer;min-height:40px;}' +
         '@media (max-width:768px){' +
         '#pwsToolPanelZone.pws-sheet{position:fixed !important;left:0;right:0;top:0;bottom:0;z-index:10005;max-height:none !important;overflow-y:auto !important;background:#07101f;padding:0 16px 40px !important;box-sizing:border-box;}' +
-        '#pwsSheetBar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;margin:0 -16px 14px;padding:16px;background:#07101f;border-bottom:1px solid rgba(200,168,75,0.5);}' +
-        '#pwsSheetBack{font-family:Cinzel,serif;font-size:20px;font-weight:700;letter-spacing:0.14em;color:#ffe9a8;background:linear-gradient(180deg,#3a2c0f,#1a1408);border:1px solid #c8a84b;border-radius:8px;padding:12px 18px;cursor:pointer;}' +
-        '#pwsSheetTitle{font-family:Cinzel,serif;font-size:16px;letter-spacing:0.14em;color:#c8a84b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
+        '#pwsToolPanelZone.pws-sheet #pwsSheetBar{position:sticky;top:0;z-index:2;flex-direction:row-reverse;justify-content:flex-end;margin:0 -16px 14px;padding:16px;background:#07101f;border-bottom:1px solid rgba(200,168,75,0.5);}' +
+        '#pwsToolPanelZone.pws-sheet #pwsSheetBack{font-size:20px;letter-spacing:0.14em;padding:12px 18px;min-height:48px;}' +
+        '#pwsToolPanelZone.pws-sheet #pwsSheetTitle{font-size:16px;}' +
         '#pwsToolPanelZone.pws-sheet .pws-links-input{font-size:19px !important;padding:14px !important;min-height:52px;width:100% !important;box-sizing:border-box;}' +
         '#pwsToolPanelZone.pws-sheet .pws-links-save-btn{font-size:20px !important;padding:16px !important;width:100% !important;min-height:58px;}' +
         '#pwsToolPanelZone.pws-sheet .pws-links-add-form{display:flex;flex-direction:column;gap:10px;margin:14px 0;}' +
@@ -7999,30 +8012,34 @@
     }
     return null;
   }
+  /* v91_104 THE CLEAN FEED: one hand that puts every accessory away (the timer stays) */
+  function pwsZoneClear_() {
+    var z = document.getElementById('pwsToolPanelZone'); if (!z) return;
+    var kids = Array.prototype.slice.call(z.children);
+    for (var k = 0; k < kids.length; k++) { if (kids[k].id !== 'pwsCdPanel') z.removeChild(kids[k]); }
+  }
   function pwsSheetSync_() {
     var zone = document.getElementById('pwsToolPanelZone');
     if (!zone) return;
-    var panel = pwsSheetIsPhone_() ? pwsSheetPanel_(zone) : null;
+    var phone = pwsSheetIsPhone_();
+    var panel = pwsSheetPanel_(zone);   /* v91_104 THE CLEAN FEED: the close bar stands at every width; the full sheet only on phones */
     var bar = document.getElementById('pwsSheetBar');
     if (!panel) {
       zone.classList.remove('pws-sheet');
       if (bar && bar.parentNode) bar.parentNode.removeChild(bar);
       return;
     }
-    zone.classList.add('pws-sheet');
+    if (phone) zone.classList.add('pws-sheet'); else zone.classList.remove('pws-sheet');
     if (!bar) {
       bar = document.createElement('div'); bar.id = 'pwsSheetBar';
       var back = document.createElement('button'); back.id = 'pwsSheetBack';
-      back.textContent = _lang === 'es' ? '\u2190 VOLVER' : '\u2190 BACK';
-      back.onclick = function() {
-        var z = document.getElementById('pwsToolPanelZone'); if (!z) return;
-        var kids = Array.prototype.slice.call(z.children);
-        for (var k = 0; k < kids.length; k++) { if (kids[k].id !== 'pwsCdPanel') z.removeChild(kids[k]); }
-      };
+      back.onclick = function() { pwsZoneClear_(); };
       var ttl = document.createElement('div'); ttl.id = 'pwsSheetTitle';
-      bar.appendChild(back); bar.appendChild(ttl);
+      bar.appendChild(ttl); bar.appendChild(back);
     }
-    var names = { pwsLinksPanelInner: ['LINKS', 'ENLACES'], pwsECMenuInner: ['MUSIC', 'M\u00daSICA'], pwsCashPanelInner: ['CASH REQUEST', 'PEDIR DINERO'], pwsContactsPanelInner: ['CONTACTS', 'CONTACTOS'] };
+    var backBtn = bar.querySelector('#pwsSheetBack');
+    if (backBtn) backBtn.textContent = phone ? (_lang === 'es' ? '\u2190 VOLVER' : '\u2190 BACK') : (_lang === 'es' ? '\u2715 CERRAR' : '\u2715 CLOSE');
+    var names = { pwsLinksPanelInner: ['LINKS', 'ENLACES'], pwsECMenuInner: ['MUSIC', 'M\u00daSICA'], pwsCashPanelInner: ['CASH REQUEST', 'PEDIR DINERO'], pwsContactsPanelInner: ['CONTACTS', 'CONTACTOS'], pwsReminderPanelInner: ['REMINDER', 'RECORDATORIO'], pwsTWSTimerPanelInner: ['TIMER', 'TEMPORIZADOR'], pwsTWSCameraPanel: ['CAMERA', 'C\u00c1MARA'], pwsAssistChatWrap: ['HELP', 'AYUDA'] };
     var nm = names[panel.id] || ['', ''];
     if (panel.id === 'pwsECMenuInner') { var ecc = panel.getAttribute('data-cat') || 'music'; nm = ecc === 'games' ? ['GAMES', 'JUEGOS'] : (ecc === 'news' ? ['NEWS', 'NOTICIAS'] : ['MUSIC', 'M\u00daSICA']); }
     var t = document.getElementById('pwsSheetTitle') || bar.querySelector('#pwsSheetTitle');
