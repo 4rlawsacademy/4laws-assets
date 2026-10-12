@@ -1,3 +1,4 @@
+/* ═══ belt.js v2.2 THE PIANO KEY (Bench 45, Sun 10/11/26): on phones the PIANO shortcut shows the pill and presses the 🎹 itself (the Mac's tap), not the first link inside it (Spotify). Cumulative on v2.1. ═══ */
 /* ═══ belt.js v2.1 MY DAY (Bench 42, Sun 9/20/26): on phones the buckle's SHORTCUTS gain MY DAY / MI DÍA -- tap and the page jumps to the MY FAVORITE DAY card (window.pwsMyDayJump, pws-talent v91_91). Cumulative on v2.0. ═══ */
 /* ═══ belt.js v2.0 SHORTCUTS (Bench 42, Sat 9/19/26): on phones the loose pills -- REMINDERS (#drFab), the piano (found by its 🎹),
  * the LVL chip (#lcChip) -- leave the screen and live under a SHORTCUTS title at the foot of the buckle's panel, as rows in the
@@ -247,14 +248,29 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
   }
   /* v2.0 SHORTCUTS */
   function isPhone() { try { return window.matchMedia && window.matchMedia('(max-width: 760px)').matches; } catch (e) { return window.innerWidth <= 760; } }
+  var _pianoKey = null;   /* v2.2: the 🎹 itself, the thing a finger taps on the Mac */
   function pianoEl() {
-    var els = document.querySelectorAll('button,div,a,span'); for (var i = 0; i < els.length; i++) { var el = els[i]; if (el.id === 'beltPanel' || el.closest && el.closest('#beltPanel')) continue; var t = (el.textContent || '').trim(); if (t.length <= 4 && t.indexOf('\uD83C\uDFB9') !== -1) { var fixedEl = el; while (fixedEl && fixedEl !== document.body) { try { if (window.getComputedStyle(fixedEl).position === 'fixed') return fixedEl; } catch (e) {} fixedEl = fixedEl.parentNode; } } }
+    var els = document.querySelectorAll('button,div,a,span'); for (var i = 0; i < els.length; i++) { var el = els[i]; if (el.id === 'beltPanel' || el.closest && el.closest('#beltPanel')) continue; var t = (el.textContent || '').trim(); if (t.length <= 4 && t.indexOf('\uD83C\uDFB9') !== -1) { var fixedEl = el; while (fixedEl && fixedEl !== document.body) { try { if (window.getComputedStyle(fixedEl).position === 'fixed') { _pianoKey = el; return fixedEl; } } catch (e) {} fixedEl = fixedEl.parentNode; } } }
     return null;
+  }
+  /* v2.2 THE PIANO KEY: on the phone the PIANO shortcut used to press the first link inside the pill (Spotify).
+     Now it shows the pill and presses the 🎹 itself, the same tap the Mac gets, so the soul-scrolls list opens.
+     The pill hides again at the next tap anywhere outside it. */
+  function tapPiano(pill) {
+    try { pill.classList.remove('belt-sc-hidden'); } catch (e) {}
+    var key = (_pianoKey && pill.contains(_pianoKey)) ? _pianoKey : pill;
+    setTimeout(function () {
+      try { key.click(); } catch (e) {}
+      setTimeout(function () {
+        var away = function (ev) { try { if (pill.contains(ev.target)) return; } catch (e) {} document.removeEventListener('click', away, true); try { if (isPhone()) pill.classList.add('belt-sc-hidden'); } catch (e2) {} };
+        document.addEventListener('click', away, true);
+      }, 50);
+    }, 30);
   }
   function shortcuts() {
     var list = [];
     var fab = document.getElementById('drFab'); if (fab) list.push({ name: T('REMINDERS', 'RECORDATORIOS'), icon: '\uD83D\uDCEC', el: fab });
-    var pn = pianoEl(); if (pn) { pn.classList.add('belt-sc-hidden'); list.push({ name: T('PIANO', 'PIANO'), icon: '\uD83C\uDFB9', el: pn }); }
+    var pn = pianoEl(); if (pn) { pn.classList.add('belt-sc-hidden'); list.push({ name: T('PIANO', 'PIANO'), icon: '\uD83C\uDFB9', el: pn, piano: true }); }
     var chip = document.getElementById('lcChip'); if (chip) list.push({ name: (chip.textContent || '').replace(/\s+/g, ' ').trim() || 'LVL', icon: '\uD83C\uDFAE', el: chip });
     if (typeof window.pwsMyDayJump === 'function') list.unshift({ name: T('MY DAY', 'MI D\u00cdA'), icon: '\uD83D\uDCC5', fn: window.pwsMyDayJump });   /* v2.1 */
     return list;
@@ -266,7 +282,7 @@ belt.js v1.7 TWO FACES (Bench 40, Wed 9/16/26 night): one buckle, two faces -- t
     var t = document.createElement('div'); t.className = 'belt-sc-title'; t.textContent = T('SHORTCUTS', 'ATAJOS'); fan.appendChild(t);
     sc.forEach(function (x) {
       var el = document.createElement('div'); el.className = 'belt-item belt-sc'; el.textContent = x.icon + '  ' + x.name;
-      el.addEventListener('click', function (e) { e.stopPropagation(); setOpen(false); if (x.fn) { try { x.fn(); } catch (eF) {} return; } try { var target = x.el; var inner = target.querySelector && target.querySelector('button,a'); (inner && inner !== target ? inner : target).click(); } catch (eC) {} });
+      el.addEventListener('click', function (e) { e.stopPropagation(); setOpen(false); if (x.fn) { try { x.fn(); } catch (eF) {} return; } try { var target = x.el; if (x.piano) { tapPiano(target); return; } var inner = target.querySelector && target.querySelector('button,a'); (inner && inner !== target ? inner : target).click(); } catch (eC) {} });
       fan.appendChild(el);
     });
     return sc.length;
