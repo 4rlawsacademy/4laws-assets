@@ -1,4 +1,34 @@
 /* ============================================================
+   DOCB-FORM.JS v1.1 — THE BOXES FOUND (Bench 50, 10/13/26)
+   The wound (founder, 10/13, a Genworth reinstatement form with 176 real
+   boxes): the tool called it a flat form, hid Ask Doc B, and the member
+   who had given Doc B every answer one at a time was left to tap and type.
+   Root cause, proven in a test bench: v1.0 told a field's kind by its
+   constructor's NAME, and the minified pdf-lib the page loads names them
+   "e" and "r" -- so EVERY field was skipped on EVERY form, and every form
+   came up flat. v1.1:
+    1. Fields are told by instanceof (name only as a fallback). The boxes
+       are found again.
+    2. A Yes/No pair that is one checkbox with two widgets (LibreOffice
+       forms) is two numbered choices, and FILL IT can set either one.
+    3. On a true flat form Ask Doc B stays: the member taps each spot an
+       answer goes (numbered), Doc B fills them by number, same as boxes.
+    4. Doc B's words land INSIDE the window (DocBForm.say), and the member
+       can answer him there (TELL DOC B) -- the window never has to close
+       to finish a form. The X hides the window and keeps the work; a
+       pill brings it back; the pill's X truly closes.
+   TESTED (Bench 50, 10/13/26, test bench with the same pdf.js 3.11.174 and
+   pdf-lib 1.17.1 the page loads, minified): 16 checks, all pass. On the real
+   Genworth reinstatement PDF: 176 boxes found (v1.0 found 0); Ask Doc B sends
+   page 7 numbered; apply fills a checkbox and a text box by number; say()
+   lands words in the window; TELL DOC B reaches the page; X hides and the
+   pill brings the form back with the answers kept; a Yes/No pair shows as two
+   numbered choices and FILL IT writes "No" into the real field (verified by
+   rendering the saved PDF). On a flat page: Ask Doc B stays, asks for taps
+   first, two tapped spots go out numbered, apply fills them, FILL IT draws
+   the words on the page (verified in the saved PDF).
+   Way back: docb-form.js v1.0 (file docb-form-v1_0-WAY-BACK.js).
+
    DOCB-FORM.JS v1.0 — THE FORM (Bench 34, 9/10/26)
    Founder: "I know I'm going to get form requests. Do we have a system
    that fills out forms and signs them?" -- and a real FMLA form due in
@@ -94,15 +124,68 @@
       + '.dfBtn[disabled]{opacity:.45;cursor:default;}'
       + '.dfGhostBtn{background:none;border:1px solid rgba(200,168,75,.5);color:#c8a84b;border-radius:999px;font-family:Cinzel,serif;font-size:12px;letter-spacing:.08em;padding:10px 14px;min-height:44px;cursor:pointer;}'
       + '.dfPg{font-family:Cinzel,serif;font-size:12px;letter-spacing:.1em;}'
-      + '.dfSmall{font-size:12px;color:rgba(240,230,204,.6);}';
+      + '.dfSmall{font-size:12px;color:rgba(240,230,204,.6);}'
+      /* v1.1: Doc B's side of the window */
+      + '.dfSide{width:320px;max-width:42vw;display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;min-height:0;gap:8px;}'
+      + '.dfSide .dfPane{width:auto;max-width:none;-webkit-flex:1;flex:1;min-height:0;}'
+      + '.dfTalk{background:rgba(6,8,12,.97);border:1px solid rgba(200,168,75,.5);border-radius:12px;padding:10px 12px;}'
+      + '.dfSay{font-size:16px;line-height:1.35;color:#f0e6cc;white-space:pre-wrap;max-height:34vh;overflow:auto;margin:0 0 8px;}'
+      + '.dfSay:empty{display:none;}'
+      + '.dfTellRow{display:-webkit-flex;display:flex;gap:6px;-webkit-align-items:flex-end;align-items:flex-end;}'
+      + '.dfTell{-webkit-flex:1;flex:1;min-height:44px;max-height:120px;resize:vertical;}'
+      + '#dfPill{position:fixed;left:50%;bottom:18px;-webkit-transform:translateX(-50%);transform:translateX(-50%);z-index:2600001;display:-webkit-flex;display:flex;gap:6px;-webkit-align-items:center;align-items:center;background:#c8a84b;color:#040608;border-radius:999px;padding:6px 8px 6px 16px;font-family:Cinzel,serif;font-size:13px;letter-spacing:.08em;box-shadow:0 8px 30px rgba(0,0,0,.6);}'
+      + '#dfPill button{background:none;border:none;color:#040608;font-family:Cinzel,serif;font-size:13px;letter-spacing:.08em;cursor:pointer;min-height:36px;padding:0 8px;}'
+      + '#dfPill button.x{border-left:1px solid rgba(4,6,8,.35);}';
     document.head.appendChild(s);
   }
 
   var st = null;
 
-  function close_() { var v = document.getElementById('dfVeil'); if (v && v.parentNode) { v.parentNode.removeChild(v); } st = null; }
+  function close_() { var v = document.getElementById('dfVeil'); if (v && v.parentNode) { v.parentNode.removeChild(v); } var p = document.getElementById('dfPill'); if (p && p.parentNode) { p.parentNode.removeChild(p); } st = null; }
+  /* v1.1: the X hides the window and keeps every answer; a pill brings it back; the pill's X truly closes */
+  function hide_() {
+    var v = document.getElementById('dfVeil'); if (!v) { return; }
+    v.style.display = 'none';
+    if (document.getElementById('dfPill')) { return; }
+    var p = document.createElement('div'); p.id = 'dfPill';
+    var back = document.createElement('button'); back.textContent = '\ud83d\udccb ' + T({ en: 'BACK TO THE FORM', es: 'VOLVER AL FORMULARIO' });
+    back.onclick = show_;
+    var x = document.createElement('button'); x.className = 'x'; x.textContent = '\u00d7'; x.title = T({ en: 'Close the form for good', es: 'Cerrar el formulario del todo' });
+    x.onclick = function () { if (window.confirm(T({ en: 'Close the form and drop the answers in it?', es: '\u00bfCerrar el formulario y perder las respuestas que tiene?' }))) { close_(); } };
+    p.appendChild(back); p.appendChild(x); document.body.appendChild(p);
+  }
+  function show_() {
+    var v = document.getElementById('dfVeil'); if (v) { v.style.display = ''; }
+    var p = document.getElementById('dfPill'); if (p && p.parentNode) { p.parentNode.removeChild(p); }
+    try { renderPage_().then(renderPane_); } catch (e) {}
+  }
+  /* v1.1: Doc B's words land inside the window */
+  function say(text) {
+    var el = document.getElementById('dfSay'); if (!el) { return; }
+    el.textContent = String(text || '').replace(/^\s+|\s+$/g, '');
+    try { el.scrollTop = 0; } catch (e) {}
+    var v = document.getElementById('dfVeil'); if (v && v.style.display === 'none') { show_(); }
+  }
+  function tell_() {
+    if (!st || typeof st.onTell !== 'function') { return; }
+    var ta = document.getElementById('dfTell'); var words = ta ? String(ta.value || '').replace(/^\s+|\s+$/g, '') : '';
+    if (!words) { return; }
+    ta.value = '';
+    var el = document.getElementById('dfSay'); if (el) { el.textContent = T({ en: 'Doc B is reading your answer\u2026', es: 'Doc B est\u00e1 leyendo tu respuesta\u2026' }); }
+    st.onTell(words, summary_(), st.page, st.doc ? st.doc.numPages : 1);
+  }
 
   /* ---------- discovering the fields (fillable road) ---------- */
+  /* v1.1: a PDF name as plain words ("/Yes" -> "Yes") */
+  function nameText_(n) { if (!n) { return ''; } try { if (n.decodeText) { return String(n.decodeText()); } } catch (e) {} return String(n).replace(/^\//, ''); }
+  function onValue_(widget) { try { return widget.getOnValue ? nameText_(widget.getOnValue()) : ''; } catch (e) { return ''; } }
+  /* v1.1: set one widget of a checkbox set on, the rest off -- pdf-lib's check() knows only the first widget */
+  function setCheckSet_(live, on) {
+    var PN = window.PDFLib.PDFName;
+    live.acroField.dict.set(PN.of('V'), PN.of(on));
+    var ws = live.acroField.getWidgets();
+    for (var i = 0; i < ws.length; i++) { var ov = onValue_(ws[i]); try { ws[i].setAppearanceState(PN.of(ov === on ? on : 'Off')); } catch (e) {} }
+  }
   function discover_(pdfDoc) {
     var out = [];
     var form;
@@ -111,12 +194,26 @@
     var pageRefs = pages.map(function (p) { return p.ref; });
     var fields = [];
     try { fields = form.getFields(); } catch (e2) { return out; }
+    var L = window.PDFLib || {};
     for (var i = 0; i < fields.length; i++) {
-      var f = fields[i], kind = 'text';
-      var cn = (f && f.constructor && f.constructor.name) || '';
-      if (/CheckBox/.test(cn)) { kind = 'check'; } else if (/RadioGroup/.test(cn)) { kind = 'radio'; } else if (/Dropdown/.test(cn)) { kind = 'select'; } else if (/OptionList/.test(cn)) { kind = 'select'; } else if (/TextField/.test(cn)) { kind = 'text'; } else { continue; }
+      var f = fields[i], kind = '';
+      /* v1.1: by instanceof -- the minified build names every class "e" or "r" */
+      try {
+        if (L.PDFTextField && f instanceof L.PDFTextField) { kind = 'text'; }
+        else if (L.PDFCheckBox && f instanceof L.PDFCheckBox) { kind = 'check'; }
+        else if (L.PDFRadioGroup && f instanceof L.PDFRadioGroup) { kind = 'radio'; }
+        else if (L.PDFDropdown && f instanceof L.PDFDropdown) { kind = 'select'; }
+        else if (L.PDFOptionList && f instanceof L.PDFOptionList) { kind = 'select'; }
+      } catch (eK) {}
+      if (!kind) {
+        var cn = (f && f.constructor && f.constructor.name) || '';
+        if (/CheckBox/.test(cn)) { kind = 'check'; } else if (/RadioGroup/.test(cn)) { kind = 'radio'; } else if (/Dropdown/.test(cn)) { kind = 'select'; } else if (/OptionList/.test(cn)) { kind = 'select'; } else if (/TextField/.test(cn)) { kind = 'text'; } else { continue; }
+      }
       var widgets = [];
       try { widgets = f.acroField.getWidgets(); } catch (e3) {}
+      /* v1.1: one checkbox wearing two or more widgets (a Yes / No pair) is a set of choices */
+      var isCheckSet = (kind === 'check' && widgets.length > 1);
+      if (isCheckSet) { kind = 'radio'; }
       for (var w = 0; w < widgets.length; w++) {
         var rect = null, pIdx = 0;
         try { rect = widgets[w].getRectangle(); } catch (e4) {}
@@ -131,10 +228,16 @@
         var opts = [];
         if (kind === 'select') { try { opts = f.getOptions(); } catch (e6) {} }
         var onVal = '';
-        if (kind === 'radio') { try { onVal = widgets[w].getOnValue ? String(widgets[w].getOnValue() || '') : ''; } catch (e7) {} }
+        if (kind === 'radio') { onVal = onValue_(widgets[w]); }
         var cur = '';
-        try { if (kind === 'text') { cur = f.getText() || ''; } else if (kind === 'check') { cur = f.isChecked() ? true : false; } else if (kind === 'select') { cur = (f.getSelected() || [])[0] || ''; } else if (kind === 'radio') { cur = f.getSelected() || ''; } } catch (e8) {}
-        out.push({ field: f, name: f.getName(), kind: kind, page: pIdx, x: rect.x, y: rect.y, w: rect.width, h: rect.height, opts: opts, onVal: onVal, value: cur, filled: false });
+        try {
+          if (kind === 'text') { cur = f.getText() || ''; }
+          else if (kind === 'check') { cur = f.isChecked() ? true : false; }
+          else if (kind === 'select') { cur = (f.getSelected() || [])[0] || ''; }
+          else if (kind === 'radio' && isCheckSet) { var as0 = widgets[w].getAppearanceState ? widgets[w].getAppearanceState() : null; cur = (as0 && onVal && nameText_(as0) === onVal) ? onVal : ''; }
+          else if (kind === 'radio') { cur = f.getSelected() || ''; }
+        } catch (e8) {}
+        out.push({ field: f, name: f.getName(), kind: kind, checkSet: isCheckSet, page: pIdx, x: rect.x, y: rect.y, w: rect.width, h: rect.height, opts: opts, onVal: onVal, value: cur, filled: false });
       }
     }
     /* reading order: page, then top-to-bottom (PDF y grows upward), then left-to-right */
@@ -192,7 +295,7 @@
         h += '</div>';
       }
     } else {
-      h += '<div class="dfSmall" style="margin-bottom:8px;">' + T({ en: 'No fillable boxes in this form. Tap anywhere on the page to place text.', es: 'Este formulario no tiene casillas. Toca en la p\u00e1gina para colocar texto.' }) + '</div>';
+      h += '<div class="dfSmall" style="margin-bottom:8px;">' + T({ en: 'No boxes in this form. Tap each spot where an answer goes \u2014 it gets a number. Then Ask Doc B fills them by number, or type them here.', es: 'Este formulario no tiene casillas. Toca cada lugar donde va una respuesta \u2014 recibe un n\u00famero. Luego Preg\u00fantale a Doc B los llena por n\u00famero, o escr\u00edbelos aqu\u00ed.' }) + '</div>';
       for (var j = 0; j < st.texts.length; j++) {
         var t = st.texts[j];
         h += '<div class="dfRow' + (st.cur === j ? ' on' : '') + '" id="dfRow_' + j + '"><div class="dfLbl">#' + (j + 1) + ' \u00b7 ' + T({ en: 'p.', es: 'p\u00e1g.' }) + (t.page + 1) + '</div>'
@@ -258,24 +361,35 @@
     return c.toDataURL('image/png');
   }
   function summary_() {
-    var items = st.mode === 'fields' ? st.fields : [];
     var lines = [];
+    if (st.mode !== 'fields') {   /* v1.1: the spots the member tapped on a flat page */
+      for (var j = 0; j < st.texts.length; j++) { var t = st.texts[j]; if (t.page !== st.page - 1) { continue; } lines.push('#' + (j + 1) + ' text spot' + (t.value ? ' (now: ' + String(t.value).substring(0, 40) + ')' : '')); }
+      return lines.join('\n');
+    }
+    var items = st.fields;
     for (var i = 0; i < items.length; i++) { var f = items[i]; if (f.page !== st.page - 1) { continue; } lines.push('#' + f.n + ' ' + (f.kind === 'check' ? 'checkbox' : f.kind === 'radio' ? 'option(' + (f.onVal || '?') + ')' : f.kind === 'select' ? 'choice[' + f.opts.join('|') + ']' : 'text') + (f.value && f.value !== true ? ' (now: ' + String(f.value).substring(0, 40) + ')' : f.value === true ? ' (now: checked)' : '')); }
     return lines.join('\n');
   }
   function askDocB_() {
     if (!st || typeof st.onAskDocB !== 'function') { return; }
+    var hint0 = document.getElementById('dfHint');
+    if (st.mode !== 'fields') {   /* v1.1: on a flat page Doc B fills the spots the member tapped */
+      var here = 0; for (var q = 0; q < st.texts.length; q++) { if (st.texts[q].page === st.page - 1) { here++; } }
+      if (!here) { if (hint0) { hint0.textContent = T({ en: 'First tap each spot on this page where an answer goes. Then press Ask Doc B.', es: 'Primero toca cada lugar de esta p\u00e1gina donde va una respuesta. Luego pulsa Preg\u00fantale a Doc B.' }); } return; }
+    }
     var png = snapshot_(); if (!png) { return; }
     st.onAskDocB(png, summary_(), st.page, st.doc ? st.doc.numPages : 1);
     var hint = document.getElementById('dfHint'); if (hint) { hint.textContent = T({ en: 'Sent the numbered page to Doc B \u2014 the answers will land in the boxes. Confirm each one before you fill.', es: 'Env\u00ede la p\u00e1gina numerada a Doc B \u2014 las respuestas caer\u00e1n en las casillas. Confirma cada una antes de llenar.' }); }
+    var sayEl = document.getElementById('dfSay'); if (sayEl) { sayEl.textContent = T({ en: 'Doc B is reading the page\u2026', es: 'Doc B est\u00e1 leyendo la p\u00e1gina\u2026' }); }
   }
   function apply(map) {
     if (!st || !map) { return 0; }
     var applied = 0;
-    var items = st.mode === 'fields' ? st.fields : [];
+    var items = st.mode === 'fields' ? st.fields : st.texts;
     for (var i = 0; i < items.length; i++) {
-      var f = items[i], key = String(f.n), v = map.hasOwnProperty(key) ? map[key] : (map.hasOwnProperty('#' + key) ? map['#' + key] : undefined);
+      var f = items[i], key = String(st.mode === 'fields' ? f.n : (i + 1)), v = map.hasOwnProperty(key) ? map[key] : (map.hasOwnProperty('#' + key) ? map['#' + key] : undefined);
       if (v === undefined || v === null || v === '') { continue; }
+      if (st.mode !== 'fields') { f.value = (v === true) ? 'X' : String(v).substring(0, 300); f.filled = !!f.value.length; if (f.filled) { applied++; } continue; }   /* v1.1: a tapped spot takes words */
       if (f.kind === 'check') { f.value = (v === true || /^(true|yes|x|checked|s\u00ed|si)$/i.test(String(v))); }
       else if (f.kind === 'radio') { f.value = (v === true || /^(true|yes|x|checked|s\u00ed|si)$/i.test(String(v))) ? f.onVal : (String(v) === f.onVal ? f.onVal : ''); }
       else if (f.kind === 'select') { var vv = String(v); var hit = f.opts.filter(function (o) { return o.toLowerCase() === vv.toLowerCase(); })[0]; f.value = hit || ''; }
@@ -305,7 +419,7 @@
           try {
             if (f.kind === 'text') { if (f.value && String(f.value).length) { live.setText(String(f.value)); } }
             else if (f.kind === 'check') { if (f.value === true) { live.check(); } else if (f.filled === false && f.value === false) { live.uncheck(); } }
-            else if (f.kind === 'radio') { if (f.value && f.onVal && f.value === f.onVal) { live.select(f.onVal); } }
+            else if (f.kind === 'radio') { if (f.value && f.onVal && f.value === f.onVal) { if (f.checkSet) { setCheckSet_(live, f.onVal); } else { live.select(f.onVal); } } }
             else if (f.kind === 'select') { if (f.value) { live.select(f.value); } }
           } catch (eF) {}
         }
@@ -337,7 +451,7 @@
   function open(o) {
     if (!o || !o.pdfB64) { return; }
     css(); close_();
-    st = { name: o.name || 'form.pdf', pdfU8: b64ToU8_(o.pdfB64), onDone: o.onDone, onAskDocB: o.onAskDocB, page: 1, scale: 1, mode: 'fields', fields: [], texts: [], cur: -1 };
+    st = { name: o.name || 'form.pdf', pdfU8: b64ToU8_(o.pdfB64), onDone: o.onDone, onAskDocB: o.onAskDocB, onTell: o.onTell, page: 1, scale: 1, mode: 'fields', fields: [], texts: [], cur: -1 };
     var v = document.createElement('div'); v.id = 'dfVeil';
     v.innerHTML = '<div class="dfBar"><span class="dfKick">\ud83d\udccb ' + T({ en: 'FILL THIS FORM', es: 'LLENA ESTE FORMULARIO' }) + ' \u00b7 ' + esc(st.name) + '</span>'
       + '<button class="dfGhostBtn" id="dfPrev">\u25c0</button><span class="dfPg" id="dfPg"></span><button class="dfGhostBtn" id="dfNext">\u25b6</button>'
@@ -345,9 +459,14 @@
       + '<button class="dfBtn" id="dfFill">\u2713 ' + T({ en: 'Fill it', es: 'Ll\u00e9nalo' }) + '</button>'
       + '<button class="dfGhostBtn" id="dfClose">\u00d7</button></div>'
       + '<p class="dfHint" id="dfHint">' + T({ en: 'Reading the form\u2026', es: 'Leyendo el formulario\u2026' }) + '</p>'
-      + '<div class="dfBody"><div class="dfStageWrap" id="dfStageWrap"><div class="dfStage" id="dfStage"><canvas id="dfCanvas"></canvas></div></div><div class="dfPane" id="dfPane"></div></div>';
+      + '<div class="dfBody"><div class="dfStageWrap" id="dfStageWrap"><div class="dfStage" id="dfStage"><canvas id="dfCanvas"></canvas></div></div>'
+      + '<div class="dfSide">'
+      + (typeof o.onTell === 'function' ? '<div class="dfTalk"><div class="dfSay" id="dfSay"></div><div class="dfTellRow"><textarea class="dfIn dfTell" id="dfTell" placeholder="' + T({ en: 'Answer Doc B here\u2026', es: 'Responde a Doc B aqu\u00ed\u2026' }) + '"></textarea><button class="dfBtn" id="dfTellBtn" style="padding:10px 12px;">' + T({ en: 'TELL DOC B', es: 'DILE A DOC B' }) + '</button></div></div>' : '<div class="dfTalk"><div class="dfSay" id="dfSay"></div></div>')
+      + '<div class="dfPane" id="dfPane"></div></div></div>';
     document.body.appendChild(v);
-    document.getElementById('dfClose').onclick = close_;
+    document.getElementById('dfClose').onclick = hide_;
+    document.getElementById('dfClose').title = T({ en: 'Hide the form (your answers stay)', es: 'Esconder el formulario (tus respuestas se quedan)' });
+    var tb = document.getElementById('dfTellBtn'); if (tb) { tb.onclick = tell_; }
     document.getElementById('dfFill').onclick = fill_;
     document.getElementById('dfAsk').onclick = askDocB_;
     document.getElementById('dfPrev').onclick = function () { if (st.page > 1) { st.page--; st.cur = -1; renderPage_().then(renderPane_); } };
@@ -367,8 +486,7 @@
       var hint = document.getElementById('dfHint');
       if (hint) { hint.textContent = st.mode === 'fields'
         ? T({ en: 'Tap a box and type, or press Ask Doc B and let him read the questions and answer by number. Confirm, then Fill it.', es: 'Toca una casilla y escribe, o pulsa Preg\u00fantale a Doc B y deja que lea las preguntas y responda por n\u00famero. Confirma y luego Ll\u00e9nalo.' })
-        : T({ en: 'This is a flat form. Tap where an answer goes and type it. Then Fill it.', es: 'Es un formulario plano. Toca donde va cada respuesta y escr\u00edbela. Luego Ll\u00e9nalo.' }); }
-      var ask = document.getElementById('dfAsk'); if (ask && st.mode !== 'fields') { ask.style.display = 'none'; }
+        : T({ en: 'This form has no boxes. Tap each spot where an answer goes, then press Ask Doc B and he fills them by number \u2014 or type them. Then Fill it.', es: 'Este formulario no tiene casillas. Toca cada lugar donde va una respuesta, luego pulsa Preg\u00fantale a Doc B y los llena por n\u00famero \u2014 o escr\u00edbelos. Luego Ll\u00e9nalo.' }); }
       return renderPage_().then(renderPane_);
     })['catch'](function (e) {
       var hint = document.getElementById('dfHint');
@@ -376,5 +494,5 @@
     });
   }
 
-  window.DocBForm = { open: open, apply: apply, close: close_, version: '1.0' };
+  window.DocBForm = { open: open, apply: apply, close: close_, say: say, show: show_, hide: hide_, isOpen: function () { return !!st; }, version: '1.1' };
 })();
