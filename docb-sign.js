@@ -1,4 +1,23 @@
 /* ============================================================
+   DOCB-SIGN.JS v1.4 — THE MANY STAMPS (Bench 50, 10/15/26)
+   The founder's walk on the Genworth form (10/13): the pen opened on a
+   blank last page, he hunted for the signature lines, tapped three pages,
+   pressed STAMP IT -- and only the last tap was kept. v1.4:
+    1. Every tap places a signature; tap a placed signature to take it
+       back. STAMP IT stamps all of them, on every page, in one pass.
+    2. The pen reads the pages for "Signature" / "Sign here" / "Firma" and
+       opens on the first page that has one; the hint names every page
+       that does; a small gold mark sits by each found line.
+    3. DATE (on by default): today's date rides to the right of each
+       signature, shown in the preview before stamping, so nothing lands
+       unseen. Turn it off in the bar for a paper that has its own date.
+   TESTED (test bench, same pdf.js 3.11.174 + pdf-lib 1.17.1 the page
+   loads): on the real Genworth PDF the pen opens on page 3 and names
+   pages 3, 9, 11; three taps on three pages stamp three signatures and
+   three dates (verified by reading the saved PDF); tapping a placed
+   signature removes it; DATE off stamps no date.
+   Way back: v1.3 (file docb-sign-v1_3-WAY-BACK.js).
+   ============================================================
    DOCB-SIGN.JS v1.3 — THE EYES (9/17/26, founder: "If I can see the f'ng
    document I would be able to decide. If I can't see the document, I
    can't decide whether I need it." The pen's chooser was a number prompt
@@ -104,7 +123,10 @@
       + '.dsHint{width:100%;max-width:820px;font-size:16px;color:rgba(240,230,204,.8);margin:0 0 10px;font-style:italic;}'
       + '.dsStage{position:relative;max-width:100%;box-shadow:0 10px 40px rgba(0,0,0,.8);border:1px solid rgba(200,168,75,.5);background:#fff;cursor:crosshair;}'
       + '.dsStage canvas{display:block;max-width:100%;height:auto;}'
-      + '.dsGhost{position:absolute;pointer-events:none;opacity:.92;outline:1px dashed rgba(200,168,75,.9);}'
+      + '.dsGhost{position:absolute;opacity:.92;outline:1px dashed rgba(200,168,75,.9);cursor:pointer;}'
+      + '.dsDate{position:absolute;pointer-events:none;font-family:Helvetica,Arial,sans-serif;color:#0d0d1a;white-space:nowrap;line-height:1;}'
+      + '.dsMark{position:absolute;pointer-events:none;border:2px dashed rgba(200,168,75,.9);border-radius:4px;background:rgba(255,215,94,.12);}'
+      + '.dsTog{font-family:Cinzel,serif;font-size:12px;letter-spacing:.1em;color:#f0e6cc;display:-webkit-inline-flex;display:inline-flex;-webkit-align-items:center;align-items:center;gap:6px;cursor:pointer;}'
       + '.dsBtn{background:#c8a84b;color:#040608;border:none;border-radius:999px;font-family:Cinzel,serif;font-size:13px;letter-spacing:.08em;padding:10px 18px;min-height:44px;cursor:pointer;}'
       + '.dsBtn[disabled]{opacity:.45;cursor:default;}'
       + '.dsGhostBtn{background:none;border:1px solid rgba(200,168,75,.5);color:#c8a84b;border-radius:999px;font-family:Cinzel,serif;font-size:12px;letter-spacing:.08em;padding:10px 14px;min-height:44px;cursor:pointer;}'
@@ -135,24 +157,74 @@
       return pg.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
     });
   }
+  /* v1.4: today's date as the paper writes it */
+  function today_() { var d = new Date(); var m = d.getMonth() + 1, da = d.getDate(); return (m < 10 ? '0' : '') + m + '/' + (da < 10 ? '0' : '') + da + '/' + d.getFullYear(); }
+  /* v1.4: read every page for a signature line; remember where each one sits */
+  function findLines_() {
+    if (!st || !st.doc) { return Promise.resolve(); }
+    st.lines = {}; var pages = [];
+    var chain = Promise.resolve();
+    for (var p = 1; p <= st.doc.numPages; p++) {
+      (function (pn) {
+        chain = chain.then(function () { return st.doc.getPage(pn).then(function (pg) { return pg.getTextContent(); }).then(function (tc) {
+          var items = tc.items || [];
+          for (var i = 0; i < items.length; i++) {
+            var it = items[i], str = String(it.str || '');
+            if (/signature|sign here|firma/i.test(str) && !/signature image|signatures?\s+are|digital/i.test(str)) {
+              var tr = it.transform || [1, 0, 0, 1, 0, 0];
+              (st.lines[pn] = st.lines[pn] || []).push({ x: tr[4], y: tr[5], w: it.width || 60, h: it.height || 10 });
+            }
+          }
+          if (st.lines[pn] && st.lines[pn].length) { pages.push(pn); }
+        })['catch'](function () {}); });
+      })(p);
+    }
+    return chain.then(function () { st.linePages = pages; });
+  }
   function placeGhost_() {
-    var g = document.getElementById('dsGhost'), canvas = document.getElementById('dsCanvas'), btn = document.getElementById('dsStamp');
-    if (!g || !canvas) { return; }
-    if (!st.at || st.at.page !== st.page) { g.style.display = 'none'; if (btn) { btn.disabled = true; } return; }
+    var stage = document.getElementById('dsStage'), canvas = document.getElementById('dsCanvas'), btn = document.getElementById('dsStamp'), proto = document.getElementById('dsGhost');
+    if (!stage || !canvas || !st) { return; }
+    var old = stage.querySelectorAll('.dsGhostN,.dsDate,.dsMark'); for (var o = 0; o < old.length; o++) { old[o].parentNode.removeChild(old[o]); }
     var disp = canvas.getBoundingClientRect();
     var k = disp.width / canvas.width; /* CSS px per canvas px */
-    var wCss = st.sigWpt * st.scale * k, hCss = wCss / st.sigAspect;
-    var cxCss = st.at.cx * k, cyCss = st.at.cy * k;
-    g.style.display = 'block'; g.style.width = wCss + 'px'; g.style.height = hCss + 'px';
-    g.style.left = (cxCss - wCss / 2) + 'px'; g.style.top = (cyCss - hCss / 2) + 'px';
-    if (btn) { btn.disabled = false; }
+    /* the found signature lines on this page, as gold marks */
+    var lines = (st.lines && st.lines[st.page]) || [];
+    for (var L = 0; L < lines.length; L++) {
+      var ln = lines[L], m = document.createElement('div'); m.className = 'dsMark';
+      var mw = Math.max(ln.w, 120) * st.scale * k, mh = 34 * st.scale * k;
+      m.style.left = (ln.x * st.scale * k) + 'px'; m.style.top = ((st.pageH - ln.y) * st.scale * k - mh) + 'px';
+      m.style.width = mw + 'px'; m.style.height = mh + 'px';
+      stage.appendChild(m);
+    }
+    /* every placed signature on this page, with its date */
+    var n = 0;
+    for (var i = 0; i < st.marks.length; i++) {
+      var at = st.marks[i]; if (at.page !== st.page) { continue; }
+      var wCss = at.w * st.scale * k, hCss = wCss / st.sigAspect;
+      var g = document.createElement('img'); g.className = 'dsGhost dsGhostN'; g.src = proto.src; g.alt = '';
+      g.style.display = 'block'; g.style.width = wCss + 'px'; g.style.height = hCss + 'px';
+      g.style.left = (at.cx * k - wCss / 2) + 'px'; g.style.top = (at.cy * k - hCss / 2) + 'px';
+      g.title = T({ en: 'Tap to take this signature back', es: 'Toca para quitar esta firma' });
+      (function (idx) { g.addEventListener('click', function (ev) { ev.stopPropagation(); ev.preventDefault(); st.marks.splice(idx, 1); placeGhost_(); }); })(i);
+      stage.appendChild(g);
+      if (st.dateOn) {
+        var d = document.createElement('div'); d.className = 'dsDate'; d.textContent = today_();
+        var fs = 10 * st.scale * k; d.style.fontSize = fs + 'px';
+        d.style.left = (at.cx * k + wCss / 2 + 6 * st.scale * k) + 'px'; d.style.top = (at.cy * k + hCss / 2 - fs - 2 * st.scale * k) + 'px';
+        stage.appendChild(d);
+      }
+      n++;
+    }
+    if (btn) { btn.disabled = !st.marks.length; }
+    var cnt = document.getElementById('dsCount'); if (cnt) { cnt.textContent = st.marks.length ? (st.marks.length + ' \u270D') : ''; }
   }
   function onTap_(ev) {
     var canvas = document.getElementById('dsCanvas'); if (!canvas || !st) { return; }
+    if (ev.target && ev.target.className && String(ev.target.className).indexOf('dsGhostN') !== -1) { return; }
     var r = canvas.getBoundingClientRect();
     var k = canvas.width / r.width;
     var t = (ev.touches && ev.touches[0]) ? ev.touches[0] : ev;
-    st.at = { page: st.page, cx: (t.clientX - r.left) * k, cy: (t.clientY - r.top) * k };
+    st.marks.push({ page: st.page, cx: (t.clientX - r.left) * k, cy: (t.clientY - r.top) * k, w: st.sigWpt, scale: st.scale });
     placeGhost_();
     if (ev.cancelable) { ev.preventDefault(); }
   }
@@ -174,7 +246,7 @@
     });
   }
   function stamp_() {
-    if (!st || !st.at) { return; }
+    if (!st || !st.marks || !st.marks.length) { return; }
     var btn = document.getElementById('dsStamp'); if (btn) { btn.disabled = true; btn.textContent = T({ en: 'Stamping\u2026', es: 'Firmando\u2026' }); }
     var hint = document.getElementById('dsHint');
     var PDFLib = window.PDFLib;
@@ -183,15 +255,24 @@
       step = 'signature';
       return sigAsPng_().then(function (pngU8) { return pdfDoc.embedPng(pngU8); }).then(function (img) {
         step = 'stamp';
-        var page = pdfDoc.getPage(st.at.page - 1);
-        var pw = page.getWidth(), ph = page.getHeight();
-        var w = st.sigWpt, h = w / st.sigAspect;
-        /* canvas px -> PDF points; the preview was drawn from the same page box, origin flipped */
-        var x = st.at.cx / st.scale - w / 2;
-        var y = ph - (st.at.cy / st.scale) - h / 2;
-        x = Math.max(0, Math.min(pw - w, x)); y = Math.max(0, Math.min(ph - h, y));
-        page.drawImage(img, { x: x, y: y, width: w, height: h });
-        return pdfDoc.save();
+        var fontP = st.dateOn ? pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica) : Promise.resolve(null);
+        return fontP.then(function (font) {
+          /* v1.4: every placed signature, on every page, in one pass */
+          var pageScale = {};
+          for (var i = 0; i < st.marks.length; i++) {
+            var at = st.marks[i];
+            var page = pdfDoc.getPage(at.page - 1);
+            var pw = page.getWidth(), ph = page.getHeight();
+            var w = at.w, h = w / st.sigAspect;
+            var sc = at.scale || st.scale;
+            var x = at.cx / sc - w / 2;
+            var y = ph - (at.cy / sc) - h / 2;
+            x = Math.max(0, Math.min(pw - w, x)); y = Math.max(0, Math.min(ph - h, y));
+            page.drawImage(img, { x: x, y: y, width: w, height: h });
+            if (font) { page.drawText(today_(), { x: x + w + 6, y: y + 2, size: 10, font: font, color: PDFLib.rgb(0.05, 0.05, 0.1) }); }
+          }
+          return pdfDoc.save();
+        });
       });
     }).then(function (bytes) {
       var base = String(st.name || 'document.pdf').replace(/\.pdf$/i, '');
@@ -216,11 +297,14 @@
     css();
     close_();
     var remembered = 120; try { remembered = parseInt(localStorage.getItem('4laws-sign-size') || '120', 10) || 120; } catch (eLs) {}
-    st = { name: o.name || 'document.pdf', pdfU8: b64ToU8_(o.pdfB64), sigU8: b64ToU8_(o.sigB64), sigMime: o.sigMime || 'image/png', onSigned: o.onSigned, page: 1, at: null, sigWpt: remembered, sigAspect: 2.4, scale: 1 }; /* v1.2: a pen-sized default, and the size you last used */
+    st = { name: o.name || 'document.pdf', pdfU8: b64ToU8_(o.pdfB64), sigU8: b64ToU8_(o.sigB64), sigMime: o.sigMime || 'image/png', onSigned: o.onSigned, page: 1, at: null, marks: [], lines: {}, linePages: [], dateOn: true, sigWpt: remembered, sigAspect: 2.4, scale: 1 };   /* v1.4: many marks, found lines, the date */
+    try { st.dateOn = localStorage.getItem('4laws-sign-date') !== 'off'; } catch (eD) {} /* v1.2: a pen-sized default, and the size you last used */
     var v = document.createElement('div'); v.id = 'dsVeil';
     v.innerHTML = '<div class="dsBar"><span class="dsKick">\u270D ' + T({ en: 'SIGN THIS FILE', es: 'FIRMA ESTE ARCHIVO' }) + ' \u00b7 ' + esc(st.name) + '</span>'
       + '<button class="dsGhostBtn" id="dsPrev">\u25c0</button><span class="dsPg" id="dsPg"></span><button class="dsGhostBtn" id="dsNext">\u25b6</button>'
       + '<span class="dsPg">' + T({ en: 'SIZE', es: 'TAMA\u00d1O' }) + '</span><input class="dsRange" id="dsSize" type="range" min="60" max="320" value="' + remembered + '">'
+      + '<label class="dsTog"><input type="checkbox" id="dsDateOn"' + (st.dateOn ? ' checked' : '') + '> ' + T({ en: 'DATE', es: 'FECHA' }) + '</label>'
+      + '<span class="dsPg" id="dsCount"></span>'
       + '<button class="dsBtn" id="dsStamp" disabled>\u270D ' + T({ en: 'Stamp it', es: 'F\u00edrmalo' }) + '</button>'
       + '<button class="dsGhostBtn" id="dsClose">\u00d7</button></div>'
       + '<p class="dsHint" id="dsHint">' + T({ en: 'Loading the page\u2026', es: 'Cargando la p\u00e1gina\u2026' }) + '</p>'
@@ -231,7 +315,8 @@
     ghost.onload = function () { if (ghost.naturalWidth && ghost.naturalHeight) { st.sigAspect = ghost.naturalWidth / ghost.naturalHeight; placeGhost_(); } };
     document.getElementById('dsClose').onclick = close_;
     document.getElementById('dsStamp').onclick = stamp_;
-    document.getElementById('dsSize').oninput = function () { st.sigWpt = parseInt(this.value, 10) || 120; try { localStorage.setItem('4laws-sign-size', String(st.sigWpt)); } catch (eS) {} placeGhost_(); };
+    document.getElementById('dsSize').oninput = function () { st.sigWpt = parseInt(this.value, 10) || 120; try { localStorage.setItem('4laws-sign-size', String(st.sigWpt)); } catch (eS) {} for (var i = 0; i < st.marks.length; i++) { st.marks[i].w = st.sigWpt; } placeGhost_(); };
+    document.getElementById('dsDateOn').onchange = function () { st.dateOn = !!this.checked; try { localStorage.setItem('4laws-sign-date', st.dateOn ? 'on' : 'off'); } catch (eS2) {} placeGhost_(); };
     document.getElementById('dsPrev').onclick = function () { if (st.page > 1) { st.page--; renderPage_(); } };
     document.getElementById('dsNext').onclick = function () { if (st.doc && st.page < st.doc.numPages) { st.page++; renderPage_(); } };
     var stage = document.getElementById('dsStage');
@@ -244,9 +329,16 @@
     }).then(function (doc) {
       if (!st) { return; }
       st.doc = doc; st.page = doc.numPages; /* a letter is signed at its end: open on the last page */
-      var hint = document.getElementById('dsHint');
-      if (hint) { hint.textContent = T({ en: 'Tap where your signature goes. Tap again to move it. Then stamp.', es: 'Toca donde va tu firma. Toca de nuevo para moverla. Luego f\u00edrmalo.' }); }
-      return renderPage_();
+      return findLines_().then(function () {
+        if (!st) { return; }
+        if (st.linePages && st.linePages.length) { st.page = st.linePages[0]; }   /* v1.4: open where the first signature line is */
+        var hint = document.getElementById('dsHint');
+        if (hint) {
+          var where = (st.linePages && st.linePages.length) ? (lang() === 'es' ? ' L\u00edneas de firma en la p\u00e1gina ' : ' Signature lines on page ') + st.linePages.join(', ') + '.' : '';
+          hint.textContent = T({ en: 'Tap where each signature goes \u2014 on any page. Tap a signature to take it back. Then stamp once for all.', es: 'Toca donde va cada firma \u2014 en cualquier p\u00e1gina. Toca una firma para quitarla. Luego f\u00edrmalo una vez por todas.' }) + where;
+        }
+        return renderPage_();
+      });
     })['catch'](function () {
       var hint = document.getElementById('dsHint');
       if (hint) { hint.textContent = T({ en: 'Couldn\u2019t open that PDF.', es: 'No se pudo abrir ese PDF.' }); }
@@ -322,5 +414,5 @@
     }
   }
 
-  window.DocBSign = { open: open, close: close_, choose: choose, thumb: thumbInto_, version: '1.3' };
+  window.DocBSign = { open: open, close: close_, choose: choose, thumb: thumbInto_, version: '1.4' };
 })();

@@ -1,4 +1,13 @@
 /* ============================================================
+   DOCB-FORM.JS v1.2 — THE WORDS IN THE BOXES (Bench 50, 10/15/26)
+   Founder's walk 10/13: "everything's green, but the answers are not on
+   the page." v1.2 draws each answer inside its box on the page itself
+   (text in text boxes, a check in a checked box) the moment it is known,
+   so the form reads as a form before FILL IT. Nothing else changed.
+   TESTED: the v1.1 bench (16 checks) passes unchanged; after apply, the
+   page shows the words inside the boxes.
+   Way back: v1.1 (file docb-form-v1_1-WAY-BACK.js).
+   ============================================================
    DOCB-FORM.JS v1.1 — THE BOXES FOUND (Bench 50, 10/13/26)
    The wound (founder, 10/13, a Genworth reinstatement form with 176 real
    boxes): the tool called it a flat form, hid Ask Doc B, and the member
@@ -114,6 +123,8 @@
       + '.dfBox.on{border-color:#ffd75e;background:rgba(255,215,94,.22);box-shadow:0 0 0 2px rgba(255,215,94,.5);}'
       + '.dfBox.filled{background:rgba(120,200,120,.16);border-color:rgba(120,200,120,.9);}'
       + '.dfNum{position:absolute;left:-2px;top:-14px;font:700 10px/12px Cinzel,serif;color:#040608;background:#ffd75e;border-radius:3px;padding:0 3px;}'
+      + '.dfVal{position:absolute;left:2px;top:0;bottom:0;right:2px;overflow:hidden;white-space:nowrap;font-family:Helvetica,Arial,sans-serif;color:#0d0d1a;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;pointer-events:none;}'
+      + '.dfVal.ck{-webkit-justify-content:center;justify-content:center;font-weight:700;}'
       + '.dfPane{width:320px;max-width:42vw;overflow:auto;background:rgba(6,8,12,.97);border:1px solid rgba(200,168,75,.5);border-radius:12px;padding:10px 12px;}'
       + '.dfRow{border-top:1px solid rgba(200,168,75,.18);padding:8px 0;}'
       + '.dfRow:first-child{border-top:none;}'
@@ -272,6 +283,15 @@
       var left = it.x * st.scale, top = (st.pageH - it.y - it.h) * st.scale;
       d.style.left = left + 'px'; d.style.top = top + 'px'; d.style.width = Math.max(10, it.w * st.scale) + 'px'; d.style.height = Math.max(10, it.h * st.scale) + 'px';
       d.innerHTML = '<span class="dfNum">' + (it.n || (k + 1)) + '</span>';
+      /* v1.2: the answer, inside the box, on the page */
+      if (it.filled) {
+        var isCk = (it.kind === 'check' || it.kind === 'radio');
+        var val = document.createElement('span'); val.className = 'dfVal' + (isCk ? ' ck' : '');
+        var px = Math.max(7, Math.min(16, (isCk ? it.h * 0.8 : (it.size || Math.min(10, it.h * 0.6))) * st.scale));
+        val.style.fontSize = px + 'px';
+        val.textContent = isCk ? '\u2713' : String(it.value);
+        d.appendChild(val);
+      }
       (function (idx) { d.addEventListener('click', function (ev) { ev.stopPropagation(); select_(idx); }); })(k);
       stage.appendChild(d);
     }
@@ -494,5 +514,5 @@
     });
   }
 
-  window.DocBForm = { open: open, apply: apply, close: close_, say: say, show: show_, hide: hide_, isOpen: function () { return !!st; }, version: '1.1' };
+  window.DocBForm = { open: open, apply: apply, close: close_, say: say, show: show_, hide: hide_, isOpen: function () { return !!st; }, version: '1.2' };
 })();
