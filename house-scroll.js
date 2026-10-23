@@ -1,4 +1,4 @@
-/* ═══ house-scroll.js v1 THE SCROLL (Bench 57, Thu 10/22/26 night). The one navigation band on every page of
+/* ═══ house-scroll.js v1.1 THE CRIMSON SCROLL (Bench 57, Thu 10/22/26 9 PM; way back: v1). First look on /pws: the band sat lopsided because it inherited the shell wrapper's crooked box, and black read dull. Now the band runs edge to edge across the screen and centers itself (width 100vw, left 50%, translated back) so it is symmetric on every page; crimson velvet like the Entertainment Center marquee -- the color of Limits, the law the house teaches first -- with gold letters, the lit door white-gold, dark doors sunk into the velvet. Everything else as v1 THE SCROLL:
  * 4 LAWS Academy -- the map of the house. Ruled tonight: seven doors, the 4 LAWS logo dead center (home = MY DAY,
  * /pws; "PWS is home and it's a logo, where you work. LIFE is where you play"); LIFE · TODOS · STUDIO on the left,
  * FAMILY · TRUST · FUN on the right; lit gold with the underline where you are, as the Entertainment Center does it;
@@ -27,28 +27,29 @@
     { k: 'fun',    href: '/music',          en: 'FUN',    es: 'DIVERSIÓN', side: 'r', notEn: 'Not yet. Finish one day and the Entertainment Center opens.',       notEs: 'Todavía no. Termina un día y se abre el Centro de Entretenimiento.' }
   ];
   var CSS = '' +
-    '#hsScroll{font-family:Cinzel,"Cormorant Garamond",Georgia,serif;position:relative;z-index:900;width:100%;box-sizing:border-box;margin:0;padding:0;background:linear-gradient(180deg,#0b1222 0%,#070d1c 60%,#050912 100%);border-top:1px solid rgba(200,168,75,0.45);border-bottom:1px solid rgba(200,168,75,0.45);box-shadow:0 6px 22px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,236,180,0.08);}' +
-    '#hsScroll:before,#hsScroll:after{content:"";position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,168,75,0.55) 18%,rgba(200,168,75,0.55) 82%,transparent);pointer-events:none;}' +
+    '#hsScroll{font-family:Cinzel,"Cormorant Garamond",Georgia,serif;position:relative;z-index:900;width:100vw;left:0;box-sizing:border-box;margin:0;padding:0;background:linear-gradient(180deg,#7a0f16 0%,#5a0a10 55%,#3d060b 100%);border-top:1px solid rgba(226,194,112,0.75);border-bottom:1px solid rgba(226,194,112,0.75);box-shadow:0 8px 26px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,236,180,0.18), inset 0 -1px 0 rgba(0,0,0,0.35);}' +
+    '#hsScroll:before,#hsScroll:after{content:"";position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(226,194,112,0.7) 12%,rgba(226,194,112,0.7) 88%,transparent);pointer-events:none;}' +
     '#hsScroll:before{top:3px;}#hsScroll:after{bottom:3px;}' +
+    'html,body{overflow-x:hidden;}' +
     '#hsScroll .hs-row{display:flex;align-items:center;justify-content:center;gap:0;max-width:1180px;margin:0 auto;padding:6px 10px;}' +
     '#hsScroll .hs-side{display:flex;flex:1 1 0;align-items:center;justify-content:flex-end;gap:4px;min-width:0;}' +
     '#hsScroll .hs-side.hs-r{justify-content:flex-start;}' +
-    '#hsScroll a.hs-door{position:relative;display:inline-block;text-decoration:none;color:rgba(222,196,128,0.78);font-size:13px;letter-spacing:0.22em;text-transform:uppercase;padding:14px 18px 12px;white-space:nowrap;transition:color .25s,opacity .25s;}' +
+    '#hsScroll a.hs-door{position:relative;display:inline-block;text-decoration:none;color:rgba(240,214,150,0.88);font-size:13px;letter-spacing:0.22em;text-transform:uppercase;padding:14px 18px 12px;white-space:nowrap;transition:color .25s,opacity .25s;}' +
     '#hsScroll a.hs-door:hover{color:#ffe9a8;}' +
-    '#hsScroll a.hs-door.on{color:#ffe9a8;text-shadow:0 0 12px rgba(255,214,120,0.55);}' +
+    '#hsScroll a.hs-door.on{color:#fff6dc;text-shadow:0 0 14px rgba(255,224,150,0.75);}' +
     '#hsScroll a.hs-door.on:after{content:"";position:absolute;left:14px;right:14px;bottom:6px;height:2px;background:linear-gradient(90deg,transparent,#e2c270,transparent);box-shadow:0 0 8px rgba(255,214,120,0.6);}' +
-    '#hsScroll a.hs-door.dim{color:rgba(222,196,128,0.3);cursor:pointer;}' +
-    '#hsScroll a.hs-door.dim:hover{color:rgba(222,196,128,0.45);}' +
+    '#hsScroll a.hs-door.dim{color:rgba(240,214,150,0.32);cursor:pointer;}' +
+    '#hsScroll a.hs-door.dim:hover{color:rgba(240,214,150,0.5);}' +
     '#hsScroll a.hs-door .hs-lamp{display:none;}' +
-    '#hsScroll a.hs-door.dim .hs-lamp{display:inline-block;width:5px;height:5px;border-radius:50%;border:1px solid rgba(200,168,75,0.45);margin-left:7px;vertical-align:middle;background:transparent;}' +
+    '#hsScroll a.hs-door.dim .hs-lamp{display:inline-block;width:5px;height:5px;border-radius:50%;border:1px solid rgba(226,194,112,0.5);margin-left:7px;vertical-align:middle;background:transparent;}' +
     '#hsScroll .hs-mid{flex:0 0 auto;display:flex;align-items:center;justify-content:center;padding:0 26px;}' +
-    '#hsScroll a.hs-home{display:flex;align-items:center;justify-content:center;width:66px;height:66px;border-radius:50%;border:1px solid rgba(200,168,75,0.7);box-shadow:0 0 0 3px #070d1c,0 0 0 4px rgba(200,168,75,0.35),0 0 18px rgba(255,214,120,0.35);background:#0b1222;overflow:hidden;text-decoration:none;transition:box-shadow .25s;}' +
+    '#hsScroll a.hs-home{display:flex;align-items:center;justify-content:center;width:66px;height:66px;border-radius:50%;border:1px solid rgba(226,194,112,0.85);box-shadow:0 0 0 3px #4a080e,0 0 0 4px rgba(226,194,112,0.5),0 0 18px rgba(255,214,120,0.4);background:#0b1222;overflow:hidden;text-decoration:none;transition:box-shadow .25s;}' +
     '#hsScroll a.hs-home img{width:58px;height:58px;object-fit:cover;border-radius:50%;filter:brightness(1.08);display:block;}' +
-    '#hsScroll a.hs-home.on{box-shadow:0 0 0 3px #070d1c,0 0 0 4px rgba(226,194,112,0.9),0 0 26px rgba(255,214,120,0.7);}' +
-    '#hsScroll a.hs-home:hover{box-shadow:0 0 0 3px #070d1c,0 0 0 4px rgba(226,194,112,0.9),0 0 26px rgba(255,214,120,0.7);}' +
-    '#hsScroll .hs-line{flex:0 0 46px;height:1px;background:linear-gradient(90deg,transparent,rgba(200,168,75,0.6));margin-right:-6px;}' +
-    '#hsScroll .hs-line.hs-after{background:linear-gradient(90deg,rgba(200,168,75,0.6),transparent);margin-right:0;margin-left:-6px;}' +
-    '#hsScroll .hs-say{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:8px;max-width:min(92vw,520px);background:#0b1222;border:1px solid rgba(200,168,75,0.55);color:#efe2bf;font-family:"Cormorant Garamond",Georgia,serif;font-size:19px;line-height:1.35;padding:12px 18px;border-radius:6px;box-shadow:0 10px 30px rgba(0,0,0,0.6);z-index:901;text-align:center;display:none;}' +
+    '#hsScroll a.hs-home.on{box-shadow:0 0 0 3px #4a080e,0 0 0 4px rgba(226,194,112,1),0 0 28px rgba(255,214,120,0.8);}' +
+    '#hsScroll a.hs-home:hover{box-shadow:0 0 0 3px #4a080e,0 0 0 4px rgba(226,194,112,1),0 0 28px rgba(255,214,120,0.8);}' +
+    '#hsScroll .hs-line{flex:0 0 46px;height:1px;background:linear-gradient(90deg,transparent,rgba(226,194,112,0.75));margin-right:-6px;}' +
+    '#hsScroll .hs-line.hs-after{background:linear-gradient(90deg,rgba(226,194,112,0.75),transparent);margin-right:0;margin-left:-6px;}' +
+    '#hsScroll .hs-say{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:8px;max-width:min(92vw,520px);background:#2a0407;border:1px solid rgba(226,194,112,0.7);color:#efe2bf;font-family:"Cormorant Garamond",Georgia,serif;font-size:19px;line-height:1.35;padding:12px 18px;border-radius:6px;box-shadow:0 10px 30px rgba(0,0,0,0.6);z-index:901;text-align:center;display:none;}' +
     '#hsScroll .hs-say.show{display:block;}' +
     '#hsScroll .hs-fold{display:none;}' +
     '@media (max-width:700px){' +
@@ -60,7 +61,7 @@
       '#hsScroll.folded .hs-side a.hs-door:not(.on){display:none;}' +
       '#hsScroll.folded .hs-side{flex:1 1 auto;}' +
       '#hsScroll.folded .hs-mid{flex:0 0 auto;}' +
-      '#hsScroll .hs-fold{display:block;position:absolute;right:10px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;border:1px solid rgba(200,168,75,0.45);background:transparent;color:rgba(222,196,128,0.85);font-size:16px;line-height:32px;text-align:center;cursor:pointer;padding:0;}' +
+      '#hsScroll .hs-fold{display:block;position:absolute;right:10px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:50%;border:1px solid rgba(226,194,112,0.6);background:transparent;color:rgba(240,214,150,0.9);font-size:16px;line-height:32px;text-align:center;cursor:pointer;padding:0;}' +
       '#hsScroll a.hs-home{width:52px;height:52px;}#hsScroll a.hs-home img{width:46px;height:46px;}' +
     '}';
 
@@ -130,6 +131,13 @@
     if (open !== '1') root.classList.add('folded');
     paint();
   }
+  /* the band runs edge to edge whatever box it was born in: measure where the wrapper put it and slide it to the screen's left edge */
+  function align() {
+    if (!root) return;
+    root.style.left = '0px';
+    var l = root.getBoundingClientRect().left;
+    if (Math.abs(l) > 0.5) root.style.left = (-l) + 'px';
+  }
   function paint() {
     if (!root) return;
     var any = false;
@@ -157,6 +165,9 @@
     else if (document.body) { document.body.insertBefore(root, document.body.firstChild); }
     else { document.addEventListener('DOMContentLoaded', function () { document.body.insertBefore(root, document.body.firstChild); }); }
     _doors = readCache(); paint(); fetchDoors();
+    align(); setTimeout(align, 60); setTimeout(align, 600);
+    window.addEventListener('resize', align);
+    window.addEventListener('load', align);
   }
   if (document.currentScript && document.body) mount();
   else document.addEventListener('DOMContentLoaded', mount);
@@ -164,7 +175,7 @@
   window.HouseScroll = {
     v: 1,
     doors: function () { return _doors ? _doors.slice() : null; },
-    relight: paint,
+    relight: function () { paint(); align(); },
     earn: function (k) {
       k = String(k || ''); if (!k) return;
       if (!_doors) _doors = [];
