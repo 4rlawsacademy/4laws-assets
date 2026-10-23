@@ -1,4 +1,4 @@
-/* ═══ house-arrows-v1.js v1.1 THE ARROWS, SECOND WALK (Bench 57, Fri 10/23/26 11:20 AM; same file name, the delivery network purged; way back: the morning's v1 in GitHub's history). From the founder's first walk: (a) PWS -- if Favorite Day is folded, the lesson opens it before pointing at PLAN MY DAY; (b) during a walk a tap on a shown pill or door no longer carries you off the page, it moves the walk on; (c) /todos -- the DONE -- SAVE arrow is measured inside the room's own scrolling panel, and the walk grows: SLEEP and WAKE, then upstairs to MY TODOS and Grandpa's box; a closed room is reopened by the walk itself. v1: The organ that teaches: an arrow and one written line on the
+/* ═══ house-arrows-v1.js v1.2 THE THIRD WALK (Bench 57, Fri 10/23/26 12:40 PM; same file name, the delivery network purged, then a hard reload; way back: v1.1 in GitHub's history). From the founder's second walk ('fantastic... but it has nothing on Favorite Day' / 'you're not pointing to the mill' / 'no training in studio, family'): (1) PWS DAY THREE, a walk that runs the first time they are back on /pws after Smart Day: Favorite Day with the activities in it, DONE / MISSED, ADD A TREAT, TALENT TIME and GO TO MY PROJECT; (2) MY TODOS grows: THE PILE bar, then a todo's own room ('the same butler, the same tools, adapted to that problem; projects; records'); (3) the Studio walk opens the coach itself (TALENT TIME) instead of waiting for someone to; (4) Family gets a first walk: INVITE, your people, Doc B for the family; (5) SHOW ME plays the first walk not yet done. v1.1: From the founder's first walk: (a) PWS -- if Favorite Day is folded, the lesson opens it before pointing at PLAN MY DAY; (b) during a walk a tap on a shown pill or door no longer carries you off the page, it moves the walk on; (c) /todos -- the DONE -- SAVE arrow is measured inside the room's own scrolling panel, and the walk grows: SLEEP and WAKE, then upstairs to MY TODOS and Grandpa's box; a closed room is reopened by the walk itself. v1: The organ that teaches: an arrow and one written line on the
  * first thing to tap, the first time a room opens for a member -- the founder's ruling of 10/22 ('each of these pages, we're
  * gonna have to have them open and put an arrow at the first thing, and out comes a written explanation of what that is and
  * how to start there'). One file, one line per page; the lessons live here, keyed by the page's address, so the pages need
@@ -10,7 +10,7 @@
  * ═══ */
 (function () {
   'use strict';
-  if (window.HouseArrows && window.HouseArrows.v >= 1.1) return;
+  if (window.HouseArrows && window.HouseArrows.v >= 1.2) return;
 
   function lang() { try { return localStorage.getItem('4laws-lang') === 'es' ? 'es' : 'en'; } catch (e) { return 'en'; } }
   function here() { return ((location.pathname || '/').replace(/\/+$/, '') || '/').toLowerCase(); }
@@ -34,6 +34,17 @@
         { sel: 'a.pws-plan-day-btn[href="/todos"]', via: '#pwsAccordionLimitsHdr', en: 'PLAN MY DAY. Tap it, and tomorrow is waiting for you on the other side.', es: 'PLANEAR MI DÍA. Tócalo, y mañana te espera del otro lado.', last: true }
       ]
     },
+    'pws-day-three': {
+      page: function (p) { return p === '/pws' || p.indexOf('/pws-talent') === 0; },
+      after: 'todos-day-two',
+      ready: function () { return visible($('#pwsAccordionLimitsHdr')); },
+      steps: [
+        { sel: '#pwsAccordionLimitsHdr',          en: 'Back home. Your Favorite Day now carries the day you planned. Open it.', es: 'De vuelta en casa. Tu Día Favorito ya lleva el día que planeaste. Ábrelo.' },
+        { sel: '#pwsDayCol .pws-checkin-btn.done', via: '#pwsAccordionLimitsHdr', en: 'Each activity, in its hour. DONE when it is done, MISSED when you missed it. This is the game: a day that keeps you safe, in your lane, and becomes a habit.', es: 'Cada actividad, a su hora. HECHO cuando está hecha, FALTÉ cuando la faltaste. Este es el juego: un día que te cuida, te mantiene en tu carril, y se vuelve hábito.', look: true },
+        { sel: '.pws-board-plate',                 en: 'ADD A TREAT. Set something you look forward to into the day — a coffee, a walk, a song — and that activity counts double.', es: 'AÑADIR UN DELEITE. Pon en el día algo que esperas con ganas — un café, una caminata, una canción — y esa actividad cuenta doble.', look: true },
+        { sel: '.pws-day-launch-btn',              en: 'TALENT TIME is an activity everyone has. Do your talent work anywhere and mark it done. GO TO MY PROJECT takes you to your coach, when it is time to make something of it.', es: 'TIEMPO DE TALENTO es una actividad que todos tienen. Haz tu trabajo de talento donde sea y márcalo hecho. IR A MI PROYECTO te lleva a tu coach, cuando toque hacer algo con ello.', look: true, last: true }
+      ]
+    },
     'todos-day-two': {
       page: function (p) { return p === '/todos'; },
       ready: function () { return !!$('#tdDayCards .td-case-header'); },
@@ -44,14 +55,25 @@
         { sel: '#pwsUseMarkDoneBtn',              en: 'When it is done: DONE — SAVE. Your tools come alive here, one activity at a time.', es: 'Cuando esté hecho: LISTO — GUARDAR. Tus herramientas cobran vida aquí, una actividad a la vez.', look: true },
         { sel: '.td-room-doors button:nth-child(2)', en: 'SLEEP puts an activity to rest for today. It waits under the list, and WAKE brings it back.', es: 'DORMIR deja descansar una actividad por hoy. Espera bajo la lista, y DESPERTAR la trae de vuelta.', look: true },
         { sel: '#tdTodosHdr',                     en: 'Upstairs: MY TODOS. When a problem lands — a bill, a form, a letter — it comes here. Open it.', es: 'Arriba: MIS TODOS. Cuando cae un problema — una cuenta, un formulario, una carta — llega aquí. Ábrelo.', before: function () { try { var o = document.getElementById('pwsUseOverlay'); if (o && o.classList.contains('open') && window.pwsCloseUse) window.pwsCloseUse(); } catch (e) {} } },
-        { sel: '#tdGrandpa #pwsUseInput',          via: '#tdTodosHdr', en: 'Grandpa. Tell him the problem, or drop the paper in his bucket — a photo is enough. He takes it from there.', es: 'El Abuelo. Cuéntale el problema, o suelta el papel en su balde — con una foto basta. Él se encarga.', look: true, last: true }
+        { sel: '#tdGrandpa #pwsUseInput',          via: '#tdTodosHdr', en: 'Grandpa. Tell him the problem, or drop the paper in his bucket — a photo is enough. He takes it from there.', es: 'El Abuelo. Cuéntale el problema, o suelta el papel en su balde — con una foto basta. Él se encarga.', look: true },
+        { sel: '#tdPileBar',                      en: 'THE PILE. A stack of letters? Drop them all on him at once. He sorts them into todos and a plan in thirty seconds.', es: 'LA PILA. ¿Un montón de cartas? Suéltalas todas de una vez. Él las ordena en todos y un plan en treinta segundos.', look: true },
+        { sel: '#tdList .td-case-header',          en: 'Every todo Grandpa makes is a room too: the same butler, the same tools, adapted to that problem. They sort themselves into projects, and the finished ones keep their records.', es: 'Cada todo que hace el Abuelo también es un cuarto: el mismo mayordomo, las mismas herramientas, adaptadas a ese problema. Se ordenan solos en proyectos, y los terminados guardan sus registros.', look: true, last: true }
+      ]
+    },
+    'family-first-look': {
+      page: function (p) { return p.indexOf('/family-atelier') === 0; },
+      ready: function () { return visible($('#faInviteOpenBtn')) || visible($('#faDocBOpenBtn')); },
+      steps: [
+        { sel: '#faInviteOpenBtn',  en: 'Your family comes in here. INVITE sends one person a text with your words and a door of their own.', es: 'Tu familia entra por aquí. INVITAR le manda a una persona un texto con tus palabras y una puerta propia.', look: true, hold: true },
+        { sel: '#faMemberList',     en: 'Your people, as they arrive. Each one keeps their own day and their own rooms; this is where you see them.', es: 'Tu gente, conforme llega. Cada quien guarda su propio día y sus propios cuartos; aquí es donde los ves.', look: true },
+        { sel: '#faDocBOpenBtn',    en: 'DOC B for the family: a question about someone you love, answered without walking into their rooms.', es: 'DOC B para la familia: una pregunta sobre alguien que amas, respondida sin entrar en sus cuartos.', look: true, hold: true, last: true }
       ]
     },
     'studio-the-coach': {
       page: function (p) { return p === '/studio'; },
-      ready: function () { return visible($('#stCoachInput')); },
+      ready: function () { return visible($('#stCoachInput')) || visible($('#stCoachBtn')); },
       steps: [
-        { sel: '#stCoachInput',          en: 'Tell Coach B what you want to make. He asks a little, then he writes.', es: 'Dile a Coach B qué quieres hacer. Él pregunta un poco, y luego escribe.', look: true },
+        { sel: '#stCoachInput',          via: '#stCoachBtn', en: 'Tell Coach B what you want to make. He asks a little, then he writes.', es: 'Dile a Coach B qué quieres hacer. Él pregunta un poco, y luego escribe.', look: true },
         { sel: '#stScrLine button',      en: 'Give it a home: pick a project, or make a new one.', es: 'Dale un hogar: elige un proyecto, o haz uno nuevo.', last: true }
       ]
     }
@@ -184,7 +206,13 @@
     if (chip || !pageLessons().length) return;
     dress(); chip = document.createElement('button'); chip.id = 'haChip'; chip.type = 'button';
     chip.textContent = (lang() === 'es' ? 'MUÉSTRAME ✦' : 'SHOW ME ✦');
-    chip.addEventListener('click', function () { if (running) { hideAll(); return; } var ks = pageLessons(); var k = null; for (var j = 0; j < ks.length; j++) { var Lx = LESSONS[ks[j]]; var ok = false; try { ok = Lx.ready(); } catch (e) {} if (ok) { k = ks[j]; break; } } if (!k) k = ks[0]; run(k, true); });
+    chip.addEventListener('click', function () {
+      if (running) { hideAll(); return; }
+      var ks = pageLessons(), k = null, j, Lx, ok;
+      for (j = 0; j < ks.length; j++) { Lx = LESSONS[ks[j]]; ok = false; try { ok = Lx.ready(); } catch (e1) {} if (ok && ls('4laws-lesson-' + ks[j]) !== '1' && !(Lx.after && ls('4laws-lesson-' + Lx.after) !== '1')) { k = ks[j]; break; } }
+      if (!k) for (j = 0; j < ks.length; j++) { Lx = LESSONS[ks[j]]; ok = false; try { ok = Lx.ready(); } catch (e2) {} if (ok) { k = ks[j]; break; } }
+      if (!k) k = ks[0]; run(k, true);
+    });
     document.body.appendChild(chip); chipPlace();
     window.addEventListener('scroll', chipPlace); window.addEventListener('resize', chipPlace); setTimeout(chipPlace, 800); setTimeout(chipPlace, 3000);
   }
@@ -215,10 +243,11 @@
     (function next(j) {
       if (j >= ks.length) return; var k = ks[j]; var L = LESSONS[k];
       if (ls('4laws-lesson-' + k) === '1') return next(j + 1);
+      if (L.after && ls('4laws-lesson-' + L.after) !== '1') return next(j + 1);   /* not yet: this walk comes after another one */
       waitFor(L.ready, (k === 'studio-the-coach') ? 90000 : 20000, function (ok) { if (ok) run(k, false); next(j + 1); });
     })(0);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(start, 900); }); else setTimeout(start, 900);
 
-  window.HouseArrows = { v: 1.1, run: function (k) { run(k, true); }, replay: function () { var ks = pageLessons(); if (ks.length) run(ks[0], true); }, stop: hideAll, lessons: function () { return Object.keys(LESSONS); }, reset: function () { for (var k in LESSONS) { try { localStorage.removeItem('4laws-lesson-' + k); } catch (e) {} } } };
+  window.HouseArrows = { v: 1.2, run: function (k) { run(k, true); }, replay: function () { var ks = pageLessons(); if (ks.length) run(ks[0], true); }, stop: hideAll, lessons: function () { return Object.keys(LESSONS); }, reset: function () { for (var k in LESSONS) { try { localStorage.removeItem('4laws-lesson-' + k); } catch (e) {} } } };
 })();
