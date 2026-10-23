@@ -1,4 +1,4 @@
-/* ═══ house-arrows-v1.js THE ARROWS (Bench 57, Fri 10/23/26). The organ that teaches: an arrow and one written line on the
+/* ═══ house-arrows-v1.js v1.1 THE ARROWS, SECOND WALK (Bench 57, Fri 10/23/26 11:20 AM; same file name, the delivery network purged; way back: the morning's v1 in GitHub's history). From the founder's first walk: (a) PWS -- if Favorite Day is folded, the lesson opens it before pointing at PLAN MY DAY; (b) during a walk a tap on a shown pill or door no longer carries you off the page, it moves the walk on; (c) /todos -- the DONE -- SAVE arrow is measured inside the room's own scrolling panel, and the walk grows: SLEEP and WAKE, then upstairs to MY TODOS and Grandpa's box; a closed room is reopened by the walk itself. v1: The organ that teaches: an arrow and one written line on the
  * first thing to tap, the first time a room opens for a member -- the founder's ruling of 10/22 ('each of these pages, we're
  * gonna have to have them open and put an arrow at the first thing, and out comes a written explanation of what that is and
  * how to start there'). One file, one line per page; the lessons live here, keyed by the page's address, so the pages need
@@ -10,7 +10,7 @@
  * ═══ */
 (function () {
   'use strict';
-  if (window.HouseArrows && window.HouseArrows.v) return;
+  if (window.HouseArrows && window.HouseArrows.v >= 1.1) return;
 
   function lang() { try { return localStorage.getItem('4laws-lang') === 'es' ? 'es' : 'en'; } catch (e) { return 'en'; } }
   function here() { return ((location.pathname || '/').replace(/\/+$/, '') || '/').toLowerCase(); }
@@ -25,13 +25,13 @@
       ready: function () { return visible($('#pwsAccordionLimitsHdr')) || visible($('#pwsTodoFab')); },
       intro: { en: 'Before you begin: four things that follow you everywhere, then your day.', es: 'Antes de empezar: cuatro cosas que te siguen a todas partes, y luego tu día.' },
       steps: [
-        { sel: '#pwsTodoFab',       en: 'TODOS. When a problem lands — a bill, a form, a letter — press here. Bruno is there.', es: 'TODOS. Cuando cae un problema — una cuenta, un formulario, una carta — presiona aquí. Bruno está ahí.', look: true },
-        { sel: '#pwsTrustFab',      en: 'TRUST. When a relationship strains, press here. We repair it together.', es: 'CONFIANZA. Cuando una relación se tensa, presiona aquí. La reparamos juntos.', look: true },
-        { sel: '#beltEmblem',       en: 'Your belt. Your tools ride here, wherever you are in the house.', es: 'Tu cinturón. Tus herramientas viajan aquí, donde estés en la casa.', look: true },
-        { sel: '#drFab',            en: 'Reminders. The house taps you on the shoulder, by text, at the hour you set.', es: 'Recordatorios. La casa te toca el hombro, por texto, a la hora que fijes.', look: true },
+        { sel: '#pwsTodoFab',       en: 'TODOS. When a problem lands — a bill, a form, a letter — press here. Bruno is there.', es: 'TODOS. Cuando cae un problema — una cuenta, un formulario, una carta — presiona aquí. Bruno está ahí.', look: true, hold: true },
+        { sel: '#pwsTrustFab',      en: 'TRUST. When a relationship strains, press here. We repair it together.', es: 'CONFIANZA. Cuando una relación se tensa, presiona aquí. La reparamos juntos.', look: true, hold: true },
+        { sel: '#beltEmblem',       en: 'Your belt. Your tools ride here, wherever you are in the house.', es: 'Tu cinturón. Tus herramientas viajan aquí, donde estés en la casa.', look: true, hold: true },
+        { sel: '#drFab',            en: 'Reminders. The house taps you on the shoulder, by text, at the hour you set.', es: 'Recordatorios. La casa te toca el hombro, por texto, a la hora que fijes.', look: true, hold: true },
         { sel: '#pwsAccordionRespectHdr', en: 'Your contributions — what you told me you give. Open it and read them once.', es: 'Tus contribuciones — lo que me dijiste que das. Ábrelo y léelas una vez.' },
         { sel: '#pwsAccordionLimitsHdr',  en: 'Your Favorite Day. This is where you live now. Open it.', es: 'Tu Día Favorito. Aquí vives ahora. Ábrelo.' },
-        { sel: 'a.pws-plan-day-btn[href="/todos"]', en: 'PLAN MY DAY. Tap it, and tomorrow is waiting for you on the other side.', es: 'PLANEAR MI DÍA. Tócalo, y mañana te espera del otro lado.', last: true }
+        { sel: 'a.pws-plan-day-btn[href="/todos"]', via: '#pwsAccordionLimitsHdr', en: 'PLAN MY DAY. Tap it, and tomorrow is waiting for you on the other side.', es: 'PLANEAR MI DÍA. Tócalo, y mañana te espera del otro lado.', last: true }
       ]
     },
     'todos-day-two': {
@@ -40,8 +40,11 @@
       steps: [
         { sel: '#tdDayHdr',                       en: 'Your Smart Day. Every activity you planned is here.', es: 'Tu Día Inteligente. Cada actividad que planeaste está aquí.', look: true },
         { sel: '#tdDayCards .td-case-header',     en: 'Tap your first activity. Every activity is a room with a butler in it.', es: 'Toca tu primera actividad. Cada actividad es un cuarto con un mayordomo adentro.' },
-        { sel: '#pwsUseInput',                    en: 'Tell him what this activity needs today. One line is enough.', es: 'Dile qué necesita esta actividad hoy. Con una línea basta.', look: true },
-        { sel: '#pwsUseMarkDoneBtn',              en: 'When it is done: DONE — SAVE. Your tools come alive here, one activity at a time.', es: 'Cuando esté hecho: LISTO — GUARDAR. Tus herramientas cobran vida aquí, una actividad a la vez.', last: true }
+        { sel: '#pwsUseInput',                    via: '#tdDayCards .td-case-header', en: 'Tell him what this activity needs today. One line is enough.', es: 'Dile qué necesita esta actividad hoy. Con una línea basta.', look: true },
+        { sel: '#pwsUseMarkDoneBtn',              en: 'When it is done: DONE — SAVE. Your tools come alive here, one activity at a time.', es: 'Cuando esté hecho: LISTO — GUARDAR. Tus herramientas cobran vida aquí, una actividad a la vez.', look: true },
+        { sel: '.td-room-doors button:nth-child(2)', en: 'SLEEP puts an activity to rest for today. It waits under the list, and WAKE brings it back.', es: 'DORMIR deja descansar una actividad por hoy. Espera bajo la lista, y DESPERTAR la trae de vuelta.', look: true },
+        { sel: '#tdTodosHdr',                     en: 'Upstairs: MY TODOS. When a problem lands — a bill, a form, a letter — it comes here. Open it.', es: 'Arriba: MIS TODOS. Cuando cae un problema — una cuenta, un formulario, una carta — llega aquí. Ábrelo.', before: function () { try { var o = document.getElementById('pwsUseOverlay'); if (o && o.classList.contains('open') && window.pwsCloseUse) window.pwsCloseUse(); } catch (e) {} } },
+        { sel: '#tdGrandpa #pwsUseInput',          via: '#tdTodosHdr', en: 'Grandpa. Tell him the problem, or drop the paper in his bucket — a photo is enough. He takes it from there.', es: 'El Abuelo. Cuéntale el problema, o suelta el papel en su balde — con una foto basta. Él se encarga.', look: true, last: true }
       ]
     },
     'studio-the-coach': {
@@ -114,7 +117,7 @@
   }
   function isFixed(el) { try { while (el && el !== document.body) { if (getComputedStyle(el).position === 'fixed') return true; el = el.parentElement; } } catch (e) {} return false; }
   function scrollTo(target) {
-    if (isFixed(target)) return;                           /* a pill that floats never needs the page to move */
+    if (isFixed(target)) { try { target.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e0) {} return; }   /* inside a room that scrolls on its own: bring it into the room's view */
     try { var r = target.getBoundingClientRect(); var y = r.top + window.pageYOffset - Math.max(120, window.innerHeight * 0.38); window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' }); } catch (e) {}
   }
 
@@ -143,7 +146,9 @@
     function onMove() { if (curTarget) place(curTarget); }
     function show(n) {
       i = n; var st = L.steps[i]; if (!st) return done(true);
-      waitFor(function () { return visible($(st.sel)); }, 12000, function (ok) {
+      try { if (st.before) st.before(); } catch (eB) {}
+      if (st.via && !visible($(st.sel))) { var v = $(st.via); if (v && visible(v)) { try { v.click(); } catch (eV) {} } }   /* open the way first (a folded card, a closed room) */
+      waitFor(function () { return visible($(st.sel)); }, st.via ? 4000 : 12000, function (ok) {
         if (!ok) { return show(i + 1); }                    /* a target this page does not have today: skip it */
         var t = $(st.sel); curTarget = t; unlight(); t.classList.add('ha-lit'); lit = t;
         scrollTo(t);
@@ -159,8 +164,11 @@
       });
     }
     onClick = function (ev) {
-      var st = L.steps[i]; if (!st || st.look) return;             /* a 'look' step is only shown; the next tap is not the lesson's */
-      var t = $(st.sel); if (t && t.contains(ev.target)) { setTimeout(function () { if (st.last) done(true); else show(i + 1); }, 250); }
+      var st = L.steps[i]; if (!st) return; var t = $(st.sel); if (!t || !t.contains(ev.target)) return;
+      if (st.hold) {   /* shown, not opened: a tap on a pill during the walk only moves the walk on (it would carry you off the page) */
+        ev.preventDefault(); ev.stopPropagation(); if (st.last) done(true); else show(i + 1); return;
+      }
+      setTimeout(function () { if (st.last) done(true); else show(i + 1); }, 250);   /* any other target: the tap does its real work, and the walk moves on */
     };
     onKey = function (ev) { var st = L.steps[i]; if (!st || ev.key !== 'Enter') return; var t = $(st.sel); if (t && t === ev.target && !st.look) setTimeout(function () { if (st.last) done(true); else show(i + 1); }, 250); };
     document.addEventListener('click', onClick, true); document.addEventListener('keydown', onKey, true);
@@ -212,5 +220,5 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(start, 900); }); else setTimeout(start, 900);
 
-  window.HouseArrows = { v: 1, run: function (k) { run(k, true); }, replay: function () { var ks = pageLessons(); if (ks.length) run(ks[0], true); }, stop: hideAll, lessons: function () { return Object.keys(LESSONS); }, reset: function () { for (var k in LESSONS) { try { localStorage.removeItem('4laws-lesson-' + k); } catch (e) {} } } };
+  window.HouseArrows = { v: 1.1, run: function (k) { run(k, true); }, replay: function () { var ks = pageLessons(); if (ks.length) run(ks[0], true); }, stop: hideAll, lessons: function () { return Object.keys(LESSONS); }, reset: function () { for (var k in LESSONS) { try { localStorage.removeItem('4laws-lesson-' + k); } catch (e) {} } } };
 })();
