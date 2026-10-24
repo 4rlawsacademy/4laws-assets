@@ -1,4 +1,24 @@
 /* ============================================================
+   DOCB-SIGN.JS v1.5 — THE NEXT STEP (Bench 50, 10/19/26)
+   The founder's pen test on v1.4 (10/15): three signatures placed,
+   "it still says stamp it... if there are multiple pages to sign, no
+   need to stamp it or anything?" -- "we should have that as an
+   instruction: click here to save the signatures." v1.5:
+    1. After the first signature is placed the hint changes to the next
+       step: "Signed in N place(s). More pages? Use the arrows and keep
+       tapping. Done? Tap STAMP IT to save them all into the file." It
+       counts up with every tap and goes back to the first hint when the
+       last signature is taken back. STAMP IT says the same on hover.
+    2. The gold marks sit only by real signature lines -- a short label
+       ("Signature", "Sign here", "Firma del solicitante", "X ____") --
+       never by a sentence in a paragraph that happens to say the word.
+   TESTED (test bench, same pdf.js 3.11.174 + pdf-lib 1.17.1 the page
+   loads): on the real Genworth PDF the pen still opens on page 3 and
+   names pages 3, 9, 11; one tap turns the hint to "Signed in 1 place";
+   three taps say 3; taking the last one back restores the first hint;
+   three signatures and dates stamp as before.
+   Way back: v1.4 (file docb-sign-v1_4-WAY-BACK.js).
+   ============================================================
    DOCB-SIGN.JS v1.4 — THE MANY STAMPS (Bench 50, 10/15/26)
    The founder's walk on the Genworth form (10/13): the pen opened on a
    blank last page, he hunted for the signature lines, tapped three pages,
@@ -170,7 +190,8 @@
           var items = tc.items || [];
           for (var i = 0; i < items.length; i++) {
             var it = items[i], str = String(it.str || '');
-            if (/signature|sign here|firma/i.test(str) && !/signature image|signatures?\s+are|digital/i.test(str)) {
+            var lbl = str.replace(/^\s+|\s+$/g, '');
+            if ((/signature|sign here|firma/i.test(lbl) && lbl.length <= 48 && !/signature image|signatures?\s+are|digital/i.test(lbl)) || /^x\s*_{3,}/i.test(lbl)) {   /* v1.5: a short label is a line; a sentence is not */
               var tr = it.transform || [1, 0, 0, 1, 0, 0];
               (st.lines[pn] = st.lines[pn] || []).push({ x: tr[4], y: tr[5], w: it.width || 60, h: it.height || 10 });
             }
@@ -217,6 +238,17 @@
     }
     if (btn) { btn.disabled = !st.marks.length; }
     var cnt = document.getElementById('dsCount'); if (cnt) { cnt.textContent = st.marks.length ? (st.marks.length + ' \u270D') : ''; }
+    nextStep_();   /* v1.5 */
+  }
+  /* v1.5 THE NEXT STEP: once a signature is placed, the hint says what comes next */
+  function nextStep_() {
+    var hint = document.getElementById('dsHint'); if (!hint || !st) { return; }
+    var n = st.marks ? st.marks.length : 0;
+    if (!n) { if (st.hint0) { hint.textContent = st.hint0; } return; }
+    if (!st.hint0) { st.hint0 = hint.textContent; }
+    hint.textContent = lang() === 'es'
+      ? ('Firmado en ' + n + (n === 1 ? ' lugar' : ' lugares') + '. \u00bfM\u00e1s p\u00e1ginas? Usa las flechas \u25c0 \u25b6 y sigue tocando. \u00bfListo? Toca \u270D F\u00cdRMALO para guardar todas las firmas en el archivo.')
+      : ('Signed in ' + n + (n === 1 ? ' place' : ' places') + '. More pages? Use the arrows \u25c0 \u25b6 and keep tapping. Done? Tap \u270D STAMP IT to save them all into the file.');
   }
   function onTap_(ev) {
     var canvas = document.getElementById('dsCanvas'); if (!canvas || !st) { return; }
@@ -305,7 +337,7 @@
       + '<span class="dsPg">' + T({ en: 'SIZE', es: 'TAMA\u00d1O' }) + '</span><input class="dsRange" id="dsSize" type="range" min="60" max="320" value="' + remembered + '">'
       + '<label class="dsTog"><input type="checkbox" id="dsDateOn"' + (st.dateOn ? ' checked' : '') + '> ' + T({ en: 'DATE', es: 'FECHA' }) + '</label>'
       + '<span class="dsPg" id="dsCount"></span>'
-      + '<button class="dsBtn" id="dsStamp" disabled>\u270D ' + T({ en: 'Stamp it', es: 'F\u00edrmalo' }) + '</button>'
+      + '<button class="dsBtn" id="dsStamp" disabled title="' + T({ en: 'Saves every signature you placed into the file', es: 'Guarda todas las firmas que pusiste en el archivo' }) + '">\u270D ' + T({ en: 'Stamp it', es: 'F\u00edrmalo' }) + '</button>'
       + '<button class="dsGhostBtn" id="dsClose">\u00d7</button></div>'
       + '<p class="dsHint" id="dsHint">' + T({ en: 'Loading the page\u2026', es: 'Cargando la p\u00e1gina\u2026' }) + '</p>'
       + '<div class="dsStage" id="dsStage"><canvas id="dsCanvas"></canvas><img class="dsGhost" id="dsGhost" alt="" style="display:none"></div>';
@@ -336,6 +368,7 @@
         if (hint) {
           var where = (st.linePages && st.linePages.length) ? (lang() === 'es' ? ' L\u00edneas de firma en la p\u00e1gina ' : ' Signature lines on page ') + st.linePages.join(', ') + '.' : '';
           hint.textContent = T({ en: 'Tap where each signature goes \u2014 on any page. Tap a signature to take it back. Then stamp once for all.', es: 'Toca donde va cada firma \u2014 en cualquier p\u00e1gina. Toca una firma para quitarla. Luego f\u00edrmalo una vez por todas.' }) + where;
+          st.hint0 = hint.textContent;   /* v1.5 */
         }
         return renderPage_();
       });
