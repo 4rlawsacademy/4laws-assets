@@ -1,0 +1,1253 @@
+<!-- ================================================================
+     SOLUTIONS WALL  v2.6  THE FINISHED WALL
+     (v2.5 + Weglot leaves the wall alone (data-wg-notranslate on its four blocks; the rest
+      of the page still translates); a visitor always starts with sound on (the switch
+      lasts one visit, never a stale "off"); the wall follows the site's language on arrival
+      (Weglot's choice or the page's lang), the EN/ES buttons still override. Way back: v2.5.)
+     ---- v2.5 was:
+     (v2.4 + the wall plays Dr. B's recorded shows itself: it reads each show from the
+      deck store the way the Watch page does, and on a tap his voice starts at once with
+      the slide's picture, its title on top and his words in big letters under it; slides
+      ride the take's stamps; the show ends on the doors. No Watch page, no frame. The
+      decks are read ahead when the wall opens, so taps are instant. If a show can't be
+      read, the card falls back to the written lines. The Studio's way back is /solutions.
+      Way back: v2.4.)
+     ---- v2.4 was:
+     (v2.3 + all eight shows recorded by Dr. B, English and Spanish, in the slots:
+      tapping a card opens the recorded show for the language on the wall. The owner
+      mark is remembered: open once with ?studio and SEND TO MY STUDIO stays on in this
+      browser; ?visitor turns it off. Way back: v2.3.)
+     ---- v2.3 was:
+     (v2.2 + SEND TO MY STUDIO on every card when the wall is opened with ?studio on the
+      address (owner only): writes the show to localStorage 'ps-wall-show' in the Studio's
+      shape and goes to /production-studio in the same tab. When a card's showUrl is
+      filled, tapping the card opens the recorded show in a frame inside the wall with the
+      wall's own CLOSE. Way back: v2.2.)
+     ---- v2.2 was:
+     (v2.1 + the mic stays open through pauses and sends only when tapped again or SEND;
+      Doc B never asks "What's on your mind?" at the wall and ends on the door; he carries
+      the map in Dr. B's order (membership and Family AI first for a family, Parent course
+      for a parent asking for a child), the key questions, the house facts for "is it safe?",
+      why membership is not a course, no free consultation; ANALYZE MY SITUATION door on
+      card 1 and in the room; top line "4 LAWS. One Source." Way back: v2.1.)
+     ---- v2.1 was:
+     (v2.0 + a cap of twelve messages per visit; after the third exchange Doc B offers
+      to remember the conversation if they come in; YES asks only for an email and saves
+      it to the Mailing List tab tagged [Wall] with their first words; the conversation
+      is kept on their device for the hand-off cut. Way back: v2.0.)
+     ---- v2.0 was:
+     (v1.1 + Doc B's room on the wall with the catalog in his hand;
+      SIGN ME UP for live training; whole pictures; doors from the
+      first line; every door in a new tab; clearer course picker;
+      Family AI to sign-up; a show slot per card. Way back: v1.1.)
+     4 LAWS Academy  -  the new Solutions page, built by code.
+     One block. English and Spanish. Eight cards. Each opens a show.
+     Way back: the old /solutions page stays untouched; this block
+     lives on its own new page until Dr. B swaps the addresses.
+     ES5 only. No outside scripts except Google Fonts.
+     ================================================================ -->
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Playfair+Display:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  #sw-root, #sw-root * { box-sizing: border-box; }
+  #sw-root {
+    --felt: #040608; --gold: #c8a84b; --cream: #f0e6cc; --crimson: #3d0a0a;
+    position: relative; width: 100%; min-height: 100vh;
+    background: var(--felt);
+    color: var(--cream);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    overflow: hidden;
+  }
+  #sw-root .sw-bg {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0;
+    background-size: cover; background-position: center;
+    opacity: 0; transition: opacity 1.6s ease;
+  }
+  #sw-root .sw-bg.on { opacity: 0.55; }
+  #sw-root .sw-bg:after {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at center, rgba(4,6,8,0.15) 0%, rgba(4,6,8,0.75) 70%, rgba(4,6,8,0.95) 100%);
+  }
+
+  /* ---------- top bar: language, sound, help ---------- */
+  #sw-root .sw-bar {
+    position: relative; z-index: 3;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 16px; gap: 12px;
+  }
+  #sw-root .sw-bar .sw-left, #sw-root .sw-bar .sw-right { display: flex; gap: 10px; align-items: center; }
+  #sw-root .sw-pill {
+    font-family: 'Cinzel', serif; font-size: 16px; letter-spacing: 2px;
+    color: var(--cream); background: rgba(4,6,8,0.6);
+    border: 1px solid rgba(200,168,75,0.6); border-radius: 999px;
+    padding: 10px 18px; cursor: pointer; user-select: none;
+    text-decoration: none; line-height: 1;
+  }
+  #sw-root .sw-pill.on { background: var(--gold); color: var(--felt); border-color: var(--gold); }
+  #sw-root .sw-pill:hover { border-color: var(--gold); }
+
+  /* ---------- the one line ---------- */
+  #sw-root .sw-line {
+    position: relative; z-index: 2; text-align: center;
+    font-family: 'Playfair Display', serif; font-weight: 800;
+    font-size: clamp(30px, 5vw, 58px); line-height: 1.1;
+    color: var(--cream); padding: 24px 16px 8px;
+    text-shadow: 0 2px 24px rgba(0,0,0,0.9);
+    opacity: 0; transform: translateY(14px);
+    transition: opacity 1.2s ease 0.4s, transform 1.2s ease 0.4s;
+  }
+  #sw-root .sw-line.on { opacity: 1; transform: none; }
+  #sw-root .sw-line small {
+    display: block; font-family: 'Cormorant Garamond', serif; font-weight: 500;
+    font-size: clamp(20px, 2.6vw, 30px); color: var(--gold); margin-top: 8px; letter-spacing: 1px;
+  }
+
+  /* ---------- the wall ---------- */
+  #sw-root .sw-wall {
+    position: relative; z-index: 2;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 22px; padding: 22px 16px 60px; max-width: 1400px; margin: 0 auto;
+  }
+  #sw-root .sw-card {
+    position: relative; height: 340px; border-radius: 18px; overflow: hidden;
+    cursor: pointer; border: 1px solid rgba(200,168,75,0.35);
+    box-shadow: 0 18px 50px rgba(0,0,0,0.65);
+    background: #0b0e12;
+    opacity: 0; transform: translateY(40px) scale(0.97);
+    transition: opacity 0.9s ease, transform 0.9s cubic-bezier(.2,.8,.2,1), box-shadow 0.4s ease, border-color 0.4s ease;
+  }
+  #sw-root .sw-card.on { opacity: 1; transform: none; }
+  #sw-root .sw-card.breathe { animation: swBreathe 7s ease-in-out infinite; }
+  @keyframes swBreathe { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  #sw-root .sw-card:hover { border-color: var(--gold); box-shadow: 0 24px 70px rgba(200,168,75,0.25); }
+  #sw-root .sw-card .sw-pic {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center;
+    transform: scale(1.02); transition: transform 6s ease;
+  }
+  #sw-root .sw-card:hover .sw-pic { transform: scale(1.08); }
+  #sw-root .sw-card .sw-veil {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to top, rgba(4,6,8,0.96) 0%, rgba(4,6,8,0.55) 45%, rgba(4,6,8,0.05) 100%);
+  }
+  #sw-root .sw-card .sw-label {
+    position: absolute; left: 20px; right: 20px; bottom: 22px;
+    font-family: 'Cinzel', serif; font-weight: 700;
+    font-size: clamp(24px, 2.4vw, 32px); line-height: 1.12; letter-spacing: 1px;
+    color: var(--cream); text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+  }
+  #sw-root .sw-card .sw-label small {
+    display: block; font-family: 'Cormorant Garamond', serif; font-weight: 600;
+    font-size: 20px; letter-spacing: 0.5px; color: var(--gold); margin-top: 6px;
+  }
+
+  /* ---------- the show ---------- */
+  #sw-show, #sw-leave {
+    --felt: #040608; --gold: #c8a84b; --cream: #f0e6cc; --crimson: #3d0a0a;
+  }
+  #sw-show {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 99999; display: none;
+    background: #040608; color: #f0e6cc;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+  #sw-show.on { display: flex; flex-direction: column; }
+  #sw-show .sh-top {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; gap: 10px; flex: 0 0 auto;
+    border-bottom: 1px solid rgba(200,168,75,0.25);
+  }
+  #sw-show .sh-title {
+    font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 2px;
+    font-size: clamp(18px, 2.4vw, 30px); color: var(--gold); text-align: center; flex: 1 1 auto;
+  }
+  #sw-show .sh-stage { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  #sw-show .sh-pic {
+    flex: 0 0 60%; background-size: contain; background-repeat: no-repeat; background-position: center;
+    background-color: #07090c; position: relative;
+  }
+  #sw-show .sh-pic:after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 40%;
+    background: linear-gradient(to top, var(--felt) 0%, rgba(4,6,8,0) 100%);
+  }
+  #sw-show .sh-pic.none { flex: 0 0 0; }
+  #sw-show .sh-words {
+    flex: 1 1 auto; display: flex; align-items: center; justify-content: center;
+    padding: 10px 24px 18px; text-align: center;
+  }
+  #sw-show .sh-words .sh-text {
+    font-family: 'Playfair Display', serif; font-weight: 600;
+    font-size: clamp(26px, 3.6vw, 48px); line-height: 1.25; max-width: 1100px;
+    opacity: 0; transform: translateY(10px); transition: opacity .7s ease, transform .7s ease;
+  }
+  #sw-show .sh-words .sh-text.on { opacity: 1; transform: none; }
+  #sw-show .sh-doors {
+    display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center;
+    padding: 8px 16px 16px; flex: 0 0 auto; opacity: 0.45; transition: opacity .6s ease;
+  }
+  #sw-show .sh-doors.on { opacity: 1; }
+  #sw-show .sh-doors.off { display: none; }
+  #sw-show .sh-door {
+    font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 2px;
+    font-size: clamp(16px, 1.6vw, 20px); color: var(--felt); background: var(--gold);
+    border: 2px solid var(--gold); border-radius: 14px; padding: 16px 24px;
+    cursor: pointer; text-decoration: none; text-align: center; line-height: 1.2;
+    min-width: 200px;
+  }
+  #sw-show .sh-door.quiet { background: transparent; color: var(--cream); border-color: rgba(200,168,75,0.6); }
+  #sw-show .sh-door:hover { filter: brightness(1.1); }
+  #sw-show .sh-foot {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 16px 14px; flex: 0 0 auto; gap: 10px;
+  }
+  #sw-show .sh-dots { display: flex; gap: 8px; }
+  #sw-show .sh-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(240,230,204,0.25); }
+  #sw-show .sh-dot.on { background: var(--gold); }
+  #sw-show .sw-pill { font-size: 15px; padding: 9px 16px; }
+
+  /* ---------- panel inside a show (courses picker, schools, books, guides) ---------- */
+  #sw-show .sh-panel {
+    display: none; flex: 1 1 auto; overflow: auto; padding: 16px;
+  }
+  #sw-show .sh-panel.on { display: block; }
+  #sw-show .sh-panel h3 {
+    font-family: 'Cinzel', serif; color: var(--gold); letter-spacing: 2px;
+    font-size: clamp(20px, 2.4vw, 28px); text-align: center; margin: 8px 0 18px;
+  }
+  #sw-show .sh-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; max-width: 1100px; margin: 0 auto; }
+  #sw-show .sh-item {
+    display: block; text-decoration: none; color: var(--cream);
+    border: 1px solid rgba(200,168,75,0.45); border-radius: 14px; padding: 18px 18px;
+    background: rgba(255,255,255,0.03); cursor: pointer;
+  }
+  #sw-show .sh-item:hover { border-color: var(--gold); background: rgba(200,168,75,0.08); }
+  #sw-show .sh-item b { display: block; font-family: 'Cinzel', serif; font-size: 20px; letter-spacing: 1px; color: var(--cream); margin-bottom: 6px; }
+  #sw-show .sh-item span { font-size: 20px; color: rgba(240,230,204,0.85); }
+  #sw-show .sh-item i { display: block; font-size: 17px; color: var(--gold); margin-top: 8px; font-style: normal; }
+  #sw-show .sh-books { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; max-width: 1100px; margin: 0 auto; }
+  #sw-show .sh-book { text-align: center; }
+  #sw-show .sh-book img { width: 100%; max-width: 240px; border-radius: 8px; box-shadow: 0 14px 40px rgba(0,0,0,0.7); display: block; margin: 0 auto 12px; }
+  #sw-show .sh-book .sh-door { display: inline-block; min-width: 0; }
+  #sw-show .sh-book p { font-size: 20px; margin: 6px 0 12px; color: rgba(240,230,204,0.9); }
+
+  /* ---------- leaving notice ---------- */
+  #sw-leave {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100000; display: none;
+    background: rgba(4,6,8,0.88); align-items: center; justify-content: center; padding: 16px;
+  }
+  #sw-leave.on { display: flex; }
+  #sw-leave .lv-box {
+    background: #0b0e12; border: 1px solid var(--gold); border-radius: 18px;
+    padding: 28px 24px; max-width: 520px; width: 100%; text-align: center;
+    font-family: 'Cormorant Garamond', Georgia, serif; color: var(--cream);
+  }
+  #sw-leave .lv-box p { font-size: 26px; margin: 0 0 20px; line-height: 1.3; }
+  #sw-leave .lv-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* ---------- Doc B's room (the Law of the Room: header, chat, text box last) ---------- */
+  #sw-room {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100001; display: none;
+    background: #040608; color: #f0e6cc; font-family: 'Cormorant Garamond', Georgia, serif;
+    --felt: #040608; --gold: #c8a84b; --cream: #f0e6cc;
+  }
+  #sw-room.on { display: flex; flex-direction: column; }
+  #sw-room .rm-top { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid rgba(200,168,75,0.25); flex: 0 0 auto; }
+  #sw-room .rm-title { font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 2px; font-size: clamp(18px, 2.2vw, 26px); color: #c8a84b; text-align: center; flex: 1 1 auto; }
+  #sw-room .rm-chat { flex: 1 1 auto; overflow: auto; padding: 18px 16px; max-width: 900px; width: 100%; margin: 0 auto; }
+  #sw-room .rm-b { max-width: 85%; margin: 0 0 14px; padding: 14px 18px; border-radius: 16px; font-size: clamp(20px, 2.2vw, 26px); line-height: 1.35; white-space: pre-wrap; }
+  #sw-room .rm-b.docb { background: rgba(200,168,75,0.12); border: 1px solid rgba(200,168,75,0.35); margin-right: auto; }
+  #sw-room .rm-b.me { background: rgba(240,230,204,0.08); border: 1px solid rgba(240,230,204,0.2); margin-left: auto; }
+  #sw-room .rm-b.think { opacity: 0.6; font-style: italic; }
+  #sw-room .rm-doors { display: flex; flex-wrap: wrap; gap: 10px; padding: 0 16px 8px; justify-content: center; flex: 0 0 auto; }
+  #sw-room .rm-doors .sh-door { min-width: 0; padding: 12px 18px; font-size: 16px; }
+  #sw-room .rm-mouth { display: flex; gap: 10px; align-items: center; padding: 10px 16px 16px; flex: 0 0 auto; max-width: 900px; width: 100%; margin: 0 auto; border-top: 1px solid rgba(200,168,75,0.25); }
+  #sw-room .rm-mouth textarea { flex: 1 1 auto; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; line-height: 1.3; min-height: 56px; max-height: 140px; resize: none; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(200,168,75,0.5); background: #0b0e12; color: #f0e6cc; outline: none; }
+  #sw-room .rm-mouth textarea:focus { border-color: #c8a84b; }
+  #sw-room .rm-btn { font-family: 'Cinzel', serif; font-size: 16px; letter-spacing: 1px; border-radius: 14px; padding: 14px 16px; cursor: pointer; border: 1px solid rgba(200,168,75,0.6); background: rgba(4,6,8,0.6); color: #f0e6cc; line-height: 1; }
+  #sw-room .rm-btn.send { background: #c8a84b; color: #040608; border-color: #c8a84b; }
+  #sw-room .rm-btn.live { background: #3d0a0a; border-color: #c8a84b; }
+
+  /* ---------- sign-up box inside a show ---------- */
+  #sw-show .sh-form { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+  #sw-show .sh-form input { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(200,168,75,0.5); background: #0b0e12; color: #f0e6cc; outline: none; }
+  #sw-show .sh-form input:focus { border-color: #c8a84b; }
+  #sw-show .sh-form .sh-door { width: 100%; }
+  #sw-show .sh-form p { font-size: 22px; text-align: center; margin: 4px 0; color: rgba(240,230,204,0.9); }
+
+  @media (max-width: 640px) {
+    #sw-root .sw-wall { grid-template-columns: 1fr; padding: 16px 16px 40px; }
+    #sw-root .sw-card { height: 260px; }
+    #sw-show .sh-pic { flex: 0 0 40%; }
+    #sw-room .rm-b { max-width: 95%; font-size: 19px; }
+    #sw-room .rm-mouth { flex-wrap: wrap; }
+    #sw-room .rm-mouth textarea { flex-basis: 100%; }
+    #sw-show .sh-words .sh-text { font-size: 24px; }
+    #sw-show .sh-door { min-width: 0; width: 100%; }
+    #sw-root .sw-pill { font-size: 14px; padding: 9px 14px; }
+  }
+</style>
+
+<div id="sw-root" data-wg-notranslate="true" class="notranslate">
+  <div class="sw-bg" id="sw-bg"></div>
+  <div class="sw-bar">
+    <div class="sw-left">
+      <span class="sw-pill" id="sw-lang-en">EN</span>
+      <span class="sw-pill" id="sw-lang-es">ES</span>
+    </div>
+    <div class="sw-right">
+      <span class="sw-pill" id="sw-sound" title="voice">&#128266; <span id="sw-sound-t">SOUND</span></span>
+      <span class="sw-pill" id="sw-help">? <span id="sw-help-t">SHOW ME HOW</span></span>
+    </div>
+  </div>
+  <div class="sw-line" id="sw-line"></div>
+  <div class="sw-wall" id="sw-wall"></div>
+</div>
+
+<div id="sw-show" data-wg-notranslate="true" class="notranslate">
+  <div class="sh-top">
+    <span class="sw-pill" id="sh-back">&#8592; <span id="sh-back-t">BACK</span></span>
+    <div class="sh-title" id="sh-title"></div>
+    <span class="sw-pill" id="sh-sound">&#128266;</span>
+  </div>
+  <div class="sh-stage" id="sh-stage">
+    <div class="sh-pic" id="sh-pic"></div>
+    <div class="sh-words"><div class="sh-text" id="sh-text"></div></div>
+    <div class="sh-panel" id="sh-panel"></div>
+  </div>
+  <div class="sh-doors" id="sh-doors"></div>
+  <div class="sh-foot">
+    <div class="sh-dots" id="sh-dots"></div>
+    <span class="sw-pill" id="sh-next"><span id="sh-next-t">NEXT</span> &#8594;</span>
+  </div>
+</div>
+
+<div id="sw-room" data-wg-notranslate="true" class="notranslate">
+  <div class="rm-top">
+    <span class="sw-pill" id="rm-back">&#8592; <span id="rm-back-t">BACK</span></span>
+    <div class="rm-title">DOC B</div>
+    <span class="sw-pill" id="rm-sound">&#128266;</span>
+  </div>
+  <div class="rm-chat" id="rm-chat"></div>
+  <div class="rm-doors" id="rm-doors"></div>
+  <div class="rm-mouth">
+    <textarea id="rm-in" rows="2"></textarea>
+    <span class="rm-btn" id="rm-mic" title="talk">&#127908;</span>
+    <span class="rm-btn send" id="rm-send">&#10148;</span>
+  </div>
+</div>
+
+<div id="sw-leave" data-wg-notranslate="true" class="notranslate">
+  <div class="lv-box">
+    <p id="lv-text"></p>
+    <div class="lv-row">
+      <a class="sh-door" id="lv-go" href="#" target="_blank" rel="noopener"></a>
+      <span class="sh-door quiet" id="lv-stay"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ======================= THE DATA ======================= */
+  var PIC = {
+    wall:     'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/00bf37c3-e3a2-4fb7-aeff-851d68ee0abc/imgg-9o5-82lzh3bd.png?format=1500w',
+    live:     'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/8f5b66c0-6881-40b2-b4f0-d02369e4f41a/imgg-tdu-3p7propf.png?format=1000w',
+    family:   'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/06938440-f7d0-49ac-b5f4-a8fc17005db9/imgg-4ov-x9120n49.png?format=1000w',
+    courses:  'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/f1651026-5eed-44f5-89f6-3cdb4b7b27a5/imgg-5i6-logbbgf0.png?format=1000w',
+    guides:   'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/82cb8f9a-929a-4ab8-8707-45d8e96dbed8/imgg-d0t-5v4s4lnq.png?format=1000w',
+    training: 'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/c77bbc74-5359-45f1-bb3e-7df60d74cbf6/imgg-lvl-1v761p5e.png?format=1000w',
+    coaching: 'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/b3e1ae31-63ab-44ad-a0ba-4a966d7984dd/imgg-9xa-g009zj03.png?format=1000w',
+    school:   'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/e95aa2d8-a13c-4773-9d8b-941a98d55afe/imgg-dlt-296lf9dx.png?format=1000w',
+    bookEn:   'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/3def06a6-d067-46be-a53f-aba74c23a6d1/4+LAWS+book+cover+for+website+%281%29.jpg',
+    bookEs:   'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/ddca2d78-e57c-4ffc-9a6e-14e571ebff40/Bustamante_Spanish_Ebook+Cover_250821_Las+4+Leyes.jpg',
+    hpEn:     'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/68980818-dd00-4b84-aa72-6a06a9be234d/Helpful+Parenting+cover+for+website.jpg',
+    hpEs:     'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/4db41500-b738-4997-8c1f-80e2603e8ddd/Bustamante_Spanish+HP+Ebook+Cover_250924_Crianza+Util.jpg',
+    clin:     'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/3f384d84-b848-4537-a8bd-1c79208b9b1c/Book+Cover+Front+Page+2nd+Edition+Treating+the+Disruptive+Adolescent.png'
+  };
+
+  var LINK = {
+    signup: '/sign-up', tour: '/grand-tour', family: '/family-atelier',
+    docb: '/ai-companion-demo', call: '/contact/#book-a-call',
+    parentBasic: '/basic-parenting-course', parentPremium: '/premium-parent-class',
+    adultBasic: '/adult-basic-course', adultPremium: '/presentations-1-1-2-adult',
+    youth: '/presentations-1-1-youth',
+    lighthouse: '/lighthouse-education',
+    amzBookEn: 'https://www.amazon.com/LAWS-Trust-Talent-Authentic-Connections-ebook/dp/B0FS3G6QD5',
+    amzBookEs: 'https://a.co/d/3FMjEoL',
+    amzHpEn:   'https://www.amazon.com/Helpful-Parenting-Forced-Goodness-Talent-ebook/dp/B0FSWTX1GK',
+    amzHpEs:   'https://www.amazon.com/Crianza-%C3%9Atil-Bondad-Forzada-Elegida/dp/B0FSDY8NQP',
+    amzClin:   'https://www.amazon.com/Treating-Disruptive-Adolescent-Oppositional-Disorders/dp/B0FVSRJQ36',
+    gIntroEn:  '/s/Free-Parent-Course-1.pdf',
+    gIntroEs:  '/s/Spanish-Script-Free-Parent-Course-Spanish.pdf',
+    gKidsEn:   '/s/Free-Kids-Course-4LAWS-1.pdf',
+    gKidsEs:   '/s/Spanish-Script-Free-Kids-Course-4LAWS-Spanish.pdf',
+    gAidEn:    '/s/Helpful-Parenting-Free-Course-English-1.pdf',
+    gAidEs:    '/s/Crianza-Util-Curso-Gratic-Condenso-1.pdf',
+    northStar: 'https://www.northstarteens.org/',
+    bayState:  'http://www.baystatelearning.org/',
+    sudbury:   'https://sudburyvalley.org/',
+    dory:      'https://www.dorylearningcenter.org/',
+    asdeMap:   'https://www.self-directed.org/resources/map',
+    liberated: 'https://liberatedlearners.net/members/member-programs/',
+    backend:   'https://script.google.com/macros/s/AKfycbzHDY-xIM2EEajM7sr2erRrIOXHTH3DJnf6yojbk59_eBNKZcxKlS9p5Q99nKN8j8pa/exec'
+  };
+
+  var UI = {
+    en: { line: '4 LAWS. One Source.', sub: 'The book. The courses. The game. Pick your way in.',
+          sound: 'SOUND', mute: 'QUIET', help: 'SHOW ME HOW', back: 'BACK', next: 'NEXT', close: 'CLOSE',
+          helpText: 'Tap any picture. It plays a short show and ends on the doors. Tap the screen to move faster. BACK brings you here. The sound button turns the voice on or off.',
+          leave: 'This opens another website in a new tab. This page stays open behind it.',
+          go: 'GO', stay: 'STAY HERE', docb: 'TALK TO DOC B', analyze: 'ANALYZE MY SITUATION', analyzeUnder: 'free, one situation, on this site', studio: 'SEND TO MY STUDIO \u2197', studioUnder: 'owner only; leaves this page',
+          basic: 'Basic — $35', premium: 'Premium — $75', youthOne: 'Youth Course — $75',
+          pick: 'Pick your course', schools: 'Schools and centers', guides: 'Take them. They are yours.', books: 'The books',
+          pickParent: 'Parent course: Basic or Premium?', pickAdult: 'Adult course: Basic or Premium?',
+          signup: 'Sign me up for live training', yourName: 'Your name', yourEmail: 'Your email', send: 'SIGN ME UP',
+          signedUp: 'You are on the list. Dr. B will write to you when the next group opens.', signupFail: 'That did not go through. Try again, or book a call.',
+          roomHello: 'I am Doc B. I know what is on this wall, what it costs, and who each thing is for. What are you looking for?',
+          roomHelloCard: 'I am Doc B. You were looking at {card}. Want to know if it is for you, or what it costs?',
+          thinking: 'one moment', roomFail: 'I could not answer just now. Try once more.', speak: 'Speak now', listening: 'listening',
+          offer: 'If you come in, I can remember this conversation and pick up where we left off. Want that?', yes: 'YES, REMEMBER ME', noThanks: 'NO THANKS',
+          askEmail: 'Your email, and nothing else:', saved: 'Done. When you come in with this email, I will remember.', capLine: 'Let\u2019s leave it here for today. The doors are below.' },
+    es: { line: '4 LEYES. Una Fuente.', sub: 'El libro. Los cursos. El juego. Escoja su entrada.',
+          sound: 'SONIDO', mute: 'SILENCIO', help: 'MUÉSTRAME CÓMO', back: 'VOLVER', next: 'SIGUIENTE', close: 'CERRAR',
+          helpText: 'Toque cualquier foto. Pasa un show corto y termina en las puertas. Toque la pantalla para ir más rápido. VOLVER lo trae aquí. El botón de sonido enciende o apaga la voz.',
+          leave: 'Esto abre otro sitio web en una pestaña nueva. Esta página se queda abierta detrás.',
+          go: 'IR', stay: 'QUEDARME', docb: 'HABLAR CON DOC B', analyze: 'ANALIZAR MI SITUACIÓN', analyzeUnder: 'gratis, una situación, en este sitio', studio: 'ENVIAR A MI ESTUDIO \u2197', studioUnder: 'solo el dueño; sale de esta página',
+          basic: 'Básico — $35', premium: 'Premium — $75', youthOne: 'Curso para Jóvenes — $75',
+          pick: 'Escoja su curso', schools: 'Escuelas y centros', guides: 'Tómelas. Son suyas.', books: 'Los libros',
+          pickParent: 'Curso para padres: ¿Básico o Premium?', pickAdult: 'Curso para adultos: ¿Básico o Premium?',
+          signup: 'Apúnteme al entrenamiento en vivo', yourName: 'Su nombre', yourEmail: 'Su correo', send: 'APÚNTEME',
+          signedUp: 'Ya está en la lista. El Dr. B le escribirá cuando abra el próximo grupo.', signupFail: 'Eso no pasó. Intente otra vez, o reserve una llamada.',
+          roomHello: 'Soy Doc B. Sé lo que hay en esta pared, cuánto cuesta, y para quién es cada cosa. ¿Qué anda buscando?',
+          roomHelloCard: 'Soy Doc B. Usted estaba viendo {card}. ¿Quiere saber si es para usted, o cuánto cuesta?',
+          thinking: 'un momento', roomFail: 'No pude responder ahora. Intente una vez más.', speak: 'Hable ahora', listening: 'escuchando',
+          offer: 'Si usted entra, puedo recordar esta conversación y seguir donde la dejamos. ¿Quiere eso?', yes: 'SÍ, RECUÉRDEME', noThanks: 'NO, GRACIAS',
+          askEmail: 'Su correo, y nada más:', saved: 'Listo. Cuando entre con este correo, me acordaré.', capLine: 'Dejémoslo aquí por hoy. Las puertas están abajo.' }
+  };
+
+  /* Each card: key, picture, label (big), under (small), title of the show,
+     lines (spoken, one per beat), doors (last beat). Doors: {t: text, href: link,
+     out: true if it leaves the site, panel: 'courses'|'books'|'guides'|'schools'} */
+  var CARDS = [
+    /* showUrl (English) and showUrlEs (Spanish): Dr. B's recorded shows. The card plays the one for the wall's language. Empty = lines + machine voice. */
+    { key: 'live', pic: PIC.live, showUrl: 'https://www.4lawsacademy.com/watch?deck=772decae-e1cb-47fd-a6cd-721703d2f75f', showUrlEs: 'https://www.4lawsacademy.com/watch?deck=b6d233c6-6404-4236-857f-bcd676ab3ea3',
+      en: { label: 'LIVE THE 4 LAWS', under: 'Doc B AI', title: 'LIVE THE 4 LAWS',
+            lines: ['This is where I live.',
+                    'My own station. My favorite day, with my favorite treats, built the way I want it.',
+                    'A 4 LAWS LIFE coach named Butler who knows me, keeps me safe, and crushes my obstacles.',
+                    'Every chat in the house knows who I am and why I’m here.',
+                    'It’s a game. The game is your life.',
+                    'Two months free. By the end, you know how to live the 4 LAWS.',
+                    'Stay and we shape your growth. Or leave, and take the 4 LAWS with you.'],
+            doors: [{ t: 'BECOME A MEMBER', href: LINK.signup }, { t: 'TAKE THE TOUR', href: LINK.tour, quiet: true }, { t: 'ANALYZE MY SITUATION', href: LINK.docb, quiet: true, under: 'free, one situation, on this site' }] },
+      es: { label: 'VIVE LAS 4 LEYES', under: 'Doc B AI', title: 'VIVE LAS 4 LEYES',
+            lines: ['Aquí es donde yo vivo.',
+                    'Mi propia estación. Mi día favorito, con mis gustos favoritos, armado como yo lo quiero.',
+                    'Un coach de las 4 LEYES llamado Butler que me conoce, me cuida, y me aplasta los obstáculos.',
+                    'Cada chat de la casa sabe quién soy y por qué estoy aquí.',
+                    'Es un juego. El juego es su vida.',
+                    'Dos meses gratis. Al final, usted sabe vivir las 4 LEYES.',
+                    'Quédese y moldeamos su crecimiento. O váyase, y llévese las 4 LEYES con usted.'],
+            doors: [{ t: 'HACERME MIEMBRO', href: LINK.signup }, { t: 'HACER EL TOUR', href: LINK.tour, quiet: true }, { t: 'ANALIZAR MI SITUACIÓN', href: LINK.docb, quiet: true, under: 'gratis, una situación, en este sitio' }] } },
+
+    { key: 'family', pic: PIC.family, showUrl: 'https://www.4lawsacademy.com/watch?deck=676e8210-18a3-4c81-a1fb-3d05d191381d', showUrlEs: 'https://www.4lawsacademy.com/watch?deck=436a17bd-e676-4a6f-bd24-349e56296e21',
+      en: { label: 'DOC B FAMILY AI', under: 'The same house, for your whole family', title: 'DOC B FAMILY AI',
+            lines: ['One culture. One family. One place to live it.',
+                    'Each of you gets your own station.',
+                    'Doc B watches over the house. When someone contributes, creates, or needs something, the parents know.',
+                    'When trust breaks, Doc B sits down with the ones involved and repairs it.',
+                    'When talent grows, the whole family sees it.',
+                    'Three dollars a month for each person you bring in.'],
+            doors: [{ t: 'BRING MY FAMILY', href: LINK.signup }] },
+      es: { label: 'DOC B FAMILY AI', under: 'La misma casa, para toda su familia', title: 'DOC B FAMILY AI',
+            lines: ['Una cultura. Una familia. Un lugar para vivirla.',
+                    'Cada uno tiene su propia estación.',
+                    'Doc B cuida la casa. Cuando alguien contribuye, crea, o necesita algo, los padres lo saben.',
+                    'Cuando la confianza se rompe, Doc B se sienta con los involucrados y la repara.',
+                    'Cuando el talento crece, toda la familia lo ve.',
+                    'Tres dólares al mes por cada persona que usted traiga.'],
+            doors: [{ t: 'TRAER A MI FAMILIA', href: LINK.signup }] } },
+
+    { key: 'courses', pic: PIC.courses, showUrl: 'https://www.4lawsacademy.com/watch?deck=baa8732c-dd39-4885-b9e8-685ddcf4ed35', showUrlEs: 'https://www.4lawsacademy.com/watch?deck=56f12a42-475d-47c9-8056-7c1547a896c6',
+      en: { label: 'ONLINE COURSES', under: 'Learn the 4 LAWS', title: 'ONLINE COURSES',
+            lines: ['Learn the 4 LAWS at your own speed.',
+                    'Thirteen videos. Worksheets. Practice scenarios. Role-play.',
+                    'Basic, thirty-five dollars. Premium, seventy-five, with the full practice system.',
+                    'Three doors: for parents, for adults, for young people who want their rights.',
+                    'Learn it once. Live it for life.'],
+            doors: [{ t: 'PARENT COURSE', panel: 'parent' }, { t: 'ADULT COURSE', panel: 'adult' }, { t: 'YOUTH COURSE', href: LINK.youth }] },
+      es: { label: 'CURSOS EN LÍNEA', under: 'Aprende las 4 LEYES', title: 'CURSOS EN LÍNEA',
+            lines: ['Aprenda las 4 LEYES a su propio ritmo.',
+                    'Trece videos. Hojas de trabajo. Escenarios de práctica. Role-play.',
+                    'Básico, treinta y cinco dólares. Premium, setenta y cinco, con el sistema completo de práctica.',
+                    'Tres puertas: para padres, para adultos, para jóvenes que quieren sus derechos.',
+                    'Apréndalo una vez. Vívalo toda la vida.'],
+            doors: [{ t: 'CURSO PARA PADRES', panel: 'parent' }, { t: 'CURSO PARA ADULTOS', panel: 'adult' }, { t: 'CURSO PARA JÓVENES', href: LINK.youth }] } },
+
+    { key: 'books', pic: PIC.bookEn, picEs: PIC.bookEs, showUrl: 'https://www.4lawsacademy.com/watch?deck=6d4372ef-eb49-4119-ba5f-5741992e1ccc', showUrlEs: 'https://www.4lawsacademy.com/watch?deck=44289864-160b-4d05-a23c-af275bb2c386',
+      en: { label: 'THE BOOKS', under: 'Where it all begins', title: 'THE BOOKS',
+            lines: ['The book is the source. Everything on this wall grew from it.',
+                    'The 4 LAWS of Trust and Talent: why forced goodness destroys trust, and how the 4 LAWS make people want to connect.',
+                    'Helpful Parenting: the training manual. What to do, step by step, eight sessions.',
+                    'For clinicians: Treating the Disruptive Adolescent. The 2000 book where it began.',
+                    'English and Spanish. On Amazon.'],
+            doors: [{ t: 'SEE THE BOOKS', panel: 'books' }] },
+      es: { label: 'LOS LIBROS', under: 'Donde empieza todo', title: 'LOS LIBROS',
+            lines: ['El libro es la fuente. Todo lo que hay en esta pared nació de él.',
+                    'Las 4 LEYES de Confianza y Talento: por qué la bondad forzada destruye la confianza, y cómo las 4 LEYES hacen que la gente quiera conectarse.',
+                    'Crianza Útil: el manual de entrenamiento. Qué hacer, paso a paso, ocho sesiones.',
+                    'Para clínicos: Treating the Disruptive Adolescent. El libro del 2000 donde empezó todo.',
+                    'En inglés y en español. En Amazon.'],
+            doors: [{ t: 'VER LOS LIBROS', panel: 'books' }] } },
+
+    { key: 'guides', pic: PIC.guides, showUrl: 'https://www.4lawsacademy.com/watch?deck=9feb6b79-87ae-4bfd-ba5b-418cb489bf90', showUrlEs: 'https://www.4lawsacademy.com/watch?deck=506571a4-b7c8-4cba-a44b-eb187cd2257a',
+      en: { label: 'FREE GUIDES', under: 'Start here. It costs nothing.', title: 'FREE GUIDES',
+            lines: ['Not sure yet? Start here. It costs nothing.',
+                    'The 4 LAWS in fifteen minutes.',
+                    'The 4 LAWS for kids, in their words.',
+                    'First aid, for the night you need an answer now.',
+                    'Take them. They’re yours.'],
+            doors: [{ t: 'DOWNLOAD THE GUIDES', panel: 'guides' }] },
+      es: { label: 'GUÍAS GRATIS', under: 'Empiece aquí. No cuesta nada.', title: 'GUÍAS GRATIS',
+            lines: ['¿Todavía no está seguro? Empiece aquí. No cuesta nada.',
+                    'Las 4 LEYES en quince minutos.',
+                    'Las 4 LEYES para niños, en sus palabras.',
+                    'Primeros auxilios, para la noche en que necesita una respuesta ya.',
+                    'Tómelas. Son suyas.'],
+            doors: [{ t: 'DESCARGAR LAS GUÍAS', panel: 'guides' }] } },
+
+    { key: 'training', pic: PIC.training, showUrl: 'https://www.4lawsacademy.com/watch?deck=a99b2801-3abe-4b54-8ab1-cac304a532d5', showUrlEs: 'https://www.4lawsacademy.com/watch?deck=c63e21eb-583c-44fe-9c4d-be3dc41e931e',
+      en: { label: 'LIVE TRAINING WITH DR. B', under: 'Inside the game, live', title: 'LIVE TRAINING WITH DR. B',
+            lines: ['Not slides. Not a lecture.',
+                    'I build your 4 LAWS LIFE culture with you, and I show you how to run it.',
+                    'Small group. Eight weeks. Your real situations, worked live.',
+                    'You walk out knowing how to live the 4 LAWS.'],
+            doors: [{ t: 'SIGN ME UP', panel: 'signup' }, { t: 'BOOK A CALL', href: LINK.call, quiet: true }] },
+      es: { label: 'ENTRENAMIENTO EN VIVO CON EL DR. B', under: 'Dentro del juego, en vivo', title: 'ENTRENAMIENTO EN VIVO CON EL DR. B',
+            lines: ['Ni diapositivas. Ni conferencia.',
+                    'Yo construyo su cultura 4 LEYES con usted, y le enseño a manejarla.',
+                    'Grupo pequeño. Ocho semanas. Sus situaciones reales, trabajadas en vivo.',
+                    'Usted sale sabiendo vivir las 4 LEYES.'],
+            doors: [{ t: 'APÚNTEME', panel: 'signup' }, { t: 'RESERVAR UNA LLAMADA', href: LINK.call, quiet: true }] } },
+
+    { key: 'coaching', pic: PIC.coaching, showUrl: 'https://www.4lawsacademy.com/watch?deck=d21c6c95-5d2e-44a9-b367-53f12182c31c', showUrlEs: 'https://www.4lawsacademy.com/watch?deck=97224c4c-5d7e-4a67-b3c8-2cbca54d57cb',
+      en: { label: 'COACHING & PSYCHOLOGICAL SERVICES', under: 'Sometimes you need a person', title: 'COACHING & PSYCHOLOGICAL SERVICES',
+            lines: ['Sometimes you need a person.',
+                    'Thirty-five years with families, children, and the ones who are hard to reach.',
+                    'These situations get complicated fast.',
+                    'Coaching for the hard cases. Clinical and school consultation.',
+                    'Consultation packages: a few hours, or unlimited for a season.',
+                    'By video or phone, from wherever you are.'],
+            doors: [{ t: 'BOOK A CALL', href: LINK.call }] },
+      es: { label: 'COACHING Y SERVICIOS PSICOLÓGICOS', under: 'A veces usted necesita a una persona', title: 'COACHING Y SERVICIOS PSICOLÓGICOS',
+            lines: ['A veces usted necesita a una persona.',
+                    'Treinta y cinco años con familias, niños, y los que son difíciles de alcanzar.',
+                    'Estas situaciones se complican rápido.',
+                    'Coaching para los casos difíciles. Consulta clínica y escolar.',
+                    'Paquetes de consulta: unas horas, o sin límite por una temporada.',
+                    'Por video o por teléfono, desde donde usted esté.'],
+            doors: [{ t: 'RESERVAR UNA LLAMADA', href: LINK.call }] } },
+
+    { key: 'school', pic: PIC.school, showUrl: 'https://www.4lawsacademy.com/watch?deck=56003cb4-ee7a-4e53-916b-04f62b8fd880', showUrlEs: 'https://www.4lawsacademy.com/watch?deck=a57cbfdf-38c1-4909-8a16-aa81b63a4871',
+      en: { label: 'SELF-DIRECTED EDUCATION', under: 'What if the question changed?', title: 'SELF-DIRECTED EDUCATION',
+            lines: ['What if the question changed?',
+                    'Not “what do I have to do.”',
+                    '“What do I do well. What do I love. How good can I get.”',
+                    'That is self-directed education. It’s a movement: homeschool centers and self-directed schools that grant real high school diplomas.',
+                    'Kids who choose their learning grow their talent. And their trust. And colleges take them.',
+                    'The 4 LAWS at home, plus a school built this way: that’s the whole transformation.',
+                    'Structured freedom, with real credentials.'],
+            doors: [{ t: 'SEE THE SCHOOLS', panel: 'schools' }] },
+      es: { label: 'EDUCACIÓN AUTODIRIGIDA', under: '¿Y si la pregunta cambiara?', title: 'EDUCACIÓN AUTODIRIGIDA',
+            lines: ['¿Y si la pregunta cambiara?',
+                    'No “qué tengo que hacer.”',
+                    '“Qué hago bien. Qué me encanta hacer. Qué tan bueno puedo llegar a ser.”',
+                    'Eso es la educación autodirigida. Es un movimiento: centros de educación en casa y escuelas autodirigidas que otorgan diplomas de secundaria de verdad.',
+                    'Los niños que escogen lo que aprenden crecen en talento. Y en confianza. Y las universidades los reciben.',
+                    'Las 4 LEYES en casa, más una escuela hecha así: esa es la transformación completa.',
+                    'Libertad con estructura, y credenciales de verdad.'],
+            doors: [{ t: 'VER LAS ESCUELAS', panel: 'schools' }] } }
+  ];
+
+  /* ======================= STATE ======================= */
+  var LS_LANG = '4laws-lang', LS_SOUND = '4laws-voice';
+  var lang = 'en', sound = true;
+  try { var s = sessionStorage.getItem(LS_SOUND); if (s === 'off') sound = false; } catch (e) {}
+  try { localStorage.removeItem(LS_SOUND); } catch (e) {}
+  /* the wall follows the site's language on arrival; the EN/ES buttons still override for this visit */
+  try {
+    var sl = sessionStorage.getItem(LS_LANG);
+    if (sl === 'es' || sl === 'en') lang = sl;
+    else {
+      var wg = ''; try { wg = localStorage.getItem('wglang') || ''; } catch (e1) {}
+      if (!wg) { try { wg = document.documentElement.getAttribute('lang') || ''; } catch (e2) {} }
+      if (!wg && /^\/es(\/|$)/.test(window.location.pathname)) wg = 'es';
+      lang = (String(wg).toLowerCase().indexOf('es') === 0) ? 'es' : 'en';
+    }
+  } catch (e) {}
+
+  var cur = null, beat = 0, timer = null, panelOpen = false;
+  var BEAT_MS = 5200;
+
+  function $(id) { return document.getElementById(id); }
+  function T() { return UI[lang]; }
+
+  /* ======================= VOICE ======================= */
+  var synth = window.speechSynthesis || null;
+  function speak(text) {
+    if (!sound || !synth) return;
+    try {
+      synth.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = (lang === 'es') ? 'es-US' : 'en-US';
+      u.rate = 0.95;
+      var voices = synth.getVoices ? synth.getVoices() : [];
+      var want = (lang === 'es') ? 'es' : 'en';
+      var i, pick = null;
+      for (i = 0; i < voices.length; i++) {
+        if (voices[i].lang && voices[i].lang.toLowerCase().indexOf(want) === 0) { pick = voices[i]; if (/natural|premium|enhanced/i.test(voices[i].name)) break; }
+      }
+      if (pick) u.voice = pick;
+      synth.speak(u);
+    } catch (e) {}
+  }
+  function hush() { if (synth) { try { synth.cancel(); } catch (e) {} } }
+
+  /* ======================= THE WALL ======================= */
+  function paintBar() {
+    $('sw-lang-en').className = 'sw-pill' + (lang === 'en' ? ' on' : '');
+    $('sw-lang-es').className = 'sw-pill' + (lang === 'es' ? ' on' : '');
+    $('sw-sound').className = 'sw-pill' + (sound ? ' on' : '');
+    $('sw-sound-t').textContent = sound ? T().sound : T().mute;
+    $('sw-help-t').textContent = T().help;
+    $('sh-back-t').textContent = T().back;
+    $('sh-next-t').textContent = T().next;
+    $('sh-sound').className = 'sw-pill' + (sound ? ' on' : '');
+    $('lv-stay').textContent = T().stay;
+    $('lv-go').textContent = T().go;
+    $('lv-text').textContent = T().leave;
+  }
+
+  var OWNER = false;
+  try {
+    if (window.location.search.indexOf('visitor') >= 0) localStorage.removeItem('4laws-wall-owner');
+    else if (window.location.search.indexOf('studio') >= 0) localStorage.setItem('4laws-wall-owner', '1');
+    OWNER = (localStorage.getItem('4laws-wall-owner') === '1');
+  } catch (e) { OWNER = (window.location.search.indexOf('studio') >= 0); }
+  function sendToStudio(n) {
+    var c = CARDS[n];
+    var show = { at: new Date().getTime(), from: 'wall', back: '/solutions', key: 'wall-' + c.key,
+                 title: { en: c.en.title, es: c.es.title }, pic: c.pic,
+                 lines: { en: c.en.lines.slice(0), es: c.es.lines.slice(0) } };
+    if (c.picEs) show.picEs = c.picEs;
+    try { localStorage.setItem('ps-wall-show', JSON.stringify(show)); } catch (e) {}
+    window.location.href = '/production-studio';
+  }
+  function showLink(n) { var c = CARDS[n]; return (lang === 'es' && c.showUrlEs) ? c.showUrlEs : (c.showUrl || c.showUrlEs || ''); }
+  function deckIdOf(n) { var m = /deck=([^&#]+)/.exec(showLink(n) || ''); return m ? decodeURIComponent(m[1]) : ''; }
+  function tapCard(n) { openShow(n); }
+  function paintWall() {
+    $('sw-line').innerHTML = T().line + '<small>' + T().sub + '</small>';
+    var wall = $('sw-wall'); wall.innerHTML = '';
+    var i;
+    for (i = 0; i < CARDS.length; i++) {
+      (function (c, n) {
+        var d = c[lang];
+        var pic = (lang === 'es' && c.picEs) ? c.picEs : c.pic;
+        var el = document.createElement('div');
+        el.className = 'sw-card';
+        el.innerHTML = '<div class="sw-pic" style="background-image:url(\'' + pic + '\')"></div>' +
+                       '<div class="sw-veil"></div>' +
+                       '<div class="sw-label">' + d.label + '<small>' + d.under + '</small></div>';
+        el.onclick = function () { tapCard(n); };
+        wall.appendChild(el);
+        setTimeout(function () { el.className = 'sw-card on'; }, 250 + n * 140);
+        setTimeout(function () { el.style.animationDelay = (n * 0.4) + 's'; el.className = 'sw-card on breathe'; }, 1500 + n * 140);
+      })(CARDS[i], i);
+    }
+  }
+
+  function setLang(l) {
+    lang = l; roomLog = []; offered = false; $('rm-chat').innerHTML = '';
+    try { sessionStorage.setItem(LS_LANG, l); } catch (e) {}
+    hush();
+    paintBar(); paintWall();
+    if (cur !== null) { openShow(cur); }
+    prefetchDecks();
+  }
+  function toggleSound() {
+    sound = !sound;
+    try { sessionStorage.setItem(LS_SOUND, sound ? 'on' : 'off'); } catch (e) {}
+    if (!sound) hush();
+    if (rec) { try { rec.audio.muted = !sound; } catch (e) {} }
+    paintBar();
+  }
+
+  /* ======================= THE SHOW ======================= */
+  function openShow(n) {
+    cur = n; beat = 0; panelOpen = false; recStop();
+    var c = CARDS[n], d = c[lang];
+    var pic = (lang === 'es' && c.picEs) ? c.picEs : c.pic;
+    $('sh-title').textContent = d.title;
+    $('sh-pic').style.backgroundImage = 'url(\'' + pic + '\')';
+    $('sh-pic').className = 'sh-pic';
+    $('sh-panel').className = 'sh-panel'; $('sh-panel').innerHTML = '';
+    $('sh-doors').className = 'sh-doors'; $('sh-doors').innerHTML = '';
+    $('sh-text').className = 'sh-text'; $('sh-text').textContent = '';
+    $('sw-show').className = 'on';
+    document.body.style.overflow = 'hidden';
+    var id = deckIdOf(n);
+    if (id) {
+      paintDots(1); paintDoors();
+      $('sh-next').style.visibility = 'visible';
+      getDeck(id, function (deck) {
+        if (cur !== n) return;
+        if (deck && playable(deck)) recPlay(n, deck); else linesShow(n);
+      });
+    } else linesShow(n);
+  }
+  function linesShow(n) {
+    var d = CARDS[n][lang];
+    paintDots(d.lines.length + 1);
+    showBeat();
+  }
+  function closeShow() {
+    cur = null; clearTimeout(timer); hush(); recStop();
+    $('sw-show').className = '';
+    document.body.style.overflow = '';
+  }
+
+  /* ======================= HIS VOICE: THE RECORDED SHOW ======================= */
+  /* The wall reads a show from the same store the Watch page reads (lecternGetDeck), then plays it
+     itself: the newest take's audio, the slides riding the take's stamps, the slide's title on top,
+     his words in big letters under the picture. Read ahead when the wall opens, so a tap is instant. */
+  var DECKS = {}, DECKQ = {}, VAULT = null, VAULT_STATE = '', VAULT_WAIT = [], PAGEPIC = {};
+  var VAULT_URL = 'https://raw.githubusercontent.com/4rlawsacademy/4laws-assets/main/YouCanBeRich_SoulScroll_STANDALONE_WORKING.html';
+  var rec = null; /* { n, deck, take, audio, idx, sent, tick } */
+  function playable(deck) { return !!(deck && deck.recordings && deck.recordings.length && deck.slides && deck.slides.length); }
+  function getDeck(id, done) {
+    if (DECKS[id]) { done(DECKS[id]); return; }
+    if (DECKQ[id]) { DECKQ[id].push(done); return; }
+    DECKQ[id] = [done];
+    post({ action: 'lecternGetDeck', deckId: id }, function (ok, r) {
+      var deck = (r && r.deck) ? r.deck : null;
+      if (deck) DECKS[id] = deck;
+      var q = DECKQ[id] || []; delete DECKQ[id];
+      var i; for (i = 0; i < q.length; i++) q[i](deck);
+    });
+  }
+  function prefetchDecks() {
+    var ids = [], i, c;
+    for (i = 0; i < CARDS.length; i++) { c = CARDS[i]; if (lang === 'es') { if (c.showUrlEs) ids.push(c.showUrlEs); if (c.showUrl) ids.push(c.showUrl); } else { if (c.showUrl) ids.push(c.showUrl); if (c.showUrlEs) ids.push(c.showUrlEs); } }
+    var k = 0;
+    function next() {
+      if (k >= ids.length) return;
+      var m = /deck=([^&#]+)/.exec(ids[k++]); if (!m) { next(); return; }
+      var id = decodeURIComponent(m[1]);
+      if (DECKS[id]) { next(); return; }
+      getDeck(id, function () { setTimeout(next, 120); });
+    }
+    next();
+  }
+  function looksLikeImage(u) {
+    if (!u) return false;
+    if (u.indexOf('data:image') === 0) return true;
+    if (/\.(jpe?g|png|gif|webp|svg)([?#]|$)/i.test(u)) return true;
+    if (u.indexOf('squarespace-cdn') !== -1) return true;
+    if (u.indexOf('raw.githubusercontent') !== -1) return true;
+    return false;
+  }
+  function normalizePath(raw) {
+    var pth = (raw || '').replace(/^\s+|\s+$/g, '');
+    if (!pth) return '';
+    pth = pth.replace(/^https?:\/\/(www\.)?4lawsacademy\.com/i, '');
+    if (pth.charAt(0) !== '/') pth = '/' + pth;
+    return pth;
+  }
+  function fetchPageImage(path, cb) {
+    if (PAGEPIC.hasOwnProperty(path)) { cb(PAGEPIC[path] || null); return; }
+    try {
+      var x = new XMLHttpRequest();
+      x.open('GET', path, true);
+      x.onload = function () {
+        var found = '';
+        if (x.status >= 200 && x.status < 400) {
+          var mTag = x.responseText.match(/<meta[^>]*og:image[^>]*>/i);
+          if (mTag) { var mSrc = mTag[0].match(/content="([^"]+)"/i); if (mSrc) found = mSrc[1]; }
+          if (!found) {
+            try {
+              var doc = new DOMParser().parseFromString(x.responseText, 'text/html');
+              var imgs = doc.querySelectorAll('section[data-section-id] img'), i2, cand;
+              for (i2 = 0; i2 < imgs.length; i2++) {
+                cand = imgs[i2].getAttribute('data-src') || imgs[i2].getAttribute('src') || '';
+                if (cand.indexOf('squarespace-cdn') !== -1) { if (cand.indexOf('?') === -1) cand = cand + '?format=1500w'; found = cand; break; }
+              }
+            } catch (e) {}
+          }
+        }
+        PAGEPIC[path] = found || null; cb(found || null);
+      };
+      x.onerror = function () { PAGEPIC[path] = null; cb(null); };
+      x.send();
+    } catch (e) { cb(null); }
+  }
+  function ensureVault(cb) {
+    if (VAULT_STATE === 'ready' || VAULT_STATE === 'failed') { cb(); return; }
+    VAULT_WAIT.push(cb);
+    if (VAULT_STATE === 'loading') return;
+    VAULT_STATE = 'loading';
+    function flush() { var w = VAULT_WAIT; VAULT_WAIT = []; var i; for (i = 0; i < w.length; i++) w[i](); }
+    try {
+      var x = new XMLHttpRequest();
+      x.open('GET', VAULT_URL, true);
+      x.onload = function () {
+        if (x.status >= 200 && x.status < 400) {
+          var txt = x.responseText, start = txt.indexOf('var IMAGES');
+          if (start !== -1) {
+            var a = txt.indexOf('{', start), depth = 0, i, end = -1;
+            for (i = a; i < txt.length; i++) { if (txt.charAt(i) === '{') depth++; else if (txt.charAt(i) === '}') { depth--; if (depth === 0) { end = i; break; } } }
+            if (end > a) { try { VAULT = JSON.parse(txt.substring(a, end + 1)); VAULT_STATE = 'ready'; } catch (e) {} }
+          }
+        }
+        if (VAULT_STATE !== 'ready') VAULT_STATE = 'failed';
+        flush();
+      };
+      x.onerror = function () { VAULT_STATE = 'failed'; flush(); };
+      x.send();
+    } catch (e) { VAULT_STATE = 'failed'; flush(); }
+  }
+  function resolveSrc(sl, cb) {
+    if (sl.imageUrl) { if (looksLikeImage(sl.imageUrl)) { cb(sl.imageUrl); return; } fetchPageImage(normalizePath(sl.imageUrl), cb); return; }
+    if (sl.imageKey) { ensureVault(function () { cb(VAULT && VAULT[sl.imageKey] ? VAULT[sl.imageKey] : null); }); return; }
+    var page = sl.imagePage || sl.link || sl.url || '';
+    if (page) { fetchPageImage(normalizePath(page), cb); return; }
+    cb(null);
+  }
+  function trimS(t) { return String(t || '').replace(/^\s+|\s+$/g, ''); }
+  function sentences(text) {
+    var rows = String(text || '').replace(/\r/g, '').split(/\n+/), out = [], i, j;
+    for (i = 0; i < rows.length; i++) {
+      var row = trimS(rows[i]); if (!row) continue;
+      var parts = row.match(/[^.!?\u2026]+(?:[.!?\u2026]+["\u201D\u2019')\]]*|$)/g) || [row];
+      for (j = 0; j < parts.length; j++) { var pz = trimS(parts[j]); if (pz) out.push(pz); }
+    }
+    var merged = [];
+    for (i = 0; i < out.length; i++) {
+      if (merged.length && merged[merged.length - 1].length < 28 && (merged[merged.length - 1].length + out[i].length) <= 150) merged[merged.length - 1] += ' ' + out[i];
+      else merged.push(out[i]);
+    }
+    return merged;
+  }
+  function recSlideFor(ms) {
+    var st = (rec && rec.take && rec.take.stamps) ? rec.take.stamps : [], idx = 0, i;
+    for (i = 0; i < st.length; i++) { if ((st[i].ms || 0) <= ms) idx = st[i].i || 0; }
+    return Math.max(0, Math.min(idx, rec.deck.slides.length - 1));
+  }
+  function recDur() { var d = rec && rec.audio ? rec.audio.duration : 0; return (d && isFinite(d)) ? d : 0; }
+  function recWords(ms) {
+    if (!rec || !rec.sent.length) { return; }
+    var k = -1, i, st = (rec.take.stamps || []);
+    if (rec.sent.length === 1) { recSentence(0); return; }
+    for (i = 0; i < st.length; i++) { if ((st[i].ms || 0) <= ms) k = i; else break; }
+    var start = (k >= 0) ? (st[k].ms || 0) : 0;
+    var end = (k + 1 < st.length) ? (st[k + 1].ms || 0) : (recDur() * 1000);
+    if (!(end > start)) { recSentence(0); return; }
+    var f = Math.max(0, Math.min(0.9999, (ms - start) / (end - start)));
+    var total = 0, acc = 0; for (i = 0; i < rec.sent.length; i++) total += rec.sent[i].length + 12;
+    for (i = 0; i < rec.sent.length; i++) { acc += rec.sent[i].length + 12; if (f < acc / total) { recSentence(i); return; } }
+    recSentence(rec.sent.length - 1);
+  }
+  function recSentence(i) {
+    if (!rec || rec.sentAt === i) return;
+    rec.sentAt = i;
+    var t = $('sh-text'); t.className = 'sh-text';
+    var txt = rec.sent[i] || '';
+    setTimeout(function () { if (rec && rec.sentAt === i) { t.textContent = txt; t.className = 'sh-text on'; } }, 40);
+  }
+  function recRender(idx) {
+    if (!rec || rec.idx === idx) return;
+    rec.idx = idx; beat = idx; markDot();
+    var sl = rec.deck.slides[idx] || {}, n = rec.n, c = CARDS[n];
+    $('sh-title').textContent = sl.title || sl.caption || c[lang].title;
+    rec.sent = sentences(sl.script || sl.caption || ''); rec.sentAt = -1;
+    if (!rec.sent.length) { $('sh-text').className = 'sh-text'; $('sh-text').textContent = ''; }
+    var fallback = (lang === 'es' && c.picEs) ? c.picEs : c.pic;
+    resolveSrc(sl, function (src) {
+      if (!rec || rec.idx !== idx) return;
+      $('sh-pic').style.backgroundImage = 'url(\'' + (src || fallback) + '\')';
+    });
+  }
+  function recPlay(n, deck) {
+    hush(); clearTimeout(timer);
+    var take = deck.recordings[deck.recordings.length - 1];
+    var src = (take.kind === 'video' || /^video\//i.test(String(take.mime || ''))) ? (take.url || '') : (take.m4aUrl || take.url || '');
+    if (!src) { linesShow(n); return; }
+    var a = null;
+    try { a = new Audio(src); } catch (e) { linesShow(n); return; }
+    a.preload = 'auto'; a.muted = !sound;
+    rec = { n: n, deck: deck, take: take, audio: a, idx: -1, sent: [], sentAt: -1, tick: null, done: false };
+    paintDots(deck.slides.length);
+    $('sh-doors').className = 'sh-doors';
+    $('sh-next').style.visibility = 'visible';
+    recRender(0);
+    a.addEventListener('timeupdate', function () { if (!rec || rec.audio !== a) return; var ms = a.currentTime * 1000; recRender(recSlideFor(ms)); recWords(ms); });
+    a.addEventListener('ended', function () { if (!rec || rec.audio !== a) return; recEnd(); });
+    a.addEventListener('error', function () { if (!rec || rec.audio !== a || rec.idx > 0) return; recStop(); linesShow(n); });
+    var tryPlay = function () { try { var pr = a.play(); if (pr && pr['catch']) pr['catch'](function () {}); } catch (e) {} };
+    tryPlay();
+    a.addEventListener('canplay', function onCp() { a.removeEventListener('canplay', onCp); if (a.paused && rec && rec.audio === a && !rec.done) tryPlay(); });
+    setTimeout(function () { if (a.paused && rec && rec.audio === a && !rec.done) tryPlay(); }, 1500);
+  }
+  function recEnd() {
+    if (!rec) return;
+    rec.done = true;
+    $('sh-doors').className = 'sh-doors on';
+    $('sh-next').style.visibility = 'hidden';
+  }
+  function recStop() {
+    if (!rec) return;
+    try { rec.audio.pause(); rec.audio.src = ''; } catch (e) {}
+    rec = null;
+  }
+  function recToggle() {
+    if (!rec || rec.done) return;
+    try { if (rec.audio.paused) rec.audio.play()['catch'](function () {}); else rec.audio.pause(); } catch (e) {}
+  }
+  function paintDots(n) {
+    var dots = $('sh-dots'); dots.innerHTML = '';
+    var i;
+    for (i = 0; i < n; i++) { var s = document.createElement('span'); s.className = 'sh-dot'; dots.appendChild(s); }
+  }
+  function markDot() {
+    var dots = $('sh-dots').children, i;
+    for (i = 0; i < dots.length; i++) dots[i].className = 'sh-dot' + (i === beat ? ' on' : '');
+  }
+  function showBeat() {
+    clearTimeout(timer);
+    var d = CARDS[cur][lang];
+    markDot();
+    if (beat < d.lines.length) {
+      var t = $('sh-text');
+      t.className = 'sh-text';
+      setTimeout(function () { t.textContent = d.lines[beat]; t.className = 'sh-text on'; }, 60);
+      speak(d.lines[beat]);
+      if (beat === 0) paintDoors();
+      $('sh-doors').className = 'sh-doors';
+      $('sh-next').style.visibility = 'visible';
+      timer = setTimeout(nextBeat, BEAT_MS + Math.min(4000, d.lines[beat].length * 28));
+    } else {
+      $('sh-text').className = 'sh-text';
+      $('sh-text').textContent = '';
+      $('sh-doors').className = 'sh-doors on';
+      $('sh-next').style.visibility = 'hidden';
+    }
+  }
+  function nextBeat() {
+    if (rec) { try { rec.audio.pause(); } catch (e) {} recEnd(); return; }
+    var d = CARDS[cur][lang];
+    if (beat < d.lines.length) { beat++; showBeat(); }
+  }
+  function paintDoors() {
+    var d = CARDS[cur][lang];
+    var box = $('sh-doors'); box.innerHTML = '';
+    var i;
+    for (i = 0; i < d.doors.length; i++) addDoor(box, d.doors[i]);
+    addDoor(box, { t: T().docb, room: true, quiet: true });
+    if (OWNER) addDoor(box, { t: T().studio, studio: true, quiet: true, under: T().studioUnder });
+  }
+  function addDoor(box, door) {
+    var a = document.createElement('a');
+    a.className = 'sh-door' + (door.quiet ? ' quiet' : '');
+    a.textContent = door.t;
+    if (door.under) { var u = document.createElement('i'); u.style.cssText = 'display:block;font-style:normal;font-size:15px;letter-spacing:0;text-transform:none;opacity:0.8;margin-top:4px;'; u.textContent = door.under; a.appendChild(u); }
+    if (door.panel) {
+      a.href = '#';
+      a.onclick = function (ev) { ev.preventDefault(); openPanel(door.panel); };
+    } else if (door.room) {
+      a.href = '#';
+      a.onclick = function (ev) { ev.preventDefault(); openRoom(); };
+    } else if (door.studio) {
+      a.href = '/production-studio';
+      a.onclick = function (ev) { ev.preventDefault(); sendToStudio(cur); };
+    } else {
+      a.href = door.href; a.target = '_blank'; a.rel = 'noopener';
+      a.onclick = function (ev) { ev.preventDefault(); leave(door.href); };
+    }
+    box.appendChild(a);
+  }
+
+  /* ======================= PANELS ======================= */
+  function openPanel(which) {
+    panelOpen = true; hush(); clearTimeout(timer);
+    var p = $('sh-panel'); p.innerHTML = '';
+    $('sh-pic').className = 'sh-pic none';
+    $('sh-text').className = 'sh-text'; $('sh-text').textContent = '';
+    var t = T(), html = '';
+    if (which === 'parent' || which === 'adult') {
+      var b = (which === 'parent') ? LINK.parentBasic : LINK.adultBasic;
+      var pr = (which === 'parent') ? LINK.parentPremium : LINK.adultPremium;
+      html += '<h3>' + ((which === 'parent') ? t.pickParent : t.pickAdult) + '</h3><div class="sh-list">';
+      html += item(b, t.basic, (lang === 'es') ? '14 videos. Diapositivas. Hojas de trabajo.' : '14 videos. Slides. Worksheets.');
+      html += item(pr, t.premium, (lang === 'es') ? 'Todo lo básico, más escenarios, role-play y el sistema completo de práctica.' : 'Everything in Basic, plus scenarios, role-play and the full practice system.');
+      html += '</div>';
+    } else if (which === 'guides') {
+      var es = (lang === 'es');
+      html += '<h3>' + t.guides + '</h3><div class="sh-list">';
+      html += item(es ? LINK.gIntroEs : LINK.gIntroEn, es ? 'Introducción a las 4 LEYES' : 'Introduction to the 4 LAWS', es ? 'Quince minutos.' : 'Fifteen minutes.', true);
+      html += item(es ? LINK.gKidsEs : LINK.gKidsEn, es ? 'Las 4 LEYES para niños' : 'The 4 LAWS for Kids', es ? 'En sus palabras.' : 'In their words.', true);
+      html += item(es ? LINK.gAidEs : LINK.gAidEn, es ? 'Primeros auxilios' : 'First Aid', es ? 'Para la noche en que necesita una respuesta ya.' : 'For the night you need an answer now.', true);
+      html += '</div>';
+    } else if (which === 'schools') {
+      html += '<h3>' + t.schools + '</h3><div class="sh-list">';
+      html += item(LINK.lighthouse, 'Lighthouse Holyoke', (lang === 'es') ? 'Holyoke, Massachusetts. La escuela que conocemos.' : 'Holyoke, Massachusetts. The school we know.');
+      html += itemOut(LINK.northStar, 'North Star', (lang === 'es') ? 'Sunderland, Massachusetts. Aprendizaje autodirigido para adolescentes.' : 'Sunderland, Massachusetts. Self-directed learning for teens.');
+      html += itemOut(LINK.bayState, 'Bay State Learning Center', (lang === 'es') ? 'Dedham, Massachusetts.' : 'Dedham, Massachusetts.');
+      html += itemOut(LINK.sudbury, 'Sudbury Valley School', (lang === 'es') ? 'Framingham, Massachusetts. Desde 1968.' : 'Framingham, Massachusetts. Since 1968.');
+      html += itemOut(LINK.dory, 'Dory Learning Center', (lang === 'es') ? 'Belfast, Maine.' : 'Belfast, Maine.');
+      html += itemOut(LINK.asdeMap, (lang === 'es') ? 'Encuentre uno cerca de usted' : 'Find one near you', (lang === 'es') ? 'El mapa de comunidades autodirigidas.' : 'The map of self-directed communities.');
+      html += itemOut(LINK.liberated, 'Liberated Learners', (lang === 'es') ? 'La red de centros, por todo el país.' : 'The network of centers, across the country.');
+      html += '</div>';
+    } else if (which === 'signup') {
+      html += '<h3>' + t.signup + '</h3><div class="sh-form">' +
+              '<input id="su-name" type="text" placeholder="' + t.yourName + '" autocomplete="name">' +
+              '<input id="su-email" type="email" placeholder="' + t.yourEmail + '" autocomplete="email">' +
+              '<a class="sh-door" id="su-go" href="#">' + t.send + '</a><p id="su-msg"></p></div>';
+    } else if (which === 'books') {
+      var e2 = (lang === 'es');
+      html += '<h3>' + t.books + '</h3><div class="sh-books">';
+      html += book(e2 ? PIC.bookEs : PIC.bookEn, e2 ? 'Las 4 LEYES de Confianza y Talento' : 'The 4 LAWS of Trust and Talent', e2 ? LINK.amzBookEs : LINK.amzBookEn, e2 ? 'COMPRAR — $14.95' : 'BUY — $14.95');
+      html += book(e2 ? PIC.hpEs : PIC.hpEn, e2 ? 'Crianza Útil — el manual' : 'Helpful Parenting — the manual', e2 ? LINK.amzHpEs : LINK.amzHpEn, e2 ? 'COMPRAR — $34.95' : 'BUY — $34.95');
+      html += book(PIC.clin, e2 ? 'Para clínicos: Treating the Disruptive Adolescent' : 'For clinicians: Treating the Disruptive Adolescent', LINK.amzClin, e2 ? 'COMPRAR — $29.95' : 'BUY — $29.95');
+      html += '</div>';
+    }
+    p.innerHTML = html;
+    p.className = 'sh-panel on';
+    var outs = p.querySelectorAll('[data-out]'), i;
+    for (i = 0; i < outs.length; i++) {
+      (function (a) { a.onclick = function (ev) { ev.preventDefault(); leave(a.getAttribute('href')); }; })(outs[i]);
+    }
+    if (which === 'signup') {
+      $('su-go').onclick = function (ev) {
+        ev.preventDefault();
+        var nm = ($('su-name').value || '').trim(), em = ($('su-email').value || '').trim();
+        if (!em || em.indexOf('@') < 1) { $('su-msg').textContent = t.yourEmail; return; }
+        $('su-msg').textContent = t.thinking + '…';
+        post({ action: 'saveEmail', name: '[Live training] ' + nm, email: em }, function (ok) {
+          $('su-msg').textContent = ok ? t.signedUp : t.signupFail;
+        });
+      };
+    }
+    $('sh-doors').innerHTML = '';
+    addDoor($('sh-doors'), { t: T().docb, room: true, quiet: true });
+    $('sh-doors').className = 'sh-doors on';
+    $('sh-next').style.visibility = 'hidden';
+  }
+
+  /* ======================= THE BACKEND ======================= */
+  function post(body, done) {
+    try {
+      var x = new XMLHttpRequest();
+      x.open('POST', LINK.backend, true);
+      x.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+      x.onreadystatechange = function () {
+        if (x.readyState !== 4) return;
+        var r = null; try { r = JSON.parse(x.responseText); } catch (e) {}
+        done(!!(r && r.status === 'ok'), r);
+      };
+      x.send(JSON.stringify(body));
+    } catch (e) { done(false, null); }
+  }
+
+  /* ======================= DOC B'S ROOM ======================= */
+  var roomLog = [], roomBusy = false, rec = null, offered = false, remembered = false, micLive = false, micHeard = '';
+  var ROOM_CAP = 12;
+  function catalog() {
+    var en = (lang !== 'es');
+    var lines = [
+      en ? 'You are Doc B, the AI of 4 LAWS Academy, standing at the Solutions wall of 4lawsacademy.com. You are talking to a visitor who is not signed in. Your job: help them find the right door and tell them plainly what it is, what it costs, and who it is for. You do not do therapy here. If they bring a life problem, you say one warm line and name ANALYZE MY SITUATION (free, one situation, right here on this site) and, for a hard or urgent case, BOOK A CALL. Never invent prices or promises. Answer in English.'
+         : 'Eres Doc B, la IA de 4 LAWS Academy, parado en la pared de Soluciones de 4lawsacademy.com. Hablas con un visitante que no ha iniciado sesión. Tu trabajo: ayudarle a encontrar la puerta correcta y decirle claramente qué es, cuánto cuesta y para quién es. Aquí no haces terapia. Si trae un problema de la vida, dices una línea cálida y nombras ANALIZAR MI SITUACIÓN (gratis, una situación, aquí mismo en este sitio) y, si el caso es difícil o urgente, RESERVAR UNA LLAMADA. Nunca inventes precios ni promesas. Trata de usted, nunca de vosotros. Respond in Spanish.',
+      '',
+      en ? 'THIS IS THE WALL, NOT THE HOUSE. The visitor has already told you what they want. Never ask "What\'s on your mind?" or "Want to keep going?". Answer what they asked, then end on the door, in capitals. The last thing you say is the door.'
+         : 'ESTO ES LA PARED, NO LA CASA. El visitante ya te dijo lo que quiere. Nunca preguntes "¿Qué tiene en mente?" ni "¿Quiere seguir?". Responde lo que preguntó y termina con la puerta, en mayúsculas. Lo último que dices es la puerta.',
+      '',
+      en ? 'THE WALL (eight doors):' : 'LA PARED (ocho puertas):',
+      en ? '1. LIVE THE 4 LAWS (Doc B AI): the membership, the house itself. Your own Personal Work Station, My Favorite Day, a LIFE coach named Butler who knows you, the LIFE game, and Doc B in your pocket every day. A community overseen by Dr. B and run by Doc B: a safe place to grow your talents and connect with others, trust and talent. Two months free, then $29.95 a month, cancel anytime. For anyone who wants to live the 4 LAWS, not just learn them; a parent, an adult, a family. Door: BECOME A MEMBER (/sign-up). Also TAKE THE TOUR (/grand-tour) and ANALYZE MY SITUATION (free, one situation, on this site).'
+         : '1. VIVE LAS 4 LEYES (Doc B AI): la membresía, la casa misma. Su propia Estación de Trabajo Personal, Mi Día Favorito, un coach llamado Butler que lo conoce, el juego LIFE, y Doc B en su bolsillo todos los días. Una comunidad supervisada por el Dr. B y manejada por Doc B: un lugar seguro para crecer en sus talentos y conectarse con otros, confianza y talento. Dos meses gratis, luego $29.95 al mes, cancela cuando quiera. Para cualquiera que quiera vivir las 4 LEYES, no solo aprenderlas; un padre, un adulto, una familia. Puerta: HACERME MIEMBRO (/sign-up). También HACER EL TOUR (/grand-tour) y ANALIZAR MI SITUACIÓN (gratis, una situación, en este sitio).',
+      en ? '2. DOC B FAMILY AI: the same membership for a whole family. Each person gets a station; Doc B watches the house, tells parents when someone contributes, creates or needs something, repairs trust when it breaks. $3 a month per added family member on top of the membership. Door: BRING MY FAMILY (/sign-up).'
+         : '2. DOC B FAMILY AI: la misma membresía para toda la familia. Cada uno tiene su estación; Doc B cuida la casa, avisa a los padres cuando alguien contribuye, crea o necesita algo, repara la confianza cuando se rompe. $3 al mes por cada familiar añadido, además de la membresía. Puerta: TRAER A MI FAMILIA (/sign-up).',
+      en ? '3. ONLINE COURSES: learn the 4 LAWS at your own speed. Thirteen videos, worksheets, practice scenarios, role-play. Parent course and Adult course each come as Basic ($35: 14 videos, slides, worksheets) or Premium ($75: everything plus scenarios, role-play and the full practice system). Youth course ($75) for young people who want their rights. Doors: PARENT COURSE, ADULT COURSE, YOUTH COURSE.'
+         : '3. CURSOS EN LÍNEA: aprenda las 4 LEYES a su ritmo. Trece videos, hojas de trabajo, escenarios de práctica, role-play. El curso para padres y el curso para adultos vienen en Básico ($35: 14 videos, diapositivas, hojas de trabajo) o Premium ($75: todo más escenarios, role-play y el sistema completo de práctica). Curso para jóvenes ($75) para jóvenes que quieren sus derechos. Puertas: CURSO PARA PADRES, CURSO PARA ADULTOS, CURSO PARA JÓVENES.',
+      en ? '4. THE BOOKS (on Amazon): The 4 LAWS of Trust and Talent, $14.95, English or Spanish. Helpful Parenting (the training manual, 8 sessions), $34.95, English or Spanish (Crianza Útil). For clinicians: Treating the Disruptive Adolescent, $29.95. Door: SEE THE BOOKS.'
+         : '4. LOS LIBROS (en Amazon): Las 4 LEYES de Confianza y Talento, $14.95, inglés o español. Crianza Útil (el manual de entrenamiento, 8 sesiones), $34.95, inglés o español. Para clínicos: Treating the Disruptive Adolescent, $29.95. Puerta: VER LOS LIBROS.',
+      en ? '5. FREE GUIDES: three free PDFs, English and Spanish: Introduction to the 4 LAWS (15 minutes), the 4 LAWS for Kids, and First Aid for the night you need an answer now. Door: DOWNLOAD THE GUIDES.'
+         : '5. GUÍAS GRATIS: tres PDF gratis, en inglés y español: Introducción a las 4 LEYES (15 minutos), las 4 LEYES para niños, y Primeros Auxilios para la noche en que necesita una respuesta ya. Puerta: DESCARGAR LAS GUÍAS.',
+      en ? '6. LIVE TRAINING WITH DR. B: Dr. B trains a small group live, eight weeks, inside the LIFE game, with their real situations. Price not yet posted; the next group opens when enough people sign up. Door: SIGN ME UP (name and email), or BOOK A CALL.'
+         : '6. ENTRENAMIENTO EN VIVO CON EL DR. B: el Dr. B entrena a un grupo pequeño en vivo, ocho semanas, dentro del juego LIFE, con sus situaciones reales. Precio aún no publicado; el próximo grupo abre cuando haya suficientes personas. Puerta: APÚNTEME (nombre y correo), o RESERVAR UNA LLAMADA.',
+      en ? '7. COACHING & PSYCHOLOGICAL SERVICES: Dr. Eduardo Bustamante, clinical and child psychologist, 35 years, by video or phone. Coaching for hard cases, clinical and school consultation, consultation packages (hour blocks or a season of unlimited; prices on request). Door: BOOK A CALL (a consultation with Dr. B, by video or phone; you book the time on the contact page; it is not free).'
+         : '7. COACHING Y SERVICIOS PSICOLÓGICOS: Dr. Eduardo Bustamante, psicólogo clínico e infantil, 35 años, por video o teléfono. Coaching para casos difíciles, consulta clínica y escolar, paquetes de consulta (bloques de horas o una temporada sin límite; precios a pedido). Puerta: RESERVAR UNA LLAMADA (una consulta con el Dr. B, por video o teléfono; usted reserva la hora en la página de contacto; no es gratis).',
+      en ? '8. SELF-DIRECTED EDUCATION: not a product; a movement Dr. B believes in. Schools and centers where kids choose their learning: Lighthouse Holyoke, North Star (Sunderland MA), Bay State Learning Center (Dedham MA), Sudbury Valley School (Framingham MA), Dory Learning Center (Belfast ME), and a map to find one anywhere. Door: SEE THE SCHOOLS.'
+         : '8. EDUCACIÓN AUTODIRIGIDA: no es un producto; es un movimiento en el que el Dr. B cree. Escuelas y centros donde los niños escogen lo que aprenden: Lighthouse Holyoke, North Star (Sunderland MA), Bay State Learning Center (Dedham MA), Sudbury Valley School (Framingham MA), Dory Learning Center (Belfast ME), y un mapa para encontrar uno en cualquier parte. Puerta: VER LAS ESCUELAS.',
+      '',
+      en ? 'THE MAP, IN DR. B\'S ORDER. Everything on the wall is the same 4 LAWS in a different form; the book is the source. For a family, or a parent with a child: the first answer is LIVE THE 4 LAWS plus DOC B FAMILY AI, two months free; the child gets a station too. A parent asking for a child takes the PARENT COURSE, not the Youth one; the YOUTH COURSE is for a young person asking for themselves. The courses are how you learn it; live training is learning it with Dr. B in the room; coaching is for the hard case. If they ask why the membership and not a course: a course teaches you the 4 LAWS once; the membership is where you live them every day, with a coach who knows you.'
+         : 'EL MAPA, EN EL ORDEN DEL DR. B. Todo en la pared son las mismas 4 LEYES en otra forma; el libro es la fuente. Para una familia, o un padre con un hijo: la primera respuesta es VIVE LAS 4 LEYES más DOC B FAMILY AI, dos meses gratis; el hijo también tiene su estación. Un padre que pregunta por su hijo toma el CURSO PARA PADRES, no el de jóvenes; el CURSO PARA JÓVENES es para un joven que pregunta por sí mismo. Los cursos son para aprenderlas; el entrenamiento en vivo es aprenderlas con el Dr. B en la sala; el coaching es para el caso difícil. Si preguntan por qué la membresía y no un curso: un curso le enseña las 4 LEYES una vez; la membresía es donde las vive todos los días, con un coach que lo conoce.',
+      '',
+      en ? 'THE KEY QUESTIONS, one at a time, only as far as you need: Do you love reading? (the books). Do you have the time to train, and feel motivated to invest in it? (the courses, or live training). Do you want to address an issue as fast as possible? (ANALYZE MY SITUATION now; BOOK A CALL for the hard case). Do you want a place to live it, not just learn it? (the membership).'
+         : 'LAS PREGUNTAS CLAVE, de una en una, solo hasta donde haga falta: ¿Le gusta leer? (los libros). ¿Tiene tiempo para entrenarse, y ganas de invertir en eso? (los cursos, o el entrenamiento en vivo). ¿Quiere resolver un asunto lo más rápido posible? (ANALIZAR MI SITUACIÓN ahora; RESERVAR UNA LLAMADA para el caso difícil). ¿Quiere un lugar donde vivirlo, no solo aprenderlo? (la membresía).',
+      '',
+      en ? 'THE HOUSE FACTS, for "is it safe?" and the like: Dr. Eduardo Bustamante is a licensed clinical and child psychologist, 35 years with families. What a member writes stays in the Academy\'s own records, run by Dr. B, and is not sold or shared. In a family, a child is never alone with the AI without the parents knowing; Doc B tells the parents when someone needs something. Two months free means nothing is charged until then, and you can cancel anytime. If you leave, you take the 4 LAWS with you. The AI is not counseling or treatment; for a mental health condition, see a licensed professional, and BOOK A CALL reaches Dr. B himself.'
+         : 'LOS HECHOS DE LA CASA, para "¿es seguro?" y parecidos: el Dr. Eduardo Bustamante es psicólogo clínico e infantil con licencia, 35 años con familias. Lo que un miembro escribe se queda en los registros propios de la Academia, manejados por el Dr. B, y no se vende ni se comparte. En una familia, un hijo nunca está a solas con la IA sin que los padres lo sepan; Doc B avisa a los padres cuando alguien necesita algo. Dos meses gratis significa que no se cobra nada hasta entonces, y puede cancelar cuando quiera. Si se va, se lleva las 4 LEYES. La IA no es consejería ni tratamiento; para una condición de salud mental, vea a un profesional con licencia, y RESERVAR UNA LLAMADA llega al Dr. B en persona.',
+      '',
+      en ? 'HOW YOU ANSWER: two or three short sentences at most. Ask at most one question before naming a door. Name the door in capitals exactly as written above so the visitor can find it on the wall. If they ask what to pick, ask who it is for (themselves, a child, the whole family) and then name one door. If unsure, say so and name BOOK A CALL.'
+         : 'CÓMO RESPONDES: dos o tres frases cortas como máximo. Haz como máximo una pregunta antes de nombrar una puerta. Nombra la puerta en mayúsculas tal como está escrita arriba para que el visitante la encuentre en la pared. Si preguntan qué escoger, pregunta para quién es (para ellos, para un hijo, para toda la familia) y nombra una puerta. Si no estás seguro, dilo y nombra RESERVAR UNA LLAMADA.'
+    ];
+    return lines.join('\n');
+  }
+  function bubble(who, text) {
+    var d = document.createElement('div'); d.className = 'rm-b ' + who; d.textContent = text;
+    $('rm-chat').appendChild(d); $('rm-chat').scrollTop = $('rm-chat').scrollHeight; return d;
+  }
+  function roomDoors() {
+    var box = $('rm-doors'); box.innerHTML = '';
+    var has = false;
+    if (cur !== null) { var d = CARDS[cur][lang], i; for (i = 0; i < d.doors.length; i++) { addDoor(box, d.doors[i]); if (d.doors[i].href === LINK.docb) has = true; } }
+    if (!has) addDoor(box, { t: T().analyze, href: LINK.docb, quiet: true, under: T().analyzeUnder });
+  }
+  function openRoom() {
+    hush(); clearTimeout(timer);
+    $('sw-room').className = 'on';
+    $('rm-back-t').textContent = T().back;
+    $('rm-sound').className = 'sw-pill' + (sound ? ' on' : '');
+    roomDoors();
+    if (roomLog.length === 0) {
+      var hello = (cur !== null) ? T().roomHelloCard.replace('{card}', CARDS[cur][lang].title) : T().roomHello;
+      bubble('docb', hello); speak(hello);
+    }
+    setTimeout(function () { $('rm-in').focus(); }, 80);
+  }
+  function closeRoom() { hush(); stopMic(); $('sw-room').className = ''; }
+  function userTurns() { var n = 0, i; for (i = 0; i < roomLog.length; i++) if (roomLog[i].role === 'user') n++; return n; }
+  function offerToRemember() {
+    offered = true;
+    var d = bubble('docb', T().offer); speak(T().offer);
+    var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 14px;';
+    var y = document.createElement('span'); y.className = 'sh-door'; y.style.minWidth = '0'; y.textContent = T().yes;
+    var n = document.createElement('span'); n.className = 'sh-door quiet'; n.style.minWidth = '0'; n.textContent = T().noThanks;
+    row.appendChild(y); row.appendChild(n); $('rm-chat').appendChild(row); $('rm-chat').scrollTop = $('rm-chat').scrollHeight;
+    n.onclick = function () { row.parentNode.removeChild(row); };
+    y.onclick = function () {
+      row.innerHTML = '';
+      var lab = document.createElement('div'); lab.className = 'rm-b docb'; lab.textContent = T().askEmail; row.appendChild(lab);
+      var box = document.createElement('div'); box.style.cssText = 'display:flex;gap:10px;width:100%;flex-wrap:wrap;';
+      var inp = document.createElement('input'); inp.type = 'email'; inp.placeholder = T().yourEmail;
+      inp.style.cssText = "flex:1 1 240px;font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;padding:12px 14px;border-radius:14px;border:1px solid rgba(200,168,75,0.5);background:#0b0e12;color:#f0e6cc;outline:none;";
+      var go = document.createElement('span'); go.className = 'sh-door'; go.style.minWidth = '0'; go.textContent = T().send;
+      box.appendChild(inp); box.appendChild(go); row.appendChild(box); inp.focus();
+      go.onclick = function () {
+        var em = (inp.value || '').trim(); if (!em || em.indexOf('@') < 1) { inp.focus(); return; }
+        var first = ''; var i; for (i = 0; i < roomLog.length; i++) { if (roomLog[i].role === 'user') { first = roomLog[i].content; break; } }
+        go.textContent = T().thinking + '\u2026';
+        post({ action: 'saveEmail', name: '[Wall] ' + first.slice(0, 80), email: em }, function (ok) {
+          row.parentNode.removeChild(row);
+          if (ok) {
+            remembered = true;
+            try { localStorage.setItem('4laws-wall-chat', JSON.stringify({ email: em, lang: lang, when: new Date().toISOString(), log: roomLog })); } catch (e) {}
+            bubble('docb', T().saved); speak(T().saved);
+          } else { bubble('docb', T().roomFail); }
+        });
+      };
+    };
+  }
+  function roomSend() {
+    var t = ($('rm-in').value || '').trim();
+    if (!t || roomBusy) return;
+    if (rec) stopMic();
+    if (userTurns() >= ROOM_CAP) { bubble('docb', T().capLine); speak(T().capLine); $('rm-in').value = ''; return; }
+    $('rm-in').value = '';
+    bubble('me', t); roomLog.push({ role: 'user', content: t });
+    roomBusy = true; var th = bubble('docb think', T().thinking + '…');
+    post({ action: 'chat', system: catalog(), messages: roomLog.slice(-12), max_tokens: 500 }, function (ok, r) {
+      roomBusy = false; th.parentNode.removeChild(th);
+      var reply = (ok && r && r.reply) ? r.reply : T().roomFail;
+      bubble('docb', reply); if (ok) roomLog.push({ role: 'assistant', content: reply });
+      speak(reply);
+      if (ok && !offered && !remembered && userTurns() >= 3) setTimeout(offerToRemember, 1200);
+    });
+  }
+  function startMic() {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert(T().speak); return; }
+    try {
+      rec = new SR(); rec.lang = (lang === 'es') ? 'es-US' : 'en-US'; rec.interimResults = true; rec.continuous = true;
+      $('rm-mic').className = 'rm-btn live';
+      micLive = true; micHeard = ($('rm-in').value || '').trim(); if (micHeard) micHeard += ' ';
+      rec.onresult = function (ev) {
+        var fin = '', tmp = '', i;
+        for (i = ev.resultIndex; i < ev.results.length; i++) { if (ev.results[i].isFinal) fin += ev.results[i][0].transcript + ' '; else tmp += ev.results[i][0].transcript; }
+        if (fin) micHeard += fin;
+        $('rm-in').value = micHeard + tmp;
+      };
+      rec.onend = function () {
+        if (micLive) { try { rec.start(); return; } catch (e) {} }
+        $('rm-mic').className = 'rm-btn'; rec = null;
+      };
+      rec.onerror = function (ev) { if (ev && (ev.error === 'no-speech' || ev.error === 'aborted')) return; micLive = false; $('rm-mic').className = 'rm-btn'; rec = null; };
+      hush(); rec.start();
+    } catch (e) { $('rm-mic').className = 'rm-btn'; rec = null; }
+  }
+  function stopMic() { micLive = false; if (rec) { try { rec.stop(); } catch (e) {} rec = null; } $('rm-mic').className = 'rm-btn'; }
+  $('rm-back').onclick = closeRoom;
+  $('rm-sound').onclick = function () { toggleSound(); $('rm-sound').className = 'sw-pill' + (sound ? ' on' : ''); };
+  $('rm-send').onclick = roomSend;
+  $('rm-mic').onclick = function () { if (rec) { stopMic(); if (($('rm-in').value || '').trim()) roomSend(); } else startMic(); };
+  $('rm-in').addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); roomSend(); } });
+  function item(href, b, s, dl) {
+    return '<a class="sh-item" data-out="1" href="' + href + '" target="_blank" rel="noopener"><b>' + b + '</b><span>' + s + '</span></a>';
+  }
+  function itemOut(href, b, s) {
+    return '<a class="sh-item" data-out="1" href="' + href + '" target="_blank" rel="noopener"><b>' + b + '</b><span>' + s + '</span><i>' + ((lang === 'es') ? 'abre otro sitio' : 'opens another site') + '</i></a>';
+  }
+  function book(pic, name, href, btn) {
+    return '<div class="sh-book"><img src="' + pic + '" alt=""><p>' + name + '</p><a class="sh-door" data-out="1" href="' + href + '" target="_blank" rel="noopener">' + btn + '</a><i style="display:block;color:#c8a84b;font-size:16px;margin-top:8px;font-style:normal">' + ((lang === 'es') ? 'abre Amazon' : 'opens Amazon') + '</i></div>';
+  }
+
+  /* ======================= LEAVING ======================= */
+  var leaveHref = '';
+  function leave(href) {
+    leaveHref = href;
+    $('lv-go').setAttribute('href', href);
+    $('sw-leave').className = 'on';
+  }
+  $('lv-stay').onclick = function () { $('sw-leave').className = ''; };
+  $('lv-go').onclick = function () { $('sw-leave').className = ''; };
+
+  /* ======================= WIRES ======================= */
+  $('sw-lang-en').onclick = function () { setLang('en'); };
+  $('sw-lang-es').onclick = function () { setLang('es'); };
+  $('sw-sound').onclick = toggleSound;
+  $('sh-sound').onclick = toggleSound;
+  $('sw-help').onclick = function () { alert(T().helpText); };
+  $('sh-back').onclick = closeShow;
+  $('sh-next').onclick = function () { if (!panelOpen) nextBeat(); };
+  $('sh-stage').onclick = function (ev) {
+    if (panelOpen) return;
+    var tg = ev.target;
+    if (tg && (tg.tagName === 'A' || (tg.parentNode && tg.parentNode.tagName === 'A'))) return;
+    if (rec) { recToggle(); return; }
+    nextBeat();
+  };
+  document.addEventListener('keydown', function (ev) {
+    if ($('sw-room').className === 'on') { if (ev.key === 'Escape') closeRoom(); return; }
+    if (cur === null) return;
+    if (ev.key === 'Escape') closeShow();
+    if (ev.key === 'ArrowRight' || ev.key === ' ') { if (!panelOpen) nextBeat(); }
+  });
+
+  /* ======================= GO ======================= */
+  try { document.body.appendChild($('sw-show')); document.body.appendChild($('sw-room')); document.body.appendChild($('sw-leave')); } catch (e) {}
+  paintBar();
+  $('sw-bg').style.backgroundImage = 'url(\'' + PIC.wall + '\')';
+  setTimeout(function () { $('sw-bg').className = 'sw-bg on'; $('sw-line').className = 'sw-line on'; }, 80);
+  paintWall();
+  prefetchDecks();
+  if (synth && synth.onvoiceschanged !== undefined) { synth.onvoiceschanged = function () {}; }
+})();
+</script>
