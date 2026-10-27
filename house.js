@@ -1,4 +1,15 @@
-/* 4 LAWS ACADEMY -- house.js v1.4 THE PILL STEPS ASIDE (Bench 54, 10/9/26)
+/* 4 LAWS ACADEMY -- house.js v1.5 ONE BAR (Bench 50, 10/27/26)
+ * Founder's field report from his Mac Studio: in a PWS Talent window room
+ * the Butler B bar stood TWICE -- Butler, PLAY . music, Butler -- with the
+ * chat squeezed under them. Cause: placeBars() asked only the element right
+ * before the chat feed whether it was a bar; pws-talent's PLAY bar slides
+ * into that very spot, so the next pass saw no bar and made another.
+ * One change: placeBars() now looks through every earlier sibling of the
+ * feed for a bar it already made, keeps the first, removes any extra, and
+ * makes a new one only when none exists. Nothing else changed.
+ * Way back: house.js v1.4 (file house-v1_4-WAY-BACK.js).
+ * -- carried below:
+ * 4 LAWS ACADEMY -- house.js v1.4 THE PILL STEPS ASIDE (Bench 54, 10/9/26)
  * Founder's field report from his phone: the REMINDERS pill sat on top of
  * Coach B's first words ("That pill should vanish when I reach coach").
  * One addition: while a Doc B chat is open and the REMINDERS pill would
@@ -179,8 +190,15 @@
       try {
         var c = CHATS[i], feed = document.getElementById(c.feed);
         if (!feed || !feed.parentNode) continue;
-        var prev = feed.previousElementSibling;
-        if (!(prev && prev.getAttribute && prev.getAttribute('data-hb') === '1')) {
+        /* v1.5 ONE BAR: the bar may stand a few places above the feed (a PLAY bar can sit between) -- find it, never double it */
+        var prev = null, sib = feed.previousElementSibling;
+        while (sib) {
+          if (sib.getAttribute && sib.getAttribute('data-hb') === '1') {
+            if (!prev) prev = sib; else if (sib.parentNode) sib.parentNode.removeChild(sib);
+          }
+          sib = sib.previousElementSibling;
+        }
+        if (!prev) {
           css();
           prev = makeBar();
           feed.parentNode.insertBefore(prev, feed);
