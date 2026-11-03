@@ -6397,11 +6397,11 @@
     var st = document.createElement('style'); st.id = 'pws108Css';
     st.textContent =
       '#pws108Day{display:inline-flex;align-items:center;justify-content:center;font-family:Cinzel,serif;font-size:19px !important;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#f0d78a !important;' +
-        'background:radial-gradient(ellipse at center,#1a1408 0%,#07060a 100%);border:1.5px solid #c8a84b !important;border-radius:999px;padding:9px 26px !important;margin-left:16px;text-decoration:none;cursor:pointer;white-space:nowrap;' +
+        'background:radial-gradient(ellipse at center,#1a1408 0%,#07060a 100%);background-size:cover;background-position:center 30%;border:1.5px solid #c8a84b !important;border-radius:999px;padding:11px 30px !important;min-width:150px;margin-left:16px;text-decoration:none;cursor:pointer;white-space:nowrap;' +
         'box-shadow:0 0 0 3px rgba(200,168,75,0.18),0 0 22px rgba(200,168,75,0.45),inset 0 0 14px rgba(200,168,75,0.18);text-shadow:0 0 8px rgba(240,215,138,0.5);order:1;transition:box-shadow .25s,transform .15s;}' +
       '#pws108Day:hover{box-shadow:0 0 0 3px rgba(200,168,75,0.3),0 0 30px rgba(200,168,75,0.7),inset 0 0 14px rgba(200,168,75,0.25);}' +
       '#pws108Day:active{transform:scale(0.97);}' +
-      '@media(max-width:768px){#pws108Day{font-size:15px !important;padding:7px 18px !important;margin-left:12px;letter-spacing:0.16em;}}';
+      '@media(max-width:768px){#pws108Day{font-size:15px !important;padding:9px 20px !important;min-width:120px;margin-left:12px;letter-spacing:0.16em;}}';
     document.head.appendChild(st);
   }
   /* open the day itself: Limits open, the bracelet unfolded, the other three cards folded, the day's picture at the top of the screen */
@@ -6430,6 +6430,7 @@
     }
     var a = document.createElement('a'); a.id = 'pws108Day'; a.href = '/pws?day';
     a.innerHTML = '<span class="en">MY DAY</span><span class="es">MI DÍA</span>';
+    try { var pic = (window.PWS_ARMORY_IMAGES || {}).myday_banner; if (pic) a.style.backgroundImage = 'linear-gradient(90deg,rgba(7,6,10,0.8) 0%,rgba(7,6,10,0.3) 42%,rgba(7,6,10,0.3) 58%,rgba(7,6,10,0.8) 100%),url(' + JSON.stringify(pic) + ')'; } catch (ePic) {}   /* the day's own picture in the medallion */
     a.addEventListener('click', function(ev) { ev.preventDefault(); pws108OpenDay_(0); });
     logo.parentNode.insertBefore(a, logo.nextSibling);
   }
