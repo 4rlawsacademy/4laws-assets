@@ -1,4 +1,3 @@
-/* ═══ v91_107 THE VEIL AND THE PIN (Bench 57, Tue 11/3/26; the founder, watching his son tap four times to reach his day: 'favorite day needs to be a one tab thing... a haze over the screen... a button you push, you bypass anything else, you go to your favorite day. I'm supposed to find my workload, not four taps away'). Built on v91_106 THE GREYED DOOR, untouched below. (1) THE VEIL: every time the Work Station opens, a gold haze settles over the page with one button, MY FAVORITE DAY / MI DÍA FAVORITO; tap it and the day is open at the top of the screen with the other three cards folded; 'look around instead' lifts the haze and leaves the page as it was. A member with no day sees BUILD MY FIRST DAY, which goes to Charles at /arrival. (2) THE PIN: after the haze lifts, a gold pill stays at the bottom of the screen the whole visit -- MY FAVORITE DAY -- one tap back to the day from anywhere on the station; it steps aside while a room overlay is open. (3) THE DOOR: /pws?day (and #day) skips the veil and opens the day directly -- the door Charles's OPEN MY DAY and the /favorite-day address use. (4) A leftover closed: a member whose Contributions were empty used to be thrown to /todos at load; now the road is Charles (/arrival), the one entrance. Same file name so the page needs no paste: upload over the old one and purge. Way back: GitHub's history for this file. ═══ */
 /* ═══ v91_106 THE GREYED DOOR (Bench 60, Tue 10/27/26; built on v91_105 THE LINKS IN HAND, untouched below). The founder's three doors (10/25): one house, and behind a LEARN or TALENT door Doc B does not speak -- the greyed door says, in one line, how to let him. (1) At load the page asks the house once (academyStatus, Main AUDIT 75 = Version 340) whether this member's chat is on. (2) When it is off, every Doc B turn on this page (every cftConvTurn, one doorway: post()) is answered on the page itself, with no call to any engine: the chat shows the line "Doc B isn’t in your plan. A day with him is $5 — tap to add." / "Doc B no está en tu plan. Un día con él cuesta $5 — toca para añadirlo.", and a slim gold bar sits at the bottom of the screen with the same line and one button, A DAY WITH DOC B — $5, which opens the store in a new tab (nobody is thrown off the page). (3) If an engine ever answers code NO_CHAT (the house gate), the same bar appears. (4) A member whose chat is on sees nothing new: the bar never exists, nothing else moved. Way back: pws-talent-v91_105.js (still on GitHub) and the shell's old script line. ═══ */
 /* ═══ v91_105 THE LINKS IN HAND (Bench 50, Tue 10/27/26; built on v91_104 THE CLEAN FEED, untouched below). The founder on his Mac Studio: ACCESSORIES -> LINKS and the links could not be reached; on the phone the same tap opens a full sheet with BACK and works. On a wide screen the accessory panel sat in a 260-px box UNDER the footer buttons, inside a window already out of height -- a sliver. Three changes: (1) THE WIDE SHEET: when an accessory panel (Links, Music, Cash, Contacts, Timer...) is seated on a wide screen, the tools footer steps aside and the panel takes its place under the chat, up to 60vh tall, with the existing CLOSE bar on top; CLOSE brings the footer back exactly as it was (full-chat fold respected). The phone sheet is untouched. (2) No room opens with the links already spread out, at any width -- PLAY and LINKS are one tap away (v91_104 had stopped this on phones only). (3) The opening line in a window room with a kept chat (Bench 57's brief, same as /todos v65.39): 'Anything this needs today -- music, a link, a contact, a reminder? If not, Mark Done and go.' Nothing is a right answer. TESTED (test bench, stand-in browser, wide window): the engine parses; a seated links panel hides the footer and shows the panel with CLOSE; CLOSE restores the footer; a phone-width window still gets the fixed sheet; the new opener is in the no-stack list. Way back: pws-talent-v91_104.js (still on GitHub) and the shell's old script line. ═══ */
 /* ═══ v91_104 THE CLEAN FEED (Bench 45, Mon 10/12/26 1 a.m., fourth upload under this name; the founder on his phone in Morning Spirit: 'once I remove the tools to chat freely... the links occupy half the space... you can have a button to remove the link area'): the line to blame was pwsTWSGetFeed -- it used the accessory box only when the room was the pop-up overlay, so in a DOCKED room (Limits, Respect, Talent, Bruno) every accessory fell into the chat feed itself, rode with the bubbles, never became the phone sheet, and stayed when the tools were hidden. Now (1) the accessory box is used whenever the room is on screen, docked or not; (2) every accessory wears a close bar at every width -- a slim LINKS ✕ CLOSE row on desktop, the full-screen ← BACK sheet on phones -- with REMINDER / TIMER / CAMERA / HELP titles added; (3) tapping FULL CHAT puts the accessories away (the timer stays); (4) on phones the saved links no longer open by themselves on room entry (the sheet would cover the room; PLAY and LINKS are one tap away) -- desktops keep the auto-open. Replaces v91_104 THE HEADROOM. ═══ */
@@ -1621,7 +1620,6 @@
     pwsTWSHookAccordion();
     pwsUpdateAccordionStatus();
     pwsEntertainmentBridgeInbound();
-    try { pws107Start_(); } catch (e107) {}   /* v91_107 THE VEIL AND THE PIN */
 
     var _pauseBtn = document.getElementById('pwsUsePauseBtn');
     if (_pauseBtn) _pauseBtn.addEventListener('click', pwsTogglePause);
@@ -1873,12 +1871,11 @@
         var twsOpen = document.getElementById('pwsTWSOverlay') && document.getElementById('pwsTWSOverlay').classList.contains('open');
         if (!alreadyPrompted && !twsOpen) {
           sessionStorage.setItem('pws_onboard_prompted', '1');
-          setTimeout(function() { window.location.href = '/arrival'; }, 800);   /* v91_107: the one entrance is Charles */
+          setTimeout(function() { window.location.href = '/todos'; }, 800);
         }
       }
       if (dTools && dTools.status === 'ok') { _toolsData = dTools.data ? Object.assign({}, dTools.data, { lastSavedAt: dTools.lastSavedAt }) : null; }
       if (dDay && dDay.status === 'ok') { _dayData = dDay.data ? Object.assign({}, dDay.data, { lastSavedAt: dDay.lastSavedAt }) : null; }
-      _pws107DayKnown = true;   /* v91_107: the veil may now say whether a day exists */
       if (_dayData && _dayData.finalSchedule) {
         pwsEnsureSlotIds_(_dayData.finalSchedule);
         /* v91_10 TALENT TIME: christen the already-planted project slot.
@@ -6391,97 +6388,6 @@
   // can never resurrect the overlay after the member closes it.
   var _pwsDeepLinkFired = false;
   try { pwsActivateDeepLink_(0); } catch (eDL) {}
-
-  /* ═══ v91_107 THE VEIL AND THE PIN ═══ */
-  var _pws107DayKnown = false, _pws107Door = false, _pws107Pin = null;
-  try { _pws107Door = /[?&]day(=|&|$)/.test(window.location.search || '') || /^#day$/i.test(window.location.hash || ''); } catch (e107a) {}
-  function pws107HasDay_() { return !!(_dayData && _dayData.finalSchedule && _dayData.finalSchedule.length); }
-  function pws107Css_() {
-    if (document.getElementById('pws107Css')) return;
-    var st = document.createElement('style'); st.id = 'pws107Css';
-    st.textContent =
-      '#pws107Veil{position:fixed;inset:0;z-index:2500000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:24px;' +
-        'background:radial-gradient(ellipse at center,rgba(60,46,14,0.72) 0%,rgba(8,6,3,0.86) 70%);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);opacity:0;transition:opacity .35s;}' +
-      '#pws107Veil.on{opacity:1;}' +
-      '#pws107Veil .pws107-btn{font-family:Cinzel,serif;font-size:30px;letter-spacing:0.14em;text-transform:uppercase;color:#120d04;background:linear-gradient(180deg,#f0d78a,#c8a84b);' +
-        'border:none;border-radius:10px;padding:24px 44px;cursor:pointer;box-shadow:0 0 0 2px rgba(240,215,138,0.35),0 18px 60px rgba(200,168,75,0.45);max-width:92vw;line-height:1.15;}' +
-      '#pws107Veil .pws107-btn:active{transform:scale(0.98);}' +
-      '#pws107Veil .pws107-look{font-family:Cormorant Garamond,Georgia,serif;font-style:italic;font-size:21px;color:rgba(240,230,204,0.82);background:none;border:none;cursor:pointer;padding:8px 14px;text-decoration:underline;text-underline-offset:4px;}' +
-      '@media(max-width:600px){#pws107Veil .pws107-btn{font-size:23px;padding:20px 28px;}}' +
-      '#pws107Pin{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9000;font-family:Cinzel,serif;font-size:16px;letter-spacing:0.14em;text-transform:uppercase;color:#120d04;' +
-        'background:linear-gradient(180deg,#f0d78a,#c8a84b);border:none;border-radius:999px;padding:13px 26px;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,0.55),0 0 0 1px rgba(240,215,138,0.5);white-space:nowrap;transition:bottom .2s;}' +
-      '#pws107Pin.hide{display:none;}';
-    document.head.appendChild(st);
-  }
-  /* open the day itself: Limits open, the bracelet unfolded, the other three cards folded, the day at the top of the screen */
-  function pws107OpenDay_(tries) {
-    tries = tries || 0;
-    var accL = document.getElementById('pwsAccordionLimits'), card = document.getElementById('pwsMyDayCard'), bd = document.getElementById('pwsMyDayBody');
-    if (!accL || !card || !bd) { if (tries < 80) setTimeout(function() { pws107OpenDay_(tries + 1); }, 500); return; }
-    ['pwsAccordionTalent', 'pwsAccordionRespect', 'pwsAccordionResponsibility'].forEach(function(id) { var c = document.getElementById(id); if (c) c.classList.remove('open'); });
-    if (!accL.classList.contains('open')) accL.classList.add('open');
-    if (bd.style.display === 'none') { try { card.click(); } catch (eC) {} }
-    try { pwsUpdateAccordionStatus(); } catch (eU) {}
-    setTimeout(function() { try { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (eS) {} }, 320);   /* the day's own picture at the top of the screen */
-  }
-  window.pws107OpenDay = function() { pws107OpenDay_(0); };
-  function pws107ShowPin_() {
-    pws107Css_();
-    if (_pws107Pin) return;
-    var es = (_lang === 'es');
-    var pin = document.createElement('button'); pin.type = 'button'; pin.id = 'pws107Pin';
-    pin.textContent = es ? 'MI DÍA FAVORITO' : 'MY FAVORITE DAY';
-    pin.addEventListener('click', function() { pws107OpenDay_(0); });
-    document.body.appendChild(pin); _pws107Pin = pin;
-    /* steps aside for a room overlay or the plan bar; never scrolls away */
-    setInterval(function() {
-      try {
-        var use = document.getElementById('pwsUseOverlay'), tws = document.getElementById('pwsTWSOverlay'), sheet = document.querySelector('#pwsToolPanelZone.pws-sheet');
-        var roomOpen = (use && use.classList.contains('open')) || (tws && tws.classList.contains('open')) || !!sheet;
-        pin.classList.toggle('hide', !!roomOpen);
-        var bar = document.getElementById('pws75Bar');
-        pin.style.bottom = (bar && bar.style.display !== 'none') ? (bar.offsetHeight + 14) + 'px' : '18px';
-        pin.textContent = (_lang === 'es') ? 'MI DÍA FAVORITO' : 'MY FAVORITE DAY';
-      } catch (eI) {}
-    }, 1000);
-  }
-  function pws107Veil_() {
-    pws107Css_();
-    if (document.getElementById('pws107Veil')) return;
-    var es = (_lang === 'es');
-    var v = document.createElement('div'); v.id = 'pws107Veil';
-    var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'pws107-btn';
-    var look = document.createElement('button'); look.type = 'button'; look.className = 'pws107-look';
-    look.textContent = es ? 'mirar la casa primero' : 'look around instead';
-    v.appendChild(btn); v.appendChild(look); document.body.appendChild(v);
-    requestAnimationFrame(function() { v.classList.add('on'); });
-    function lift() { v.classList.remove('on'); setTimeout(function() { try { v.parentNode.removeChild(v); } catch (eR) {} }, 380); pws107ShowPin_(); }
-    function paint() {
-      var es2 = (_lang === 'es');
-      if (_pws107DayKnown && !pws107HasDay_()) btn.textContent = es2 ? 'CONSTRUIR MI PRIMER DÍA' : 'BUILD MY FIRST DAY';
-      else btn.textContent = es2 ? 'MI DÍA FAVORITO' : 'MY FAVORITE DAY';
-      look.textContent = es2 ? 'mirar la casa primero' : 'look around instead';
-    }
-    paint();
-    var painter = setInterval(function() { if (!document.getElementById('pws107Veil')) { clearInterval(painter); return; } paint(); }, 400);   /* follows EN/ES while the veil is down */
-    look.addEventListener('click', function() { lift(); });
-    btn.addEventListener('click', function() {
-      btn.disabled = true;
-      var waited = 0;
-      (function go() {
-        if (_pws107DayKnown || waited >= 8000) {
-          if (_pws107DayKnown && !pws107HasDay_()) { btn.textContent = (_lang === 'es') ? 'Charles te espera…' : 'Charles is waiting…'; window.location.href = '/arrival'; return; }
-          lift(); pws107OpenDay_(0); return;
-        }
-        waited += 250; setTimeout(go, 250);
-      })();
-    });
-  }
-  function pws107Start_() {
-    if (!_session || !_memberId) return;
-    if (_pws107Door) { pws107ShowPin_(); pws107OpenDay_(0); return; }
-    pws107Veil_();
-  }
 
   function pwsAdherenceFeedback(done, total) {
     var ratio = total > 0 ? done / total : 0;
