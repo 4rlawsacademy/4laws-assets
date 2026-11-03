@@ -6396,12 +6396,15 @@
     if (document.getElementById('pws108Css')) return;
     var st = document.createElement('style'); st.id = 'pws108Css';
     st.textContent =
-      '#pws108Day{display:inline-flex;align-items:center;justify-content:center;font-family:Cinzel,serif;font-size:19px !important;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#f0d78a !important;' +
-        'background:radial-gradient(ellipse at center,#1a1408 0%,#07060a 100%);background-size:cover;background-position:center 30%;border:1.5px solid #c8a84b !important;border-radius:999px;padding:11px 30px !important;min-width:150px;margin-left:16px;text-decoration:none;cursor:pointer;white-space:nowrap;' +
-        'box-shadow:0 0 0 3px rgba(200,168,75,0.18),0 0 22px rgba(200,168,75,0.45),inset 0 0 14px rgba(200,168,75,0.18);text-shadow:0 0 8px rgba(240,215,138,0.5);order:1;transition:box-shadow .25s,transform .15s;}' +
-      '#pws108Day:hover{box-shadow:0 0 0 3px rgba(200,168,75,0.3),0 0 30px rgba(200,168,75,0.7),inset 0 0 14px rgba(200,168,75,0.25);}' +
+      '#pws108Day{display:inline-flex;align-items:stretch;height:46px;border:1.5px solid #c8a84b !important;border-radius:7px;overflow:hidden;margin-left:16px;text-decoration:none;cursor:pointer;' +
+        'background:linear-gradient(180deg,#143d6b 0%,#0a2448 55%,#061a36 100%);box-shadow:0 0 0 2px rgba(200,168,75,0.16),0 0 18px rgba(200,168,75,0.4);font-family:Cinzel,serif;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;' +
+        'color:#f0d78a !important;font-size:15px !important;line-height:1;text-shadow:0 0 8px rgba(240,215,138,0.45);transition:box-shadow .25s,transform .15s;order:1;}' +
+      '#pws108Day .pws108-w{display:flex;align-items:center;justify-content:center;padding:0 12px;min-width:44px;}' +
+      '#pws108Day .pws108-p{width:46px;flex:0 0 46px;background-size:cover;background-position:center;}' +
+      '#pwsRoot[data-lang="es"] #pws108Day .en,#pwsRoot:not([data-lang="es"]) #pws108Day .es{display:none !important;}' +   /* one tongue, always */
+      '#pws108Day:hover{box-shadow:0 0 0 2px rgba(200,168,75,0.28),0 0 26px rgba(200,168,75,0.65);}' +
       '#pws108Day:active{transform:scale(0.97);}' +
-      '@media(max-width:768px){#pws108Day{font-size:15px !important;padding:9px 20px !important;min-width:120px;margin-left:12px;letter-spacing:0.16em;}}';
+      '@media(max-width:768px){#pws108Day{height:38px;margin-left:12px;font-size:13px !important;letter-spacing:0.12em;}#pws108Day .pws108-w{padding:0 9px;min-width:36px;}#pws108Day .pws108-p{width:38px;flex-basis:38px;}}';
     document.head.appendChild(st);
   }
   /* open the day itself: Limits open, the bracelet unfolded, the other three cards folded, the day's picture at the top of the screen */
@@ -6429,8 +6432,10 @@
       for (var i = 0; i < olds.length; i++) { try { olds[i].parentNode.removeChild(olds[i]); } catch (eO) {} }
     }
     var a = document.createElement('a'); a.id = 'pws108Day'; a.href = '/pws?day';
-    a.innerHTML = '<span class="en">MY DAY</span><span class="es">MI DÍA</span>';
-    try { var pic = (window.PWS_ARMORY_IMAGES || {}).myday_banner; if (pic) a.style.backgroundImage = 'linear-gradient(90deg,rgba(7,6,10,0.8) 0%,rgba(7,6,10,0.3) 42%,rgba(7,6,10,0.3) 58%,rgba(7,6,10,0.8) 100%),url(' + JSON.stringify(pic) + ')'; } catch (ePic) {}   /* the day's own picture in the medallion */
+    var pic = ''; try { pic = (window.PWS_ARMORY_IMAGES || {}).myday_banner || ''; } catch (ePic) {}
+    a.innerHTML = '<span class="pws108-w"><span class="en">MY</span><span class="es">MI</span></span>'
+      + '<span class="pws108-p"' + (pic ? ' style="background-image:url(' + escHtml(JSON.stringify(pic)) + ')"' : '') + '></span>'
+      + '<span class="pws108-w"><span class="en">DAY</span><span class="es">D\u00cdA</span></span>';   /* the banner itself, small: blue, the street, blue */
     a.addEventListener('click', function(ev) { ev.preventDefault(); pws108OpenDay_(0); });
     logo.parentNode.insertBefore(a, logo.nextSibling);
   }
