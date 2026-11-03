@@ -1,3 +1,4 @@
+/* ═══ v91_108 THE STATION OPENS ON THE DAY (Bench 57, Tue 11/3/26; the founder, after his son tapped four times to reach his day and after withdrawing v91_107's haze and bottom pill: 'favorite day needs to be a one tab thing... I'm supposed to find my workload, not four taps away'; 'we're getting pill heavy'; 'replace Studio'). Built on v91_106 THE GREYED DOOR, untouched below. (1) THE LANDING: every time the Work Station opens, by any road, it opens ON the day -- the Limits card open, the MY FAVORITE DAY bracelet unfolded, the other three cards folded, the day's picture at the top of the screen. (2) THE HEADER: the logo, the title, EN/ES, and MY DAY / MI DÍA -- a gold medallion in the crest's own style, seated right after the logo (on the phone, in the gap before the title); the STUDIO, TR and Doc B doors leave the top row (the crest bar and the cards keep those doors). (3) THE DOOR: /pws?day and #day keep working for links. (4) A leftover closed: a member whose Contributions were empty used to be thrown to /todos at load; now the road is Charles (/arrival), the one entrance. Same file name so the page needs no paste: upload over the old one and purge. Way back: GitHub's history for this file. ═══ */
 /* ═══ v91_106 THE GREYED DOOR (Bench 60, Tue 10/27/26; built on v91_105 THE LINKS IN HAND, untouched below). The founder's three doors (10/25): one house, and behind a LEARN or TALENT door Doc B does not speak -- the greyed door says, in one line, how to let him. (1) At load the page asks the house once (academyStatus, Main AUDIT 75 = Version 340) whether this member's chat is on. (2) When it is off, every Doc B turn on this page (every cftConvTurn, one doorway: post()) is answered on the page itself, with no call to any engine: the chat shows the line "Doc B isn’t in your plan. A day with him is $5 — tap to add." / "Doc B no está en tu plan. Un día con él cuesta $5 — toca para añadirlo.", and a slim gold bar sits at the bottom of the screen with the same line and one button, A DAY WITH DOC B — $5, which opens the store in a new tab (nobody is thrown off the page). (3) If an engine ever answers code NO_CHAT (the house gate), the same bar appears. (4) A member whose chat is on sees nothing new: the bar never exists, nothing else moved. Way back: pws-talent-v91_105.js (still on GitHub) and the shell's old script line. ═══ */
 /* ═══ v91_105 THE LINKS IN HAND (Bench 50, Tue 10/27/26; built on v91_104 THE CLEAN FEED, untouched below). The founder on his Mac Studio: ACCESSORIES -> LINKS and the links could not be reached; on the phone the same tap opens a full sheet with BACK and works. On a wide screen the accessory panel sat in a 260-px box UNDER the footer buttons, inside a window already out of height -- a sliver. Three changes: (1) THE WIDE SHEET: when an accessory panel (Links, Music, Cash, Contacts, Timer...) is seated on a wide screen, the tools footer steps aside and the panel takes its place under the chat, up to 60vh tall, with the existing CLOSE bar on top; CLOSE brings the footer back exactly as it was (full-chat fold respected). The phone sheet is untouched. (2) No room opens with the links already spread out, at any width -- PLAY and LINKS are one tap away (v91_104 had stopped this on phones only). (3) The opening line in a window room with a kept chat (Bench 57's brief, same as /todos v65.39): 'Anything this needs today -- music, a link, a contact, a reminder? If not, Mark Done and go.' Nothing is a right answer. TESTED (test bench, stand-in browser, wide window): the engine parses; a seated links panel hides the footer and shows the panel with CLOSE; CLOSE restores the footer; a phone-width window still gets the fixed sheet; the new opener is in the no-stack list. Way back: pws-talent-v91_104.js (still on GitHub) and the shell's old script line. ═══ */
 /* ═══ v91_104 THE CLEAN FEED (Bench 45, Mon 10/12/26 1 a.m., fourth upload under this name; the founder on his phone in Morning Spirit: 'once I remove the tools to chat freely... the links occupy half the space... you can have a button to remove the link area'): the line to blame was pwsTWSGetFeed -- it used the accessory box only when the room was the pop-up overlay, so in a DOCKED room (Limits, Respect, Talent, Bruno) every accessory fell into the chat feed itself, rode with the bubbles, never became the phone sheet, and stayed when the tools were hidden. Now (1) the accessory box is used whenever the room is on screen, docked or not; (2) every accessory wears a close bar at every width -- a slim LINKS ✕ CLOSE row on desktop, the full-screen ← BACK sheet on phones -- with REMINDER / TIMER / CAMERA / HELP titles added; (3) tapping FULL CHAT puts the accessories away (the timer stays); (4) on phones the saved links no longer open by themselves on room entry (the sheet would cover the room; PLAY and LINKS are one tap away) -- desktops keep the auto-open. Replaces v91_104 THE HEADROOM. ═══ */
@@ -1620,6 +1621,7 @@
     pwsTWSHookAccordion();
     pwsUpdateAccordionStatus();
     pwsEntertainmentBridgeInbound();
+    try { pws108Start_(); } catch (e108) {}   /* v91_108 THE STATION OPENS ON THE DAY */
 
     var _pauseBtn = document.getElementById('pwsUsePauseBtn');
     if (_pauseBtn) _pauseBtn.addEventListener('click', pwsTogglePause);
@@ -1871,7 +1873,7 @@
         var twsOpen = document.getElementById('pwsTWSOverlay') && document.getElementById('pwsTWSOverlay').classList.contains('open');
         if (!alreadyPrompted && !twsOpen) {
           sessionStorage.setItem('pws_onboard_prompted', '1');
-          setTimeout(function() { window.location.href = '/todos'; }, 800);
+          setTimeout(function() { window.location.href = '/arrival'; }, 800);   /* v91_108: the one entrance is Charles */
         }
       }
       if (dTools && dTools.status === 'ok') { _toolsData = dTools.data ? Object.assign({}, dTools.data, { lastSavedAt: dTools.lastSavedAt }) : null; }
@@ -6388,6 +6390,54 @@
   // can never resurrect the overlay after the member closes it.
   var _pwsDeepLinkFired = false;
   try { pwsActivateDeepLink_(0); } catch (eDL) {}
+
+  /* ═══ v91_108 THE STATION OPENS ON THE DAY ═══ */
+  function pws108Css_() {
+    if (document.getElementById('pws108Css')) return;
+    var st = document.createElement('style'); st.id = 'pws108Css';
+    st.textContent =
+      '#pws108Day{display:inline-flex;align-items:center;justify-content:center;font-family:Cinzel,serif;font-size:19px !important;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:#f0d78a !important;' +
+        'background:radial-gradient(ellipse at center,#1a1408 0%,#07060a 100%);border:1.5px solid #c8a84b !important;border-radius:999px;padding:9px 26px !important;margin-left:16px;text-decoration:none;cursor:pointer;white-space:nowrap;' +
+        'box-shadow:0 0 0 3px rgba(200,168,75,0.18),0 0 22px rgba(200,168,75,0.45),inset 0 0 14px rgba(200,168,75,0.18);text-shadow:0 0 8px rgba(240,215,138,0.5);order:1;transition:box-shadow .25s,transform .15s;}' +
+      '#pws108Day:hover{box-shadow:0 0 0 3px rgba(200,168,75,0.3),0 0 30px rgba(200,168,75,0.7),inset 0 0 14px rgba(200,168,75,0.25);}' +
+      '#pws108Day:active{transform:scale(0.97);}' +
+      '@media(max-width:768px){#pws108Day{font-size:15px !important;padding:7px 18px !important;margin-left:12px;letter-spacing:0.16em;}}';
+    document.head.appendChild(st);
+  }
+  /* open the day itself: Limits open, the bracelet unfolded, the other three cards folded, the day's picture at the top of the screen */
+  function pws108OpenDay_(tries) {
+    tries = tries || 0;
+    var accL = document.getElementById('pwsAccordionLimits'), card = document.getElementById('pwsMyDayCard'), bd = document.getElementById('pwsMyDayBody');
+    if (!accL || !card || !bd) { if (tries < 80) setTimeout(function() { pws108OpenDay_(tries + 1); }, 500); return; }
+    ['pwsAccordionTalent', 'pwsAccordionRespect', 'pwsAccordionResponsibility'].forEach(function(id) { var c = document.getElementById(id); if (c) c.classList.remove('open'); });
+    if (!accL.classList.contains('open')) accL.classList.add('open');
+    if (bd.style.display === 'none') { try { card.click(); } catch (eC) {} }
+    try { pwsUpdateAccordionStatus(); } catch (eU) {}
+    setTimeout(function() { try { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (eS) {} }, 320);
+  }
+  window.pws108OpenDay = function() { pws108OpenDay_(0); };
+  /* MY DAY takes the STUDIO door's seat in the header and sits right after the logo */
+  function pws108Header_(tries) {
+    tries = tries || 0;
+    var bar = document.querySelector('#pwsRoot .pws-topbar'), logo = bar && bar.querySelector('.pws-topbar-logo');
+    if (!bar || !logo) { if (tries < 40) setTimeout(function() { pws108Header_(tries + 1); }, 500); return; }
+    if (document.getElementById('pws108Day')) return;
+    pws108Css_();
+    var doors = document.getElementById('pwsTopbarDoors');
+    if (doors) {   /* the founder, 11/3: logo, the title, EN/ES, MY DAY -- STUDIO, TR and the Doc B button go (the crest bar and the cards keep those doors) */
+      var olds = doors.querySelectorAll('a[href="/studio"], a[href*="pws-trust"], .pws-docb-btn');
+      for (var i = 0; i < olds.length; i++) { try { olds[i].parentNode.removeChild(olds[i]); } catch (eO) {} }
+    }
+    var a = document.createElement('a'); a.id = 'pws108Day'; a.href = '/pws?day';
+    a.innerHTML = '<span class="en">MY DAY</span><span class="es">MI DÍA</span>';
+    a.addEventListener('click', function(ev) { ev.preventDefault(); pws108OpenDay_(0); });
+    logo.parentNode.insertBefore(a, logo.nextSibling);
+  }
+  function pws108Start_() {
+    pws108Header_(0);
+    if (!_session || !_memberId) return;
+    pws108OpenDay_(0);   /* every road lands on the day */
+  }
 
   function pwsAdherenceFeedback(done, total) {
     var ratio = total > 0 ? done / total : 0;
