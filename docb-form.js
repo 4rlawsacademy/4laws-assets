@@ -1,4 +1,21 @@
 /* ============================================================
+   DOCB-FORM.JS v1.3 — THE HONEST FILL (Bench 50, Mon 11/9/26)
+   The founder's night of 11/8: FILL IT wrote nothing into a blank copy, saved
+   it, and the room said "Filled". Doc B then said "Done. Now tap SIGN."
+   v1.3, three changes, nothing else moved:
+    1. FILL IT counts what it writes. When it would write nothing it does NOT
+       save a copy -- the hint says "Nothing to write yet. Ask Doc B or type in
+       the boxes." and the button comes back.
+    2. It reports what it did: onDone(bytes, name, mode, report) where report =
+       { wrote, blankLeft, total, flatPages:[page numbers with no boxes] }, and
+       the same line goes to DocBLoop (if that organ is on the page) under the
+       key the page gave in open({ loopKey }).
+    3. A fielded form that has pages WITHOUT boxes (a flat page inside -- the
+       Genworth designee page) is named at open: "Pages 11 have no boxes: sign
+       or write there with the pen." -- so nobody hunts for boxes that are not
+       there.
+   Way back: v1.2 (file docb-form-v1_2-WAY-BACK.js).
+   ----------------------------------------------------------------
    DOCB-FORM.JS v1.2 — THE WORDS IN THE BOXES (Bench 50, 10/15/26)
    Founder's walk 10/13: "everything's green, but the answers are not on
    the page." v1.2 draws each answer inside its box on the page itself
@@ -248,7 +265,7 @@
           else if (kind === 'radio' && isCheckSet) { var as0 = widgets[w].getAppearanceState ? widgets[w].getAppearanceState() : null; cur = (as0 && onVal && nameText_(as0) === onVal) ? onVal : ''; }
           else if (kind === 'radio') { cur = f.getSelected() || ''; }
         } catch (e8) {}
-        out.push({ field: f, name: f.getName(), kind: kind, checkSet: isCheckSet, page: pIdx, x: rect.x, y: rect.y, w: rect.width, h: rect.height, opts: opts, onVal: onVal, value: cur, filled: false });
+        out.push({ field: f, name: f.getName(), kind: kind, checkSet: isCheckSet, page: pIdx, x: rect.x, y: rect.y, w: rect.width, h: rect.height, opts: opts, onVal: onVal, value: cur, orig: cur, filled: false });   /* v1.3: orig = what the paper already held */
       }
     }
     /* reading order: page, then top-to-bottom (PDF y grows upward), then left-to-right */
@@ -428,40 +445,61 @@
     if (!st) { return; }
     var btn = document.getElementById('dfFill'); if (btn) { btn.disabled = true; }
     var PDFLib = window.PDFLib, hint = document.getElementById('dfHint');
+    var rep = { wrote: 0, kept: 0, blankLeft: 0, total: 0, firstPage: 0, flatPages: (st.flatPages || []).slice(), mode: st.mode };   /* v1.3 THE HONEST FILL: count everything */
+    function wrote_(f) { rep.wrote++; if (!rep.firstPage) { rep.firstPage = (f.page || 0) + 1; } }
     PDFLib.PDFDocument.load(st.pdfU8, { ignoreEncryption: true }).then(function (pdfDoc) {
       if (st.mode === 'fields') {
         var form = pdfDoc.getForm();
         var byName = {};
         var all = form.getFields();
         for (var a = 0; a < all.length; a++) { byName[all[a].getName()] = all[a]; }
+        rep.total = st.fields.length;
         for (var i = 0; i < st.fields.length; i++) {
           var f = st.fields[i], live = byName[f.name]; if (!live) { continue; }
           try {
-            if (f.kind === 'text') { if (f.value && String(f.value).length) { live.setText(String(f.value)); } }
-            else if (f.kind === 'check') { if (f.value === true) { live.check(); } else if (f.filled === false && f.value === false) { live.uncheck(); } }
-            else if (f.kind === 'radio') { if (f.value && f.onVal && f.value === f.onVal) { if (f.checkSet) { setCheckSet_(live, f.onVal); } else { live.select(f.onVal); } } }
-            else if (f.kind === 'select') { if (f.value) { live.select(f.value); } }
+            if (f.kind === 'text') { if (f.value && String(f.value).length) { if (String(f.value) !== String(f.orig || '')) { live.setText(String(f.value)); wrote_(f); } else { rep.kept++; } } else { rep.blankLeft++; } }
+            else if (f.kind === 'check') { if (f.value === true) { if (f.orig !== true) { live.check(); wrote_(f); } else { rep.kept++; } } else if (f.filled === false && f.value === false) { live.uncheck(); } }
+            else if (f.kind === 'radio') { if (f.value && f.onVal && f.value === f.onVal) { if (f.orig !== f.onVal) { if (f.checkSet) { setCheckSet_(live, f.onVal); } else { live.select(f.onVal); } wrote_(f); } else { rep.kept++; } } }
+            else if (f.kind === 'select') { if (f.value) { if (f.value !== f.orig) { live.select(f.value); wrote_(f); } else { rep.kept++; } } }
           } catch (eF) {}
         }
         try { form.updateFieldAppearances(); } catch (eU) {}
       } else {
         return pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica).then(function (font) {
           var pages = pdfDoc.getPages();
+          rep.total = st.texts.length;
           for (var j = 0; j < st.texts.length; j++) {
-            var t = st.texts[j]; if (!t.value) { continue; }
+            var t = st.texts[j]; if (!t.value) { rep.blankLeft++; continue; }
             var pg = pages[t.page]; if (!pg) { continue; }
             pg.drawText(String(t.value), { x: t.x + 2, y: t.y + 3, size: t.size, font: font, color: PDFLib.rgb(0.05, 0.05, 0.1) });
+            wrote_(t);
           }
           return pdfDoc;
         });
       }
       return pdfDoc;
-    }).then(function (pdfDoc) { return pdfDoc.save(); })
+    }).then(function (pdfDoc) {
+      if (!rep.wrote) {   /* v1.3: never save a copy that changed nothing */
+        if (btn) { btn.disabled = false; }
+        if (hint) { hint.textContent = rep.kept
+          ? T({ en: 'Nothing new to write \u2014 this paper already holds ' + rep.kept + ' answers. Change a box, or close and SIGN it.', es: 'Nada nuevo que escribir \u2014 este papel ya tiene ' + rep.kept + ' respuestas. Cambia una casilla, o cierra y F\u00cdRMALO.' })
+          : T({ en: 'Nothing to write yet. Ask Doc B, or tap a box and type \u2014 then FILL IT.', es: 'Nada que escribir todav\u00eda. Preg\u00fantale a Doc B, o toca una casilla y escribe \u2014 luego LL\u00c9NALO.' }); }
+        try { if (window.DocBLoop && st.loopKey) { window.DocBLoop.report(st.loopKey, rep.kept ? (lang() === 'es' ? 'LLENAR no cambi\u00f3 nada: el papel ya ten\u00eda ' + rep.kept + ' respuestas; no se guard\u00f3 copia.' : 'FILL changed nothing: the paper already held ' + rep.kept + ' answers; no copy was saved.') : (lang() === 'es' ? 'LLENAR no escribi\u00f3 nada (no hab\u00eda respuestas); no se guard\u00f3 ninguna copia.' : 'FILL wrote nothing (there were no answers); no copy was saved.'), { tool: 'fill', wrote: 0, kept: rep.kept, saved: false }); } } catch (eL0) {}
+        return null;
+      }
+      return pdfDoc.save();
+    })
     .then(function (bytes) {
+      if (!bytes) { return; }
       var base = String(st.name || 'form.pdf').replace(/\.pdf$/i, '');
       var suggested = base + (lang() === 'es' ? ' \u2014 lleno.pdf' : ' \u2014 filled.pdf');
-      var cb = st.onDone, mode = st.mode; close_();
-      if (typeof cb === 'function') { cb(bytes, suggested, mode); }
+      var cb = st.onDone, mode = st.mode, key = st.loopKey; close_();
+      var line = lang() === 'es'
+        ? ('LLENAR escribi\u00f3 ' + rep.wrote + ' casillas' + (rep.kept ? ' (' + rep.kept + ' ya estaban)' : '') + (rep.blankLeft ? ', ' + rep.blankLeft + ' quedaron vac\u00edas' : ', ninguna qued\u00f3 vac\u00eda') + (rep.flatPages.length ? '; p\u00e1gina(s) ' + rep.flatPages.join(', ') + ' sin casillas (pluma)' : '') + '.')
+        : ('FILL wrote ' + rep.wrote + ' boxes' + (rep.kept ? ' (' + rep.kept + ' already there)' : '') + (rep.blankLeft ? ', ' + rep.blankLeft + ' left blank' : ', none left blank') + (rep.flatPages.length ? '; page' + (rep.flatPages.length > 1 ? 's ' : ' ') + rep.flatPages.join(', ') + ' with no boxes (pen)' : '') + '.');
+      rep.line = line; rep.saved = true;
+      try { if (window.DocBLoop && key) { window.DocBLoop.report(key, line, { tool: 'fill', wrote: rep.wrote, kept: rep.kept, blankLeft: rep.blankLeft, total: rep.total, flatPages: rep.flatPages, firstPage: rep.firstPage, saved: true }); } } catch (eL1) {}
+      if (typeof cb === 'function') { cb(bytes, suggested, mode, rep); }
     })['catch'](function (e) {
       if (btn) { btn.disabled = false; }
       if (hint) { hint.textContent = T({ en: 'Couldn\u2019t write into this form.', es: 'No se pudo escribir en este formulario.' }) + (e && e.message ? ' [' + String(e.message).substring(0, 120) + ']' : ''); }
@@ -471,7 +509,7 @@
   function open(o) {
     if (!o || !o.pdfB64) { return; }
     css(); close_();
-    st = { name: o.name || 'form.pdf', pdfU8: b64ToU8_(o.pdfB64), onDone: o.onDone, onAskDocB: o.onAskDocB, onTell: o.onTell, page: 1, scale: 1, mode: 'fields', fields: [], texts: [], cur: -1 };
+    st = { name: o.name || 'form.pdf', pdfU8: b64ToU8_(o.pdfB64), onDone: o.onDone, onAskDocB: o.onAskDocB, onTell: o.onTell, loopKey: o.loopKey || '', page: 1, scale: 1, mode: 'fields', fields: [], texts: [], cur: -1 };
     var v = document.createElement('div'); v.id = 'dfVeil';
     v.innerHTML = '<div class="dfBar"><span class="dfKick">\ud83d\udccb ' + T({ en: 'FILL THIS FORM', es: 'LLENA ESTE FORMULARIO' }) + ' \u00b7 ' + esc(st.name) + '</span>'
       + '<button class="dfGhostBtn" id="dfPrev">\u25c0</button><span class="dfPg" id="dfPg"></span><button class="dfGhostBtn" id="dfNext">\u25b6</button>'
@@ -499,6 +537,9 @@
       if (!st) { return; }
       st.fields = discover_(pdfDoc);
       st.mode = st.fields.length ? 'fields' : 'flat';
+      /* v1.3: pages with no boxes inside a fielded form */
+      st.flatPages = [];
+      try { if (st.mode === 'fields') { var nP = pdfDoc.getPageCount(), hasF = {}; for (var fi = 0; fi < st.fields.length; fi++) { hasF[st.fields[fi].page] = 1; } for (var pi = 0; pi < nP; pi++) { if (!hasF[pi]) { st.flatPages.push(pi + 1); } } } } catch (eFp) {}
       return window.pdfjsLib.getDocument({ data: st.pdfU8.slice(0) }).promise;
     }).then(function (doc) {
       if (!st) { return; }
@@ -507,6 +548,10 @@
       if (hint) { hint.textContent = st.mode === 'fields'
         ? T({ en: 'Tap a box and type, or press Ask Doc B and let him read the questions and answer by number. Confirm, then Fill it.', es: 'Toca una casilla y escribe, o pulsa Preg\u00fantale a Doc B y deja que lea las preguntas y responda por n\u00famero. Confirma y luego Ll\u00e9nalo.' })
         : T({ en: 'This form has no boxes. Tap each spot where an answer goes, then press Ask Doc B and he fills them by number \u2014 or type them. Then Fill it.', es: 'Este formulario no tiene casillas. Toca cada lugar donde va una respuesta, luego pulsa Preg\u00fantale a Doc B y los llena por n\u00famero \u2014 o escr\u00edbelos. Luego Ll\u00e9nalo.' }); }
+      if (hint && st.mode === 'fields' && st.flatPages && st.flatPages.length && st.flatPages.length < (st.doc.numPages || 99)) {
+        var fpN = st.flatPages.filter(function (p) { return p > 0; });
+        if (fpN.length && fpN.length <= 6) { hint.textContent += ' ' + T({ en: 'Page' + (fpN.length > 1 ? 's ' : ' ') + fpN.join(', ') + ' ' + (fpN.length > 1 ? 'have' : 'has') + ' no boxes \u2014 sign or write there with the pen.', es: (fpN.length > 1 ? 'Las p\u00e1ginas ' : 'La p\u00e1gina ') + fpN.join(', ') + ' no ' + (fpN.length > 1 ? 'tienen' : 'tiene') + ' casillas \u2014 firma o escribe ah\u00ed con la pluma.' }); }
+      }
       return renderPage_().then(renderPane_);
     })['catch'](function (e) {
       var hint = document.getElementById('dfHint');
@@ -514,5 +559,5 @@
     });
   }
 
-  window.DocBForm = { open: open, apply: apply, close: close_, say: say, show: show_, hide: hide_, isOpen: function () { return !!st; }, version: '1.2' };
+  window.DocBForm = { open: open, apply: apply, close: close_, say: say, show: show_, hide: hide_, isOpen: function () { return !!st; }, version: '1.3' };
 })();

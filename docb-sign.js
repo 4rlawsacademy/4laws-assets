@@ -1,4 +1,13 @@
 /* ============================================================
+   DOCB-SIGN.JS v1.6 — THE PEN REPORTS (Bench 50, Mon 11/9/26)
+   The founder's night of 11/8: Doc B "could not confirm a signature" on a
+   file this pen had stamped -- he was reading text, and a signature is a
+   picture. v1.6: after STAMP IT the pen says what it did -- how many
+   signatures, on which pages, dated or not -- to onSigned(bytes, name,
+   report) and to DocBLoop (if on the page) under open({ loopKey }). The
+   inner version label finally says what the header says. Nothing else moved.
+   Way back: v1.5 (file docb-sign-v1_5-WAY-BACK.js).
+   ----------------------------------------------------------------
    DOCB-SIGN.JS v1.5 — THE NEXT STEP (Bench 50, 10/19/26)
    The founder's pen test on v1.4 (10/15): three signatures placed,
    "it still says stamp it... if there are multiple pages to sign, no
@@ -309,9 +318,18 @@
     }).then(function (bytes) {
       var base = String(st.name || 'document.pdf').replace(/\.pdf$/i, '');
       var suggested = base + (lang() === 'es' ? ' \u2014 firmado.pdf' : ' \u2014 signed.pdf');
-      var cb = st.onSigned;
+      var cb = st.onSigned, key = st.loopKey;
+      /* v1.6 THE PEN REPORTS */
+      var pagesSeen = {}, pagesL = [];
+      for (var mi = 0; mi < st.marks.length; mi++) { var pg = st.marks[mi].page; if (!pagesSeen[pg]) { pagesSeen[pg] = 1; pagesL.push(pg); } }
+      pagesL.sort(function (a, b) { return a - b; });
+      var rep = { tool: 'sign', count: st.marks.length, pages: pagesL, dated: !!st.dateOn, date: st.dateOn ? today_() : '' };
+      rep.line = lang() === 'es'
+        ? ('FIRMA puso ' + rep.count + (rep.count === 1 ? ' firma' : ' firmas') + ' en ' + (pagesL.length === 1 ? 'la p\u00e1gina ' : 'las p\u00e1ginas ') + pagesL.join(', ') + (rep.dated ? ', con fecha ' + rep.date : ', sin fecha') + '.')
+        : ('SIGN placed ' + rep.count + (rep.count === 1 ? ' signature' : ' signatures') + ' on page' + (pagesL.length === 1 ? ' ' : 's ') + pagesL.join(', ') + (rep.dated ? ', dated ' + rep.date : ', undated') + '.');
       close_();
-      if (typeof cb === 'function') { cb(bytes, suggested); }
+      try { if (window.DocBLoop && key) { window.DocBLoop.report(key, rep.line, rep); } } catch (eL) {}
+      if (typeof cb === 'function') { cb(bytes, suggested, rep); }
     })['catch'](function (e) {
       if (btn) { btn.disabled = false; btn.textContent = T({ en: '\u270D Stamp it', es: '\u270D F\u00edrmalo' }); }
       var why = (e && e.message) ? String(e.message).substring(0, 120) : '';
@@ -329,7 +347,7 @@
     css();
     close_();
     var remembered = 120; try { remembered = parseInt(localStorage.getItem('4laws-sign-size') || '120', 10) || 120; } catch (eLs) {}
-    st = { name: o.name || 'document.pdf', pdfU8: b64ToU8_(o.pdfB64), sigU8: b64ToU8_(o.sigB64), sigMime: o.sigMime || 'image/png', onSigned: o.onSigned, page: 1, at: null, marks: [], lines: {}, linePages: [], dateOn: true, sigWpt: remembered, sigAspect: 2.4, scale: 1 };   /* v1.4: many marks, found lines, the date */
+    st = { name: o.name || 'document.pdf', pdfU8: b64ToU8_(o.pdfB64), sigU8: b64ToU8_(o.sigB64), sigMime: o.sigMime || 'image/png', onSigned: o.onSigned, loopKey: o.loopKey || '', page: 1, at: null, marks: [], lines: {}, linePages: [], dateOn: true, sigWpt: remembered, sigAspect: 2.4, scale: 1 };   /* v1.4: many marks, found lines, the date */
     try { st.dateOn = localStorage.getItem('4laws-sign-date') !== 'off'; } catch (eD) {} /* v1.2: a pen-sized default, and the size you last used */
     var v = document.createElement('div'); v.id = 'dsVeil';
     v.innerHTML = '<div class="dsBar"><span class="dsKick">\u270D ' + T({ en: 'SIGN THIS FILE', es: 'FIRMA ESTE ARCHIVO' }) + ' \u00b7 ' + esc(st.name) + '</span>'
@@ -447,5 +465,5 @@
     }
   }
 
-  window.DocBSign = { open: open, close: close_, choose: choose, thumb: thumbInto_, version: '1.4' };
+  window.DocBSign = { open: open, close: close_, choose: choose, thumb: thumbInto_, version: '1.6' };
 })();
