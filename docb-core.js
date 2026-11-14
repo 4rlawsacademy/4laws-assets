@@ -1,23 +1,37 @@
 /**
  * docb-core.js
  * 4 LAWS Academy — Shared Doc B AI capabilities
- * Version 3.1.0 — THE ONE VOICE (11/14/26, the Voice bench)
+ * Version 3.2.0 — THE ONE VOICE, EVERYWHERE IT CAN REACH (11/14/26, the Voice bench)
  *
  * WHERE IT LIVES: the GitHub shelf (4rlawsacademy/4laws-assets), under
- *   this same name. Every page with a Doc B chat loads it (seen: /todos).
- * THE WAY BACK: upload the earlier docb-core.js (Version 2.0.0, the robot
- *   voice) over this one, under the same name, and purge.
- * NEEDS: Main Apps Script with AUDIT 92 THE ONE VOICE (action docbSpeak).
- *   Until that is live, Doc B is simply silent.
+ *   this same name. Every page with a Doc B chat loads it (seen: /todos,
+ *   the Work Station); charles-voice-v1.js (cut 2) loads it on the other
+ *   pages that have arrows.
+ * THE WAY BACK: upload the earlier docb-core.js (Version 3.1.0) over this
+ *   one, under the same name, and purge.
+ * NEEDS: Main Apps Script with AUDIT 93 THE KEPT LINES (action docbSpeak).
  *
- * What changed in 3.x:
- *   Doc B speaks with the one house voice (ElevenLabs "David") on every
- *   page. This file holds NO key and never talks to ElevenLabs. It asks
- *   the house server "say this"; the house checks the member is signed
- *   in, keeps the key, and sends the sound back. The browser's robot
- *   voice (SpeechSynthesis) is retired: if the house cannot speak, Doc B
- *   stays silent, never the robot. Voice is ON by default; the sound
- *   button turns it off (saved).
+ * The voice (3.x):
+ *   Doc B speaks with the one house voice (ElevenLabs "David"). This file
+ *   holds NO key and never talks to ElevenLabs. It asks the house server
+ *   "say this"; the house checks the member is signed in, keeps the key,
+ *   and sends the sound back. If the house cannot speak, Doc B is silent,
+ *   never the robot. Voice is ON by default; the sound button turns it
+ *   off, and off STAYS off (kept under 4laws-voice-off, which no page
+ *   erases).
+ * New in 3.2:
+ *   - THE CATCH: anything on the page that still speaks through the
+ *     browser's robot (speechSynthesis.speak) is caught and said by the
+ *     house voice instead: the arrows' fallback, the Production Studio's
+ *     own reader. Each caller keeps its own mute; this file adds none.
+ *   - "Hi. I can talk." is not said any more (founder, 11/14/26).
+ *   - THE HUSH IS OBEYED: when a page above (the Lectern, recording)
+ *     silences speechSynthesis.speak, the house voice is silent too.
+ *   - DocBCore.sayLine(text, lang, { keep, onend }): one line, said now.
+ *     keep:true marks a FIXED line (an arrows card): the house makes its
+ *     sound once and keeps it. DocBCore.stopSpeaking() stops everything.
+ *   - If an older copy of this file already wired the page, this one
+ *     only takes over the voice and leaves the rest as it stands.
  *
  * Provides:
  *   - Screenshot paste interception (document-level listener)
@@ -46,9 +60,15 @@
 (function (global) {
   'use strict';
 
+  var VOICE_CUT = 2;
+  var _old = global.DocBCore;
+  if (_old && _old.voiceCut >= VOICE_CUT) { return; }                    /* loaded twice: the first copy stands */
+  var _patching = !!(_old && typeof _old.init === 'function');          /* an older copy already wired this page: take over the voice only */
+
   var _pending        = null;   // { base64, dataUrl, mediaType }
   var _voiceOn        = true;
-  var _voiceKey       = '4laws-voice-on';
+  var _voiceKey       = '4laws-voice-on';    // the old key: some pages erase it at every visit
+  var _voiceOffKey    = '4laws-voice-off';   // 3.2: '1' = off. No page erases this one, so off stays off
   var _cfg            = {};
   var _continuousMicFn = null;  // page-level function to restart mic after speech
 
@@ -60,20 +80,34 @@
   var _audio       = null;  // one shared <audio> for the whole page
   var _xhr         = null;  // the request in flight, if any
   var _objUrl      = null;  // the sound now loaded, if any
-  var _speakSeq    = 0;     // only the newest reply may speak
-  var _restUntil   = 0;     // the house said "quiet for now": do not ask again until then
+  var _queue       = [];    // lines waiting their turn
+  var _cur         = null;  // the line being fetched or spoken
+  var _restUntil   = 0;     // the house said "this member / the house is done for today": no new replies until then
+  var _offUntil    = 0;     // the house said "the voice is not set up" or "not signed in": ask nothing until then
+  var _lines       = {};    // fixed lines already heard on this page: said again without asking
+  var _lineCount   = 0;
+  var _shimOn      = false; // the catch is installed on speechSynthesis
+  var _origSpeak   = null, _origCancel = null;
+  var _GREETING    = /^(hi\.? i can talk\.?|hola\.? puedo hablar contigo\.?)$/i;   // retired 11/14/26
   var _SILENCE     = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
 
   // ── Load persisted voice preference ──────────────────────────────────────
-  try {
-    var _stored = localStorage.getItem(_voiceKey);
-    if (_stored === 'false') { _voiceOn = false; }
-  } catch (e) {}
+  function _prefOn() {
+    try {
+      if (localStorage.getItem(_voiceOffKey) === '1') { return false; }
+      if (localStorage.getItem(_voiceKey) === 'false') { return false; }
+    } catch (e) {}
+    return true;
+  }
+  _voiceOn = _prefOn();
 
   // ── INTERNAL HELPERS ─────────────────────────────────────────────────────
 
   function _saveVoicePref() {
-    try { localStorage.setItem(_voiceKey, _voiceOn ? 'true' : 'false'); } catch (e) {}
+    try {
+      localStorage.setItem(_voiceKey, _voiceOn ? 'true' : 'false');
+      if (_voiceOn) { localStorage.removeItem(_voiceOffKey); } else { localStorage.setItem(_voiceOffKey, '1'); }
+    } catch (e) {}
   }
 
   function _stored_(key) {
@@ -87,32 +121,146 @@
     return _audio;
   }
 
+  function _micFn() {
+    if (_continuousMicFn) { return _continuousMicFn; }
+    try {
+      var d = global.DocBCore;
+      if (d && typeof d.__mic === 'function') { return d.__mic; }
+      if (d && d._cfg && typeof d._cfg.continuousMicFn === 'function') { return d._cfg.continuousMicFn; }
+    } catch (e) {}
+    return null;
+  }
   function _micBack(delay) {
-    if (_continuousMicFn) { setTimeout(_continuousMicFn, delay); }
+    var fn = _micFn();
+    if (fn) { setTimeout(fn, delay); }
+  }
+  function _fire(fn, arg) { if (typeof fn === 'function') { try { fn(arg); } catch (e) {} } }
+
+  /* ── THE HUSH: a page above (the Lectern, recording) silences speechSynthesis.speak. Obey it. ── */
+  function _isNative(fn) { try { return /\[native code\]/.test(Function.prototype.toString.call(fn)); } catch (e) { return true; } }
+  function _synth() { try { return global.speechSynthesis || null; } catch (e) { return null; } }
+  function _installShim() {
+    var S = _synth(); if (!S || _shimOn) { return; }
+    if (!_isNative(S.speak)) { return; }                 /* already silenced by someone: leave their hand on it */
+    try {
+      _origSpeak = S.speak; _origCancel = S.cancel;
+      S.speak = _shimSpeak; S.cancel = _shimCancel;
+      _shimOn = (S.speak === _shimSpeak);
+    } catch (e) { _shimOn = false; }
+  }
+  function _hushed() {
+    var S = _synth(); if (!S) { return false; }
+    if (_shimOn) { return S.speak !== _shimSpeak; }      /* someone took our place: hushed */
+    _installShim();
+    if (_shimOn) { return false; }
+    return !_isNative(S.speak);                          /* silenced before we arrived */
   }
 
-  /* Stops any reply being fetched or spoken. Returns true if one was. */
-  function _cancelSpeech() {
-    var wasActive = false;
-    _speakSeq++;
+  /* ── THE LINE: one voice, one line at a time ── */
+  function _dropSound() {
     if (_xhr) {
-      wasActive = true;
       try { _xhr.onload = null; _xhr.onerror = null; _xhr.ontimeout = null; _xhr.abort(); } catch (e) {}
       _xhr = null;
     }
     if (_audio) {
-      if (!_audio.paused && _objUrl) { wasActive = true; }
-      _audio.onended = null;
-      _audio.onerror = null;
+      _audio.onended = null; _audio.onerror = null;
       try { _audio.pause(); } catch (e2) {}
     }
     if (_objUrl) {
       try { if (_objUrl.indexOf('blob:') === 0) { global.URL.revokeObjectURL(_objUrl); } } catch (e3) {}
       _objUrl = null;
     }
-    /* The retired robot: silence it too, in case an old page started it */
-    try { if (global.speechSynthesis) { global.speechSynthesis.cancel(); } } catch (e4) {}
-    return wasActive;
+  }
+  /* Stops everything said or waiting. Returns true if something was. A stopped line's own onend still fires (as the browser's reader does); the mic is not reopened here. */
+  function _stopAll() {
+    var was = !!_cur || _queue.length > 0, q = _queue, c = _cur, i;
+    _queue = []; _cur = null;
+    _dropSound();
+    if (c && !c.done) { c.done = true; _fire(c.onend); }
+    for (i = 0; i < q.length; i++) { if (!q[i].done) { q[i].done = true; _fire(q[i].onend); } }
+    return was;
+  }
+  function _done(item) {
+    if (_cur === item) { _cur = null; _dropSound(); }
+    if (!item.done) { item.done = true; _fire(item.onend); if (item.mic) { _micBack(400); } }
+    _pump();
+  }
+  function _pump() {
+    if (_cur || !_queue.length) { return; }
+    _cur = _queue.shift();
+    _start(_cur);
+  }
+  function _play(item, b64, mime) {
+    if (_cur !== item) { return; }
+    if (_hushed() || (item.mic && !_prefOn())) { _done(item); return; }
+    var a = _getAudio(); if (!a) { _done(item); return; }
+    try {
+      _objUrl   = _soundUrl(b64, mime || 'audio/mpeg');
+      a.onended = function () { _done(item); };
+      a.onerror = function () { _done(item); };
+      a.src     = _objUrl;
+      _fire(item.onstart);
+      var p = a.play();
+      if (p && typeof p['catch'] === 'function') { p['catch'](function () { _done(item); }); }
+    } catch (e) { _done(item); }
+  }
+  function _start(item) {
+    var session = _stored_(_SESSION_KEY), member = _stored_(_MEMBER_KEY), now = new Date().getTime();
+    if (_hushed() || !session || !member || now < _offUntil || (!item.keep && now < _restUntil) ||
+        typeof global.XMLHttpRequest === 'undefined' || !_getAudio()) { _done(item); return; }
+    if (item.keep && _lines.hasOwnProperty('k:' + item.text)) { _play(item, _lines['k:' + item.text], 'audio/mpeg'); return; }
+    var xhr = new global.XMLHttpRequest();
+    _xhr = xhr;
+    try {
+      /* No headers set: the house's door takes a plain post, as every page sends it */
+      xhr.open('POST', _HOUSE_URL, true);
+      xhr.timeout = 40000;
+    } catch (e) { _xhr = null; _done(item); return; }
+    xhr.onload = function () {
+      if (_xhr === xhr) { _xhr = null; }
+      if (_cur !== item) { return; }
+      var d = null;
+      try { d = JSON.parse(xhr.responseText); } catch (eP) { d = null; }
+      if (!d || d.status !== 'ok' || !d.audio) {
+        var until = new Date().getTime() + 30 * 60 * 1000;
+        if (d && (d.code === 'QUIET_MEMBER' || d.code === 'QUIET_HOUSE')) { _restUntil = until; }
+        if (d && (d.code === 'VOICE_OFF' || d.code === 'NO_SESSION')) { _offUntil = until; }
+        _done(item);
+        return;
+      }
+      if (item.keep && _lineCount < 60) { _lines['k:' + item.text] = d.audio; _lineCount++; }
+      _play(item, d.audio, d.mime);
+    };
+    xhr.onerror   = function () { if (_xhr === xhr) { _xhr = null; } _done(item); };
+    xhr.ontimeout = function () { if (_xhr === xhr) { _xhr = null; } _done(item); };
+    try {
+      var body = { action: 'docbSpeak', sessionId: session, requestingMemberId: member, text: item.text, lang: (item.lang === 'es') ? 'es' : 'en' };
+      if (item.keep) { body.keep = true; }
+      xhr.send(JSON.stringify(body));
+    } catch (e3) { _xhr = null; _done(item); }
+  }
+
+  /* ── THE CATCH: what the page hands to the browser's robot, the house voice says ── */
+  function _shimSpeak(u) {
+    var text = '';
+    try { text = _cleanForSpeech((u && u.text) || ''); } catch (e) { text = ''; }
+    var item = { text: text, lang: (u && /^es/i.test(String(u.lang || ''))) ? 'es' : 'en', keep: false, mic: false, done: false,
+      onstart: function () { if (u) { _fire(u.onstart, { utterance: u }); } },
+      onend:   function () { if (u) { _fire(u.onend,   { utterance: u }); } } };
+    if (!text || (u && u.volume === 0) || _GREETING.test(text)) { item.done = true; setTimeout(function () { _fire(item.onend); }, 0); return; }   /* nothing to say, an unlock, or the retired greeting */
+    _queue.push(item);
+    _pump();
+  }
+  function _shimCancel() {
+    _stopAll();
+    try { if (_origCancel) { _origCancel.call(_synth()); } } catch (e) {}
+  }
+
+  /* Stops any reply being fetched or spoken. Returns true if one was. */
+  function _cancelSpeech() {
+    var was = _stopAll();
+    try { var S = _synth(); if (S && _origCancel && _shimOn) { _origCancel.call(S); } } catch (e4) {}
+    return was;
   }
 
   /* Phones only let a page play sound after a tap. On the first tap or key,
@@ -237,9 +385,10 @@
     // ── Voice button ──────────────────────────────────────────────────────
     var voiceBtn = document.getElementById(_cfg.voiceBtnId || '');
     if (voiceBtn) {
-      if (_voiceOn) { voiceBtn.classList.add('active'); }
+      _voiceOn = _prefOn();
+      voiceBtn.classList.toggle('active', _voiceOn);
       voiceBtn.addEventListener('click', function () {
-        _voiceOn = !_voiceOn;
+        _voiceOn = !_prefOn();
         _saveVoicePref();
         voiceBtn.classList.toggle('active', _voiceOn);
         if (!_voiceOn) {
@@ -291,90 +440,42 @@
    * Asks the house server for the sound (the house checks the member is
    * signed in and holds the key). After speech ends — or if it cannot
    * play — reopens continuous mic if continuousMicFn is set. Never falls
-   * back to the robot voice.
+   * back to the robot voice. A new reply takes the place of the last one.
    *
    * @param {string}   text
    * @param {function} getLang  Returns 'en' or 'es' (the voice follows the words)
    */
-  DocBCore.speak = function (text, getLang) {
-    var clean   = (_voiceOn && text) ? _cleanForSpeech(text) : '';
-    var session = clean ? _stored_(_SESSION_KEY) : '';
-    var member  = clean ? _stored_(_MEMBER_KEY)  : '';
-    var now     = new Date().getTime();
-    if (!clean || !session || !member || now < _restUntil ||
-        typeof global.XMLHttpRequest === 'undefined' || !_getAudio()) {
+  function _speakReply(text, getLang) {
+    var clean = (_prefOn() && text) ? _cleanForSpeech(text) : '';
+    if (!clean) {
       /* Even if voice is off, still reopen mic in continuous mode */
       _micBack(300);
       return;
     }
-    _cancelSpeech();
-    var seq      = _speakSeq;
-    var finished = false;
-    function done() {
-      if (finished) { return; }
-      finished = true;
-      if (seq !== _speakSeq) { return; }
-      if (_audio) { _audio.onended = null; _audio.onerror = null; }
-      if (_objUrl) {
-        try { if (_objUrl.indexOf('blob:') === 0) { global.URL.revokeObjectURL(_objUrl); } } catch (e) {}
-        _objUrl = null;
-      }
-      _micBack(400);
-    }
-
+    _stopAll();
     var lang = (typeof getLang === 'function') ? getLang() : 'en';
-    var xhr  = new global.XMLHttpRequest();
-    _xhr = xhr;
-    try {
-      /* No headers set: the house's door takes a plain post, as every page sends it */
-      xhr.open('POST', _HOUSE_URL, true);
-      xhr.timeout = 40000;
-    } catch (e) {
-      _xhr = null;
-      done();
-      return;
-    }
-    xhr.onload = function () {
-      if (_xhr === xhr) { _xhr = null; }
-      if (seq !== _speakSeq) { return; }
-      var d = null;
-      try { d = JSON.parse(xhr.responseText); } catch (eP) { d = null; }
-      if (!d || d.status !== 'ok' || !d.audio) {
-        /* A daily limit reached, or the voice not set up: stop asking for a while */
-        if (d && (d.code === 'QUIET_MEMBER' || d.code === 'QUIET_HOUSE' || d.code === 'VOICE_OFF')) {
-          _restUntil = new Date().getTime() + 30 * 60 * 1000;
-        }
-        done();
-        return;
-      }
-      if (!_voiceOn) { done(); return; }
-      var a = _getAudio();
-      try {
-        _objUrl   = _soundUrl(d.audio, d.mime || 'audio/mpeg');
-        a.onended = done;
-        a.onerror = done;
-        a.src     = _objUrl;
-        var p = a.play();
-        if (p && typeof p['catch'] === 'function') { p['catch'](done); }
-      } catch (e2) {
-        done();
-      }
-    };
-    xhr.onerror   = function () { if (_xhr === xhr) { _xhr = null; } done(); };
-    xhr.ontimeout = function () { if (_xhr === xhr) { _xhr = null; } done(); };
-    try {
-      xhr.send(JSON.stringify({
-        action: 'docbSpeak',
-        sessionId: session,
-        requestingMemberId: member,
-        text: clean,
-        lang: (lang === 'es') ? 'es' : 'en'
-      }));
-    } catch (e3) {
-      _xhr = null;
-      done();
-    }
-  };
+    _queue.push({ text: clean, lang: (lang === 'es') ? 'es' : 'en', keep: false, mic: true, done: false });
+    _pump();
+  }
+  DocBCore.speak = _speakReply;
+
+  /**
+   * sayLine — say one line now, in the house voice (the arrows, a page's own words).
+   * @param {string} text
+   * @param {string} lang   'en' or 'es'
+   * @param {Object} opts   keep:true = a FIXED line, kept by the house after its first telling; onend = called when done
+   */
+  function _sayLine(text, lang, opts) {
+    opts = opts || {};
+    var clean = text ? _cleanForSpeech(text) : '';
+    if (!clean) { _fire(opts.onend); return; }
+    _stopAll();
+    _queue.push({ text: clean, lang: (lang === 'es') ? 'es' : 'en', keep: !!opts.keep, mic: false, done: false, onend: opts.onend || null });
+    _pump();
+  }
+  DocBCore.sayLine = _sayLine;
+  DocBCore.stopSpeaking = function () { _stopAll(); };
+  DocBCore.voiceCut = VOICE_CUT;
 
   /**
    * getPending — returns the pending screenshot object or null.
@@ -439,7 +540,7 @@
    * isVoiceOn — read current voice preference.
    */
   DocBCore.isVoiceOn = function () {
-    return _voiceOn;
+    return _prefOn();
   };
 
   /**
@@ -453,6 +554,21 @@
   };
 
   // ── Expose globally ───────────────────────────────────────────────────────
-  global.DocBCore = DocBCore;
+  _installShim();
+  if (_patching) {
+    /* An older copy wired this page (its paste, camera and voice button stand). Take over the voice only. */
+    var _oldSetMic = _old.setContinuousMic;
+    _old.speak = _speakReply;
+    _old.sayLine = _sayLine;
+    _old.stopSpeaking = DocBCore.stopSpeaking;
+    _old.isVoiceOn = DocBCore.isVoiceOn;
+    _old.setContinuousMic = function (fn) {
+      _old.__mic = (typeof fn === 'function') ? fn : null;
+      if (typeof _oldSetMic === 'function') { try { _oldSetMic(fn); } catch (e) {} }
+    };
+    _old.voiceCut = VOICE_CUT;
+  } else {
+    global.DocBCore = DocBCore;
+  }
 
 }(window));
