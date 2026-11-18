@@ -18,7 +18,7 @@
   var LOGO = 'https://images.squarespace-cdn.com/content/v1/6759ae4c910c924d2a7bdecd/a2eea043-07f6-47c0-8b79-85b1f4b886da/4LAWS+logo+print.jpg?format=500w';
   var ALWAYS = { home: 1, todos: 1, trust: 1 };
   var DOORS = [
-    { k: 'life',   href: '/life',           en: 'LIFE',   es: 'LIFE',      side: 'l', notEn: 'Not yet. Sit with Charles first; the game opens after.',            notEs: 'Todavía no. Siéntate primero con Charles; el juego se abre después.' },
+    { k: 'life',   href: '/life',           en: 'SELF',   es: 'YO',        side: 'l', notEn: 'Not yet. Sit with Charles first; the game opens after.',            notEs: 'Todavía no. Siéntate primero con Charles; el juego se abre después.' },
     { k: 'todos',  href: '/todos',          en: 'TODOS',  es: 'TODOS',     side: 'l', notEn: '', notEs: '' },
     { k: 'studio', href: '/studio',         en: 'STUDIO', es: 'ESTUDIO',   side: 'l', notEn: 'Not yet. Choose your talent project with your coach and this one opens.', notEs: 'Todavía no. Escoge tu proyecto de talento con tu coach y esta se abre.' },
     { k: 'home',   href: '/pws',            en: 'MY DAY', es: 'MI DÍA', side: 'c', notEn: '', notEs: '' },
